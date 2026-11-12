@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
+import { useEffect, useRef, useState, type PointerEvent as RPointerEvent, type RefObject } from 'react'
 import { useLocation } from 'react-router'
 import { TLink, useTransition } from './Transition'
 import { asset, categories, contacts, pad } from '../data'
 import { useLang, type Key } from '../i18n'
-import { gsap, useGSAP, lenis, scroll } from '../lib/motion'
+import { gsap, lenis } from '../lib/motion'
 
 export const NAV: { to: string; key: Key }[] = [
   { to: '/', key: 'nav.home' },
@@ -58,33 +58,43 @@ const supportsRefraction = () =>
 export function Header() {
   const { t } = useLang()
   const { pathname } = useLocation()
-  const bar = useRef<HTMLElement>(null)
   const glass = useRef<HTMLDivElement>(null)
   const nav = useRef<HTMLElement>(null)
   const lens = useRef<HTMLSpanElement>(null)
   const [open, setOpen] = useState(false)
+  const [light, setLight] = useState(false)
   const [refract] = useState(supportsRefraction)
+  const openRef = useRef(false)
+  openRef.current = open
   const activeIndex = NAV.slice(1).findIndex((n) => pathname.startsWith(n.to))
 
-  // hide on scroll down, show on scroll up
+  // the bar is always on screen; it turns into light glass over light sections (like iOS)
   useEffect(() => {
-    let last = 0
-    let hidden = false
-    const onTick = () => {
-      const y = scroll.y
-      const down = y > last + 2 && y > 160
-      const up = y < last - 2
-      if (down && !hidden) {
-        hidden = true
-        gsap.to(bar.current, { yPercent: -160, duration: 0.9, ease: 'expo.out' })
-      } else if ((up || y < 160) && hidden) {
-        hidden = false
-        gsap.to(bar.current, { yPercent: 0, duration: 0.9, ease: 'expo.out' })
+    let frame = 0
+    let current = false
+    const tick = () => {
+      if (++frame % 4) return
+      const g = glass.current
+      if (!g) return
+      const r = g.getBoundingClientRect()
+      const y = r.top + r.height / 2
+      let over = false
+      if (!openRef.current) {
+        for (const s of document.querySelectorAll<HTMLElement>('.tone-light, .tone-sand')) {
+          const sr = s.getBoundingClientRect()
+          if (sr.top <= y && sr.bottom >= y && sr.left < r.right && sr.right > r.left) {
+            over = true
+            break
+          }
+        }
       }
-      last = y
+      if (over !== current) {
+        current = over
+        setLight(over)
+      }
     }
-    gsap.ticker.add(onTick)
-    return () => gsap.ticker.remove(onTick)
+    gsap.ticker.add(tick)
+    return () => gsap.ticker.remove(tick)
   }, [])
 
   // specular highlight follows the pointer across the glass
@@ -125,18 +135,20 @@ export function Header() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeIndex])
 
+  const isLight = light && !open
+
   return (
     <>
       <LiquidFilter />
-      <header ref={bar} className="pointer-events-none fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6 md:pt-5">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6 md:pt-5">
         <div
           ref={glass}
           onPointerMove={onGlassMove}
           onPointerLeave={onGlassLeave}
-          className={`glass ${refract ? 'glass-refract' : ''} pointer-events-auto mx-auto flex max-w-[1240px] items-center justify-between gap-4 rounded-full py-2 pl-5 pr-2 md:py-2.5 md:pl-7 md:pr-2.5`}
+          className={`glass ${refract ? 'glass-refract' : ''} ${isLight ? 'is-light ui-on-light' : ''} pointer-events-auto mx-auto flex max-w-[1240px] items-center justify-between gap-4 rounded-full py-2 pl-5 pr-2 md:py-2.5 md:pl-7 md:pr-2.5`}
         >
-          <TLink to="/" aria-label="Novacolor" data-cursor="link" className="shrink-0 transition-transform duration-500 active:scale-95">
-            <img src={asset('img/logo.png')} alt="Novacolor" className="h-6 w-auto drop-shadow-[0_1px_6px_rgba(0,0,0,0.35)] md:h-7" />
+          <TLink to="/" aria-label="Novacolor" data-cursor="link" className="shrink-0 transition-transform duration-500 active:scale-95" onClick={() => setOpen(false)}>
+            <img src={asset('img/logo.png')} alt="Novacolor" className="logo h-6 w-auto md:h-7" />
           </TLink>
 
           <nav ref={nav} className="relative hidden items-center lg:flex" onPointerLeave={() => moveLens(activeLink())}>
@@ -146,6 +158,7 @@ export function Header() {
                 key={n.to}
                 to={n.to}
                 data-navlink
+                onClick={() => setOpen(false)}
                 onPointerEnter={(e) => moveLens(e.currentTarget)}
                 className="label relative z-[1] flex items-baseline gap-1.5 rounded-full px-4 py-2.5 !text-bone transition-transform duration-300 active:scale-95"
               >
@@ -160,55 +173,91 @@ export function Header() {
               <LangSwitch glass />
             </div>
             <button
-              onClick={() => setOpen(true)}
+              onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
               className="glass-chip label group flex items-center gap-3 rounded-full py-2.5 pl-4 pr-3.5 !text-bone transition-transform duration-300 hover:scale-[1.03] active:scale-95"
             >
-              <span>{t('menu')}</span>
-              <span className="flex w-5 flex-col gap-[4px]">
-                <span className="h-px w-full bg-bone transition-transform duration-500 group-hover:scale-x-75" />
-                <span className="h-px w-full origin-right bg-bone transition-transform duration-500 group-hover:scale-x-50" />
+              <span className="w-12 text-center">{open ? t('close') : t('menu')}</span>
+              <span className="relative block h-2.5 w-5">
+                <span
+                  className="absolute left-0 h-px w-full bg-bone transition-transform duration-700 ease-[var(--ease-expo)]"
+                  style={{ top: open ? '50%' : '0%', transform: open ? 'rotate(45deg)' : 'none' }}
+                />
+                <span
+                  className="absolute left-0 h-px w-full origin-center bg-bone transition-transform duration-700 ease-[var(--ease-expo)]"
+                  style={{ top: open ? '50%' : '100%', transform: open ? 'rotate(-45deg)' : 'none' }}
+                />
               </span>
             </button>
           </div>
         </div>
       </header>
-      <Menu open={open} onClose={() => setOpen(false)} />
+      <Menu open={open} onClose={() => setOpen(false)} capsule={glass} refract={refract} />
     </>
   )
 }
 
-function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
+/**
+ * Liquid-glass dropdown: the panel is born from the navbar capsule and
+ * "pours" downward with an elastic, droplet-shaped bottom edge. It's
+ * translucent, so the page stays visible (blurred) behind it.
+ */
+function Menu({ open, onClose, capsule, refract }: { open: boolean; onClose: () => void; capsule: RefObject<HTMLDivElement | null>; refract: boolean }) {
   const { t, l } = useLang()
-  const root = useRef<HTMLDivElement>(null)
-  const tl = useRef<gsap.core.Timeline>(null)
+  const panel = useRef<HTMLDivElement>(null)
+  const content = useRef<HTMLDivElement>(null)
+  const backdrop = useRef<HTMLDivElement>(null)
   const [hover, setHover] = useState(0)
   const { pathname } = useLocation()
-
-  useGSAP(
-    () => {
-      const el = root.current!
-      tl.current = gsap
-        .timeline({ paused: true })
-        .set(el, { autoAlpha: 1 })
-        .fromTo(el, { clipPath: 'inset(0% 0% 100% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'expo.inOut' })
-        .from(el.querySelectorAll('[data-item]'), { yPercent: 120, rotate: 4, duration: 1.1, ease: 'expo.out', stagger: 0.06 }, '-=0.45')
-        .from(el.querySelectorAll('[data-fade]'), { autoAlpha: 0, y: 20, duration: 0.8, ease: 'expo.out', stagger: 0.05 }, '<0.2')
-        .from(el.querySelector('[data-visual]'), { clipPath: 'inset(100% 0% 0% 0%)', duration: 1.2, ease: 'expo.inOut' }, 0.3)
-    },
-    { scope: root },
-  )
+  const mounted = useRef(false)
 
   useEffect(() => {
-    if (!tl.current) return
+    const p = panel.current!
+    const c = content.current!
+    const bd = backdrop.current!
+    const items = p.querySelectorAll('[data-item]')
+    const fades = p.querySelectorAll('[data-fade]')
+    if (!mounted.current) {
+      mounted.current = true
+      if (!open) return
+    }
+    const capH = capsule.current?.offsetHeight ?? 60
+    const r = capH / 2
+    const corners = ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomLeftRadius', 'borderBottomRightRadius'] as const
+    const all = (v: string) => Object.fromEntries(corners.map((k) => [k, v]))
+    gsap.killTweensOf([p, bd, ...items, ...fades])
+
     if (open) {
       lenis?.stop()
-      tl.current.timeScale(1).play()
+      c.style.paddingTop = `${capH + 28}px`
+      const top = p.getBoundingClientRect().top
+      const target = Math.min(c.scrollHeight, window.innerHeight - top - 12)
+      const w = p.offsetWidth
+      gsap
+        .timeline()
+        .set(p, { autoAlpha: 1, height: capH, scaleX: 1, ...all(`${r}px ${r}px`) })
+        .set(bd, { autoAlpha: 1 })
+        .fromTo(bd, { opacity: 0 }, { opacity: 1, duration: 0.6 }, 0)
+        // liquid pours down: elastic stretch…
+        .to(p, { height: target, duration: 1.35, ease: 'elastic.out(1, 0.6)' }, 0)
+        // …with a droplet-shaped bottom that settles into soft corners
+        .to(p, { borderBottomLeftRadius: `${w * 0.48}px 90px`, borderBottomRightRadius: `${w * 0.48}px 90px`, duration: 0.32, ease: 'power2.out' }, 0)
+        .to(p, { ...all('36px 36px'), duration: 0.9, ease: 'elastic.out(1, 0.45)' }, 0.32)
+        .fromTo(p, { scaleX: 0.97 }, { scaleX: 1, duration: 1.1, ease: 'elastic.out(1, 0.4)' }, 0)
+        .fromTo(items, { yPercent: 120, rotate: 3 }, { yPercent: 0, rotate: 0, duration: 1, ease: 'expo.out', stagger: 0.05 }, 0.2)
+        .fromTo(fades, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'expo.out', stagger: 0.05 }, 0.32)
     } else {
       lenis?.start()
-      tl.current.timeScale(1.6).reverse()
+      gsap
+        .timeline()
+        .to(fades, { autoAlpha: 0, duration: 0.2 }, 0)
+        .to(items, { yPercent: -120, duration: 0.35, ease: 'power3.in', stagger: 0.02 }, 0)
+        .to(p, { borderBottomLeftRadius: `${p.offsetWidth * 0.48}px 70px`, borderBottomRightRadius: `${p.offsetWidth * 0.48}px 70px`, duration: 0.25, ease: 'power2.in' }, 0.1)
+        .to(p, { height: capH, ...all(`${r}px ${r}px`), scaleX: 0.985, duration: 0.55, ease: 'power3.inOut' }, 0.18)
+        .to(bd, { autoAlpha: 0, duration: 0.4 }, 0.2)
+        .set(p, { autoAlpha: 0, scaleX: 1 })
     }
-  }, [open])
+  }, [open, capsule])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -219,71 +268,71 @@ function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const visual = categories[hover % categories.length]
 
   return (
-    <div ref={root} className="invisible fixed inset-0 z-[80] flex flex-col bg-char" role="dialog" aria-modal="true" aria-hidden={!open}>
-      <div className="flex items-center justify-between px-5 py-5 md:px-10 md:py-7">
-        <img data-fade src={asset('img/logo.png')} alt="Novacolor" className="h-7 w-auto md:h-8" />
-        <button data-fade onClick={onClose} className="label group flex items-center gap-3 !text-bone">
-          {t('close')}
-          <span className="relative block h-4 w-4">
-            <span className="absolute left-0 top-1/2 h-px w-full rotate-45 bg-bone transition-transform duration-500 group-hover:rotate-[135deg]" />
-            <span className="absolute left-0 top-1/2 h-px w-full -rotate-45 bg-bone transition-transform duration-500 group-hover:rotate-45" />
-          </span>
-        </button>
-      </div>
-      <div className="grid flex-1 grid-cols-1 gap-10 px-5 pb-8 md:px-10 lg:grid-cols-12">
-        <nav className="flex flex-col justify-center lg:col-span-7">
-          {NAV.map((n, i) => {
-            const active = n.to === '/' ? pathname === '/' : pathname.startsWith(n.to)
-            return (
-              <div key={n.to} className="overflow-hidden">
-                <TLink
-                  to={n.to}
-                  data-item
-                  onClick={onClose}
-                  onMouseEnter={() => setHover(i)}
-                  className="group flex items-baseline gap-4 py-1 md:gap-6"
-                >
-                  <span className="label w-6">{pad(i + 1)}</span>
-                  <span className={`display text-[13vw] leading-[1] transition-[color,transform] duration-700 ease-[var(--ease-expo)] group-hover:translate-x-4 group-hover:italic md:text-[7.2vw] lg:text-[5.6vw] ${active ? 'text-sand' : 'text-bone'}`}>
-                    {t(n.key)}
-                  </span>
-                </TLink>
+    <>
+      <div ref={backdrop} onClick={onClose} className="invisible fixed inset-0 z-[48] bg-black/15" aria-hidden />
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-[49] px-3 pt-3 md:px-6 md:pt-5">
+        <div
+          ref={panel}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('menu')}
+          aria-hidden={!open}
+          className={`glass glass-panel ${refract ? 'glass-refract' : ''} pointer-events-auto invisible mx-auto max-w-[1240px] origin-top overflow-hidden`}
+        >
+          <div ref={content} className="h-full overflow-y-auto" data-lenis-prevent>
+            <div className="grid gap-8 px-6 pb-8 md:grid-cols-12 md:gap-10 md:px-10 md:pb-10">
+              <nav className="md:col-span-7">
+                {NAV.map((n, i) => {
+                  const active = n.to === '/' ? pathname === '/' : pathname.startsWith(n.to)
+                  return (
+                    <div key={n.to} className="overflow-hidden">
+                      <TLink to={n.to} data-item onClick={onClose} onMouseEnter={() => setHover(i)} className="group flex items-baseline gap-4 py-1 md:gap-6">
+                        <span className="label w-6">{pad(i + 1)}</span>
+                        <span
+                          className={`display text-[12vw] leading-[1.02] drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] transition-[color,transform] duration-700 ease-[var(--ease-expo)] group-hover:translate-x-3 group-hover:italic md:text-6xl lg:text-7xl ${active ? 'text-sand' : 'text-bone'}`}
+                        >
+                          {t(n.key)}
+                        </span>
+                      </TLink>
+                    </div>
+                  )
+                })}
+              </nav>
+              <div className="flex flex-col justify-between gap-6 md:col-span-5">
+                <div data-fade className="relative hidden aspect-[4/3] overflow-hidden rounded-[24px] md:block">
+                  {categories.map((c) => (
+                    <img
+                      key={c.id}
+                      src={asset(c.image)}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-1000 ease-[var(--ease-expo)]"
+                      style={{ opacity: c.id === visual.id ? 1 : 0, transform: c.id === visual.id ? 'scale(1)' : 'scale(1.12)' }}
+                    />
+                  ))}
+                  <span className="label absolute bottom-4 left-4 rounded-full bg-black/30 px-3 py-1.5 !text-bone backdrop-blur">{l(visual.name)}</span>
+                </div>
+                <div data-fade className="space-y-2 text-sm text-ash">
+                  <a href={contacts.phoneHref} className="link-line display block text-3xl text-bone">
+                    {contacts.phone}
+                  </a>
+                  <div className="flex flex-wrap gap-x-6 gap-y-1">
+                    <a href={contacts.telegram} target="_blank" rel="noreferrer" className="link-line">
+                      Telegram ↗
+                    </a>
+                    <a href={contacts.instagram} target="_blank" rel="noreferrer" className="link-line">
+                      Instagram ↗
+                    </a>
+                  </div>
+                  <p>{l(contacts.address)}</p>
+                </div>
+                <div data-fade className="sm:hidden">
+                  <LangSwitch glass />
+                </div>
               </div>
-            )
-          })}
-        </nav>
-        <div className="hidden flex-col justify-center lg:col-span-5 lg:flex">
-          <div data-visual className="relative aspect-[4/5] w-full overflow-hidden">
-            {categories.map((c) => (
-              <img
-                key={c.id}
-                src={asset(c.image)}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-1000 ease-[var(--ease-expo)]"
-                style={{ opacity: c.id === visual.id ? 1 : 0, transform: c.id === visual.id ? 'scale(1)' : 'scale(1.12)' }}
-              />
-            ))}
-            <span className="label absolute bottom-4 left-4 !text-bone">{l(visual.name)}</span>
+            </div>
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap items-end justify-between gap-6 border-t border-line px-5 py-6 md:px-10">
-        <div data-fade className="flex flex-wrap gap-x-10 gap-y-2 text-sm text-ash">
-          <a href={contacts.phoneHref} className="link-line text-bone">
-            {contacts.phone}
-          </a>
-          <a href={contacts.telegram} target="_blank" rel="noreferrer" className="link-line">
-            Telegram
-          </a>
-          <a href={contacts.instagram} target="_blank" rel="noreferrer" className="link-line">
-            Instagram
-          </a>
-          <span>{l(contacts.address)}</span>
-        </div>
-        <div data-fade>
-          <LangSwitch />
-        </div>
-      </div>
-    </div>
+    </>
   )
 }

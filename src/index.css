@@ -107,6 +107,48 @@ html.has-cursor button {
   }
 }
 
+/* ---------- section tones ----------
+ * Light / sand sections remap the colour tokens, so every component inside
+ * (text-bone, border-line, bg-bone buttons…) flips automatically. */
+.tone-light,
+.tone-sand,
+.ui-on-light {
+  --color-bone: #161513;
+  --color-ink: #efeae2;
+  --color-char: #e4ddd2;
+  --color-ash: #5b5750;
+  --color-mute: #8d887f;
+  --color-sand: #8a6a3e;
+  --color-line: rgb(22 21 19 / 0.14);
+}
+.tone-light,
+.tone-sand {
+  color: var(--color-bone);
+}
+.tone-light {
+  background-color: #efeae2;
+}
+.tone-sand {
+  background-color: #cbb08a;
+  --color-ash: #3f362a;
+  --color-sand: #2d2216;
+  --color-line: rgb(22 21 19 / 0.2);
+}
+.tone-char {
+  background-color: #161513;
+}
+/* inset rounded "card" sections */
+.panel {
+  margin: 0.5rem;
+  border-radius: 28px;
+}
+@media (min-width: 768px) {
+  .panel {
+    margin: 0.75rem;
+    border-radius: 44px;
+  }
+}
+
 /* ---------- Liquid Glass (iOS 26 style) ---------- */
 .glass {
   position: relative;
@@ -152,6 +194,46 @@ html.has-cursor button {
   opacity: var(--hl, 0);
   transition: opacity 0.6s var(--ease-expo);
   pointer-events: none;
+}
+
+/* light glass — the bar adapts when it floats over a light section */
+.glass {
+  transition: background-color 0.5s, box-shadow 0.5s;
+}
+.glass.is-light {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.62), rgb(255 255 255 / 0.28) 55%, rgb(255 255 255 / 0.4)),
+    rgb(255 255 255 / 0.12);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    inset 0 -1px 1px rgb(255 255 255 / 0.35),
+    inset 0 0 18px rgb(255 255 255 / 0.25),
+    0 12px 40px -14px rgb(0 0 0 / 0.35),
+    0 2px 8px rgb(0 0 0 / 0.1);
+}
+.glass .logo {
+  transition: filter 0.5s;
+}
+.glass.is-light .logo {
+  filter: brightness(0);
+}
+.glass.is-light .glass-chip {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.55));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 1),
+    0 4px 14px -4px rgb(0 0 0 / 0.25);
+}
+
+/* the big dropdown panel: thinner tint so the page stays visible behind */
+.glass.glass-panel {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.03) 40%, rgb(255 255 255 / 0.05)),
+    rgb(16 15 13 / 0.46);
+  -webkit-backdrop-filter: blur(26px) saturate(180%) brightness(0.95);
+  backdrop-filter: blur(26px) saturate(180%) brightness(0.95);
+}
+.glass.glass-panel.glass-refract {
+  backdrop-filter: url(#nc-liquid) blur(22px) saturate(180%) brightness(0.95);
 }
 
 /* small glass "droplet" used for the sliding lens, active chips and buttons */

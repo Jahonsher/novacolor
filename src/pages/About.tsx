@@ -42,7 +42,7 @@ export default function About() {
         <GLImage src="img/categories/mineral.jpg" alt="Novacolor" className="aspect-[16/9] md:aspect-[21/9]" />
       </div>
 
-      <section className="px-5 py-28 md:px-10 md:py-40">
+      <section className="tone-light panel mt-16 px-5 py-24 md:mt-24 md:px-10 md:py-32">
         <div className="grid gap-16 md:grid-cols-12">
           <div className="md:col-span-5">
             <GLImage src="img/about.jpg" alt="Novacolor interior" className="aspect-[4/5]" />
@@ -55,7 +55,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="border-t border-line px-5 py-28 md:px-10 md:py-36">
+      <section className="px-5 py-24 md:px-10 md:py-32">
         {milestones.map((m) => (
           <div key={m.year} className="grid gap-6 border-b border-line py-10 md:grid-cols-12 md:py-14">
             <Reveal as="p" by="chars" className="display text-8xl text-sand md:col-span-5 md:text-[10vw]">
@@ -83,12 +83,12 @@ export default function About() {
         </div>
       </section>
 
-      <section className="px-5 pb-28 md:px-10 md:pb-40">
+      <section className="tone-light panel px-5 py-24 md:px-10 md:py-32">
         <Reveal as="p" className="label mb-16">{`— ${t('stats.label')}`}</Reveal>
         <Stats />
       </section>
 
-      <section className="px-5 md:px-10">
+      <section className="px-5 py-24 md:px-10 md:py-32">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-7">
           {categories.map((c) => (
             <div key={c.id}>
@@ -99,7 +99,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="mt-28 border-y border-line">
+      <section className="tone-light panel">
         <p className="label px-5 pt-10 md:px-10">{`— ${t('clients.label')}`}</p>
         <Clients />
       </section>

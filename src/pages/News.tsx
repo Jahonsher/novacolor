@@ -52,7 +52,7 @@ export default function News() {
       </section>
 
       {/* the rest as a big grid */}
-      <section className="px-5 py-28 md:px-10 md:py-36">
+      <section className="tone-light panel mt-24 px-5 py-24 md:mt-32 md:px-10 md:py-32">
         <div className="grid gap-x-8 gap-y-16 md:grid-cols-2">
           {rest.map((n, i) => {
             const p = n.product ? productBySlug(n.product) : undefined
@@ -73,7 +73,7 @@ export default function News() {
         </div>
       </section>
 
-      <section className="px-5 pb-20 md:px-10">
+      <section className="px-5 py-24 md:px-10">
         <p className="label border-b border-line pb-5">{`— ${t('news.title')}`}</p>
         <NewsList />
       </section>

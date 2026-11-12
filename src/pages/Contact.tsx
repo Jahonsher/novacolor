@@ -84,7 +84,7 @@ export default function Contact() {
         </Reveal>
       </section>
 
-      <section className="px-5 pb-28 md:px-10">
+      <section className="tone-light panel px-5 py-20 md:px-10 md:py-28">
         <div className="grid gap-20 md:grid-cols-12">
           <FadeUp className="md:col-span-7">
             <form onSubmit={submit} className="space-y-10">
@@ -143,7 +143,7 @@ export default function Contact() {
         </div>
       </section>
 
-      <FadeUp className="px-5 pb-28 md:px-10">
+      <FadeUp className="px-5 py-24 md:px-10">
         <div className="relative aspect-[4/3] overflow-hidden border border-line md:aspect-[21/9]">
           <iframe
             title="Novacolor — map"

@@ -66,7 +66,7 @@ function Hero() {
 function AboutIntro() {
   const { t, l } = useLang()
   return (
-    <section className="px-5 py-28 md:px-10 md:py-40">
+    <section className="tone-light panel px-5 py-24 md:px-10 md:py-36">
       <div className="grid gap-12 md:grid-cols-12">
         <div className="md:col-span-3">
           <Reveal as="p" className="label">{`— ${t('about.label')}`}</Reveal>
@@ -119,7 +119,7 @@ function Featured() {
   )
 
   return (
-    <section ref={root} className="relative flex h-screen flex-col justify-center overflow-hidden">
+    <section ref={root} className="tone-char relative flex h-screen flex-col justify-center overflow-hidden">
       <div className="mb-10 px-5 md:px-10">
         <SectionHead index="03" label={t('featured.label')}>
           <TLink to="/products" className="label link-line !text-bone">
@@ -155,14 +155,14 @@ export default function Home() {
       <Hero />
       <AboutIntro />
       <CategoryRing />
-      <section className="px-5 py-28 md:px-10 md:py-40">
+      <section className="tone-light panel px-5 py-24 md:px-10 md:py-32">
         <div className="mb-16">
           <Reveal as="p" className="label">{`— ${t('stats.label')}`}</Reveal>
         </div>
         <Stats />
       </section>
       <Featured />
-      <section className="px-5 py-28 md:px-10 md:py-40">
+      <section className="px-5 py-28 md:px-10 md:py-36">
         <SectionHead index="04" label={t('news.label')}>
           <TLink to="/news" className="label link-line !text-bone">
             {t('news.all')} →
@@ -170,7 +170,7 @@ export default function Home() {
         </SectionHead>
         <NewsList limit={5} />
       </section>
-      <section className="border-y border-line">
+      <section className="tone-light panel">
         <p className="label px-5 pt-10 md:px-10">{`05 — ${t('clients.label')}`}</p>
         <Clients />
       </section>

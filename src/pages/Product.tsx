@@ -74,7 +74,7 @@ function ProductView({ slug }: { slug: string }) {
       </section>
 
       {/* description */}
-      <section className="border-t border-line px-5 py-24 md:px-10 md:py-36">
+      <section className="tone-light panel px-5 py-24 md:px-10 md:py-32">
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-3">
             <div className="md:sticky md:top-32">
@@ -98,7 +98,7 @@ function ProductView({ slug }: { slug: string }) {
       </section>
 
       {/* gallery */}
-      <section className="px-5 pb-32 md:px-10">
+      <section className="px-5 py-24 md:px-10 md:py-32">
         <div className="mb-12 flex items-end justify-between border-b border-line pb-5">
           <Reveal as="h2" by="words" className="display text-5xl md:text-7xl">
             {t('product.gallery')}
@@ -120,7 +120,7 @@ function ProductView({ slug }: { slug: string }) {
       </section>
 
       {/* next product */}
-      <TLink to={`/products/${next.slug}`} className="group relative block overflow-hidden border-t border-line" data-cursor="view">
+      <TLink to={`/products/${next.slug}`} className="tone-sand panel group relative block overflow-hidden" data-cursor="view">
         <div className="grid items-center gap-8 px-5 py-20 md:grid-cols-12 md:px-10 md:py-28">
           <div className="md:col-span-7">
             <Reveal as="p" className="label mb-6">{`${t('product.next')} →`}</Reveal>

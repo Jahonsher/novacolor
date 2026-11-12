@@ -28,7 +28,7 @@ export function Footer() {
   )
 
   return (
-    <footer className="relative overflow-hidden border-t border-line px-5 pt-20 md:px-10">
+    <footer className="tone-char relative mt-2 overflow-hidden rounded-t-[28px] px-5 pt-20 md:mt-3 md:rounded-t-[44px] md:px-10">
       <div className="grid gap-12 md:grid-cols-12">
         <div className="md:col-span-5">
           <Reveal as="p" className="display max-w-md text-3xl italic md:text-4xl">

@@ -140,7 +140,7 @@ export function Clients() {
     <div className="relative overflow-hidden py-10 [mask-image:linear-gradient(90deg,transparent,#000_15%,#000_85%,transparent)]">
       <div className="flex w-max items-center gap-24 pr-24" style={{ animation: reducedMotion ? 'none' : 'marquee 40s linear infinite' }}>
         {[...row, ...row].map((c, i) => (
-          <img key={i} src={asset(c)} alt="" className="h-14 w-auto opacity-60 [filter:brightness(0)_invert(1)] md:h-20" loading="lazy" />
+          <img key={i} src={asset(c)} alt="" className="h-14 w-auto opacity-70 [filter:brightness(0)] md:h-20" loading="lazy" />
         ))}
       </div>
     </div>
@@ -173,7 +173,7 @@ export function ContactCTA() {
     }
   })
   return (
-    <section className="px-5 py-28 md:px-10 md:py-40">
+    <section className="tone-sand panel px-5 py-24 md:px-10 md:py-36">
       <Reveal as="p" className="label mb-10">{t('cta.label')}</Reveal>
       <div className="grid items-end gap-12 md:grid-cols-12">
         <Reveal as="h2" by="words" className="display text-[12vw] md:col-span-9 md:text-[7vw]">

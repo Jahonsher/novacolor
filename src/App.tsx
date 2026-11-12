@@ -19,7 +19,9 @@ import NotFound from './pages/NotFound'
 // initialise the shared WebGL layer before any page mounts its images
 const glCanvas = typeof document !== 'undefined' ? document.createElement('canvas') : null
 if (glCanvas && !reducedMotion) {
-  glCanvas.className = 'pointer-events-none fixed inset-0 z-0 h-full w-full'
+  // above the page content (z-1) so images also show on solid light sections,
+  // below the header, menu, lightbox and transition layers
+  glCanvas.className = 'pointer-events-none fixed inset-0 z-[2] h-full w-full'
   glCanvas.setAttribute('aria-hidden', 'true')
   mediaGL.init(glCanvas)
 }
@@ -58,7 +60,6 @@ export default function App() {
     <TransitionProvider>
       <GLLayer />
       <Header />
-      {/* page content stays transparent so the WebGL images (z-0) show through */}
       <main key={lang} className="relative z-[1]">
         <Routes>
           <Route path="/" element={<Home />} />

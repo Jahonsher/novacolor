@@ -80,7 +80,7 @@ export default function Products() {
         </p>
       </section>
 
-      <section className="px-5 pb-24 md:px-10">
+      <section className="tone-light panel px-5 py-16 md:px-10 md:py-20">
         <div ref={grid} key={active} className={wide ? 'grid grid-cols-3 gap-x-10' : 'grid grid-cols-1 gap-x-6 gap-y-16 sm:grid-cols-2'}>
           {wide
             ? [0, 1, 2].map((col) => (
