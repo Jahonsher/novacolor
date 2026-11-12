@@ -204,7 +204,13 @@ export function Header() {
         .to(l, { ...vars, duration: 0.85, ease: 'elastic.out(0.9, 0.85)', overwrite: 'auto' })
         .fromTo(l, { scaleY: 0.86 }, { scaleY: 1, duration: 0.8, ease: 'elastic.out(1, 0.6)' }, 0)
   }
-  const activeLink = () => (activeIndex >= 0 ? nav.current?.querySelectorAll<HTMLElement>('[data-navlink]')[activeIndex] ?? null : null)
+  // the section the user picked (by drag or click) while its page is still loading:
+  // the lens stays there instead of springing back to the old page
+  const pending = useRef<number | null>(null)
+  const activeLink = () => {
+    const i = pending.current ?? activeIndex
+    return i >= 0 ? (nav.current?.querySelectorAll<HTMLElement>('[data-navlink]')[i] ?? null) : null
+  }
 
   /* ---- drag the lens between sections (like the iOS tab bar) ---- */
   const { go } = useTransition()
@@ -278,7 +284,10 @@ export function Header() {
       .to(l, { x: d.links[best].c - d.links[best].w / 2, width: d.links[best].w, duration: 0.9, ease: 'elastic.out(0.9, 0.7)' }, 0)
       .to(l, { scaleX: 1.18, scaleY: 0.9, duration: 0.16, ease: 'sine.out' }, 0)
       .to(l, { scaleX: 1, scaleY: 1, duration: 0.9, ease: 'elastic.out(1.1, 0.45)' }, 0.16)
-    if (best !== activeIndex) setTimeout(() => go(NAV[best + 1].to), 420)
+    if (best !== activeIndex) {
+      pending.current = best
+      setTimeout(() => go(NAV[best + 1].to), 420)
+    }
   }
 
   const onNavDown = (e: RPointerEvent<HTMLElement>) => {
@@ -301,6 +310,7 @@ export function Header() {
   useEffect(() => {
     // after fonts settle, park the lens under the current page
     // (also after a language change — the link widths change)
+    if (pending.current === activeIndex) pending.current = null
     const id = setTimeout(() => moveLens(activeLink(), true), 50)
     return () => clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -341,6 +351,7 @@ export function Header() {
                 onClick={(e) => {
                   // a drag that ends on a link must not also count as a click
                   if (suppressClick.current) return e.preventDefault()
+                  if (i !== activeIndex && !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) pending.current = i
                   setOpen(false)
                 }}
                 onPointerEnter={(e) => !drag.current && moveLens(e.currentTarget)}
