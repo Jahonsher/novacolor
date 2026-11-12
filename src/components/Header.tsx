@@ -206,6 +206,98 @@ export function Header() {
   }
   const activeLink = () => (activeIndex >= 0 ? nav.current?.querySelectorAll<HTMLElement>('[data-navlink]')[activeIndex] ?? null : null)
 
+  /* ---- drag the lens between sections (like the iOS tab bar) ---- */
+  const { go } = useTransition()
+  type Geo = { c: number; w: number; el: HTMLElement }
+  const drag = useRef<{ x0: number; c0: number; moved: boolean; lastX: number; lastT: number; links: Geo[] } | null>(null)
+  const suppressClick = useRef(false)
+
+  const geometry = (): Geo[] => {
+    const nr = nav.current!.getBoundingClientRect()
+    return [...nav.current!.querySelectorAll<HTMLElement>('[data-navlink]')].map((el) => {
+      const r = el.getBoundingClientRect()
+      return { c: r.left - nr.left + r.width / 2, w: r.width, el }
+    })
+  }
+  // lens width blends between neighbouring links as it travels
+  const widthAt = (cx: number, links: Geo[]) => {
+    if (cx <= links[0].c) return links[0].w
+    const last = links[links.length - 1]
+    if (cx >= last.c) return last.w
+    for (let i = 0; i < links.length - 1; i++) {
+      const a = links[i]
+      const b = links[i + 1]
+      if (cx <= b.c) return a.w + (b.w - a.w) * ((cx - a.c) / (b.c - a.c))
+    }
+    return last.w
+  }
+
+  const onNavMove = (e: PointerEvent) => {
+    const d = drag.current
+    const l = lens.current
+    if (!d || !l) return
+    const dx = e.clientX - d.x0
+    if (!d.moved) {
+      if (Math.abs(dx) < 5) return
+      d.moved = true
+      gsap.killTweensOf(l)
+      // the droplet swells as it's picked up
+      gsap.to(l, { autoAlpha: 1, scaleX: 1.1, scaleY: 1.14, duration: 0.45, ease: 'expo.out' })
+    }
+    const first = d.links[0].c
+    const last = d.links[d.links.length - 1].c
+    let cx = d.c0 + dx
+    // rubber band past the first / last section
+    if (cx < first) cx = first - (first - cx) * 0.3
+    if (cx > last) cx = last + (cx - last) * 0.3
+    const w = widthAt(cx, d.links)
+    gsap.to(l, { x: cx - w / 2, width: w, duration: 0.28, ease: 'power3.out', overwrite: 'auto' })
+    const now = performance.now()
+    const v = (e.clientX - d.lastX) / Math.max(1, now - d.lastT)
+    d.lastX = e.clientX
+    d.lastT = now
+    const stretch = Math.min(0.32, Math.abs(v) * 0.22)
+    gsap.to(l, { scaleX: 1.1 + stretch, scaleY: 1.14 - stretch * 0.45, duration: 0.3, ease: 'power2.out' })
+  }
+
+  const onNavUp = (e: PointerEvent) => {
+    window.removeEventListener('pointermove', onNavMove)
+    const d = drag.current
+    drag.current = null
+    if (!d || !d.moved) return
+    suppressClick.current = true
+    setTimeout(() => (suppressClick.current = false), 60)
+    const nr = nav.current!.getBoundingClientRect()
+    const px = Math.min(Math.max(e.clientX - nr.left, d.links[0].c), d.links[d.links.length - 1].c)
+    let best = 0
+    d.links.forEach((g, i) => Math.abs(g.c - px) < Math.abs(d.links[best].c - px) && (best = i))
+    const l = lens.current!
+    // settle onto the nearest section with an elastic wobble, then open it
+    gsap
+      .timeline()
+      .to(l, { x: d.links[best].c - d.links[best].w / 2, width: d.links[best].w, duration: 0.9, ease: 'elastic.out(0.9, 0.7)' }, 0)
+      .to(l, { scaleX: 1.18, scaleY: 0.9, duration: 0.16, ease: 'sine.out' }, 0)
+      .to(l, { scaleX: 1, scaleY: 1, duration: 0.9, ease: 'elastic.out(1.1, 0.45)' }, 0.16)
+    if (best !== activeIndex) setTimeout(() => go(NAV[best + 1].to), 420)
+  }
+
+  const onNavDown = (e: RPointerEvent<HTMLElement>) => {
+    if (e.button !== 0) return
+    const links = geometry()
+    if (!links.length) return
+    const nr = nav.current!.getBoundingClientRect()
+    const px = e.clientX - nr.left
+    const l = lens.current!
+    const lx = Number(gsap.getProperty(l, 'x'))
+    const lw = l.offsetWidth
+    const shown = getComputedStyle(l).visibility !== 'hidden'
+    // grab the lens if the press is on it, otherwise it jumps to the finger
+    const c0 = shown && px >= lx && px <= lx + lw ? lx + lw / 2 : px
+    drag.current = { x0: e.clientX, c0, moved: false, lastX: e.clientX, lastT: performance.now(), links }
+    window.addEventListener('pointermove', onNavMove)
+    window.addEventListener('pointerup', onNavUp, { once: true })
+  }
+
   useEffect(() => {
     // after fonts settle, park the lens under the current page
     // (also after a language change — the link widths change)
@@ -232,15 +324,26 @@ export function Header() {
             <img src={asset('img/logo.png')} alt="Novacolor" className="logo h-6 w-auto md:h-7" />
           </TLink>
 
-          <nav ref={nav} className="relative hidden items-center lg:flex" onPointerLeave={() => moveLens(activeLink())}>
+          <nav
+            ref={nav}
+            className="relative hidden touch-none select-none items-center lg:flex"
+            onPointerDown={onNavDown}
+            onPointerLeave={() => !drag.current && moveLens(activeLink())}
+          >
             <span ref={lens} className="glass-drop pointer-events-none invisible absolute left-0 top-0 h-full rounded-full will-change-transform" aria-hidden />
             {NAV.slice(1).map((n, i) => (
               <TLink
                 key={n.to}
                 to={n.to}
                 data-navlink
-                onClick={() => setOpen(false)}
-                onPointerEnter={(e) => moveLens(e.currentTarget)}
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+                onClick={(e) => {
+                  // a drag that ends on a link must not also count as a click
+                  if (suppressClick.current) return e.preventDefault()
+                  setOpen(false)
+                }}
+                onPointerEnter={(e) => !drag.current && moveLens(e.currentTarget)}
                 className="label relative z-[1] flex items-baseline gap-1.5 rounded-full px-4 py-2.5 !text-bone transition-transform duration-300 active:scale-95"
               >
                 <span className="text-[9px] text-bone/50">{pad(i + 1)}</span>
