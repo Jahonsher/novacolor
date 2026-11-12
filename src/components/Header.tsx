@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
 import { useLocation } from 'react-router'
 import { TLink, useTransition } from './Transition'
 import { asset, categories, contacts, pad } from '../data'
@@ -13,29 +13,58 @@ export const NAV: { to: string; key: Key }[] = [
   { to: '/contact', key: 'nav.contact' },
 ]
 
-function LangSwitch() {
+/** Segmented UZ / RU control; the active language sits on a glass droplet. */
+function LangSwitch({ glass = false }: { glass?: boolean }) {
   const { lang, setLang } = useLang()
   const { run } = useTransition()
   const change = (l: 'uz' | 'ru') => l !== lang && void run(() => setLang(l))
   return (
-    <div className="label flex items-center gap-2 !text-bone">
-      {(['uz', 'ru'] as const).map((l, i) => (
-        <span key={l} className="flex items-center gap-2">
-          {i > 0 && <span className="text-mute">/</span>}
-          <button onClick={() => change(l)} className={`transition-opacity ${l === lang ? 'opacity-100' : 'opacity-40 hover:opacity-80'}`} aria-pressed={l === lang}>
-            {l.toUpperCase()}
-          </button>
-        </span>
+    <div className={`label flex items-center !text-bone ${glass ? 'gap-0.5 rounded-full bg-white/[0.04] p-1' : 'gap-2'}`}>
+      {(['uz', 'ru'] as const).map((l) => (
+        <button
+          key={l}
+          onClick={() => change(l)}
+          aria-pressed={l === lang}
+          className={`rounded-full px-3 py-1.5 transition-[opacity,background-color,transform] duration-500 active:scale-90 ${
+            l === lang ? `opacity-100 ${glass ? 'glass-chip' : ''}` : 'opacity-50 hover:opacity-90'
+          }`}
+        >
+          {l.toUpperCase()}
+        </button>
       ))}
     </div>
   )
 }
 
+/** SVG filter used by Chromium to refract what's behind the glass. */
+function LiquidFilter() {
+  return (
+    <svg width="0" height="0" className="absolute" aria-hidden>
+      <filter id="nc-liquid" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.006 0.012" numOctaves="2" seed="7" result="noise" />
+        <feGaussianBlur in="noise" stdDeviation="2" result="soft" />
+        <feDisplacementMap in="SourceGraphic" in2="soft" scale="38" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+  )
+}
+
+const supportsRefraction = () =>
+  typeof window !== 'undefined' &&
+  /Chrome\//.test(navigator.userAgent) &&
+  !/Edg\/|OPR\//.test(navigator.userAgent) &&
+  CSS.supports('backdrop-filter', 'url(#a) blur(1px)')
+
 export function Header() {
   const { t } = useLang()
   const { pathname } = useLocation()
   const bar = useRef<HTMLElement>(null)
+  const glass = useRef<HTMLDivElement>(null)
+  const nav = useRef<HTMLElement>(null)
+  const lens = useRef<HTMLSpanElement>(null)
   const [open, setOpen] = useState(false)
+  const [refract] = useState(supportsRefraction)
+  const activeIndex = NAV.slice(1).findIndex((n) => pathname.startsWith(n.to))
 
   // hide on scroll down, show on scroll up
   useEffect(() => {
@@ -47,10 +76,10 @@ export function Header() {
       const up = y < last - 2
       if (down && !hidden) {
         hidden = true
-        gsap.to(bar.current, { yPercent: -120, duration: 0.8, ease: 'expo.out' })
+        gsap.to(bar.current, { yPercent: -160, duration: 0.9, ease: 'expo.out' })
       } else if ((up || y < 160) && hidden) {
         hidden = false
-        gsap.to(bar.current, { yPercent: 0, duration: 0.8, ease: 'expo.out' })
+        gsap.to(bar.current, { yPercent: 0, duration: 0.9, ease: 'expo.out' })
       }
       last = y
     }
@@ -58,28 +87,85 @@ export function Header() {
     return () => gsap.ticker.remove(onTick)
   }, [])
 
+  // specular highlight follows the pointer across the glass
+  const onGlassMove = (e: RPointerEvent) => {
+    const el = glass.current!
+    const r = el.getBoundingClientRect()
+    el.style.setProperty('--mx', `${e.clientX - r.left}px`)
+    el.style.setProperty('--my', `${e.clientY - r.top}px`)
+    el.style.setProperty('--hl', '1')
+  }
+  const onGlassLeave = () => glass.current!.style.setProperty('--hl', '0')
+
+  // the lens droplet glides (with a little squash) to the hovered / active link
+  const moveLens = (target: HTMLElement | null, instant = false) => {
+    const l = lens.current
+    const n = nav.current
+    if (!l || !n) return
+    if (!target) {
+      gsap.to(l, { autoAlpha: 0, scale: 0.6, duration: 0.4, ease: 'power3.out' })
+      return
+    }
+    const nr = n.getBoundingClientRect()
+    const tr = target.getBoundingClientRect()
+    const vars = { x: tr.left - nr.left, width: tr.width, autoAlpha: 1, scale: 1 }
+    if (instant) gsap.set(l, vars)
+    else
+      gsap
+        .timeline()
+        .to(l, { ...vars, duration: 0.7, ease: 'elastic.out(1, 0.75)' })
+        .fromTo(l, { scaleY: 0.82 }, { scaleY: 1, duration: 0.6, ease: 'elastic.out(1.2, 0.5)' }, 0)
+  }
+  const activeLink = () => (activeIndex >= 0 ? nav.current?.querySelectorAll<HTMLElement>('[data-navlink]')[activeIndex] ?? null : null)
+
+  useEffect(() => {
+    // after fonts settle, park the lens under the current page
+    const id = setTimeout(() => moveLens(activeLink(), true), 50)
+    return () => clearTimeout(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex])
+
   return (
     <>
-      <header ref={bar} className="fixed inset-x-0 top-0 z-50 mix-blend-difference">
-        <div className="flex items-center justify-between px-5 py-5 md:px-10 md:py-7">
-          <TLink to="/" aria-label="Novacolor" data-cursor="link">
-            <img src={asset('img/logo.png')} alt="Novacolor" className="h-7 w-auto md:h-8" />
+      <LiquidFilter />
+      <header ref={bar} className="pointer-events-none fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6 md:pt-5">
+        <div
+          ref={glass}
+          onPointerMove={onGlassMove}
+          onPointerLeave={onGlassLeave}
+          className={`glass ${refract ? 'glass-refract' : ''} pointer-events-auto mx-auto flex max-w-[1240px] items-center justify-between gap-4 rounded-full py-2 pl-5 pr-2 md:py-2.5 md:pl-7 md:pr-2.5`}
+        >
+          <TLink to="/" aria-label="Novacolor" data-cursor="link" className="shrink-0 transition-transform duration-500 active:scale-95">
+            <img src={asset('img/logo.png')} alt="Novacolor" className="h-6 w-auto drop-shadow-[0_1px_6px_rgba(0,0,0,0.35)] md:h-7" />
           </TLink>
-          <nav className="hidden items-center gap-9 lg:flex">
+
+          <nav ref={nav} className="relative hidden items-center lg:flex" onPointerLeave={() => moveLens(activeLink())}>
+            <span ref={lens} className="glass-chip pointer-events-none invisible absolute left-0 top-0 h-full rounded-full" aria-hidden />
             {NAV.slice(1).map((n, i) => (
-              <TLink key={n.to} to={n.to} className="group label flex items-baseline gap-1.5 !text-bone">
-                <span className="text-[9px] text-ash">{pad(i + 1)}</span>
-                <span className={`link-line pb-0.5 ${pathname.startsWith(n.to) ? '!bg-[length:100%_1px]' : ''}`}>{t(n.key)}</span>
+              <TLink
+                key={n.to}
+                to={n.to}
+                data-navlink
+                onPointerEnter={(e) => moveLens(e.currentTarget)}
+                className="label relative z-[1] flex items-baseline gap-1.5 rounded-full px-4 py-2.5 !text-bone transition-transform duration-300 active:scale-95"
+              >
+                <span className="text-[9px] text-bone/50">{pad(i + 1)}</span>
+                <span className={i === activeIndex ? 'text-bone' : 'text-bone/85'}>{t(n.key)}</span>
               </TLink>
             ))}
           </nav>
-          <div className="flex items-center gap-7">
+
+          <div className="flex shrink-0 items-center gap-2">
             <div className="hidden sm:block">
-              <LangSwitch />
+              <LangSwitch glass />
             </div>
-            <button onClick={() => setOpen(true)} className="label group flex items-center gap-3 !text-bone" aria-expanded={open}>
+            <button
+              onClick={() => setOpen(true)}
+              aria-expanded={open}
+              className="glass-chip label group flex items-center gap-3 rounded-full py-2.5 pl-4 pr-3.5 !text-bone transition-transform duration-300 hover:scale-[1.03] active:scale-95"
+            >
               <span>{t('menu')}</span>
-              <span className="flex w-7 flex-col gap-[5px]">
+              <span className="flex w-5 flex-col gap-[4px]">
                 <span className="h-px w-full bg-bone transition-transform duration-500 group-hover:scale-x-75" />
                 <span className="h-px w-full origin-right bg-bone transition-transform duration-500 group-hover:scale-x-50" />
               </span>
