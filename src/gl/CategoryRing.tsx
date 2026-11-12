@@ -151,7 +151,7 @@ export function CategoryRing() {
     const tick = () => {
       if (!visible) return
       const prev = current
-      current += (target.current - current) * (reducedMotion ? 1 : 0.075)
+      current += (target.current - current) * (reducedMotion ? 1 : 0.06)
       const vel = current - prev
       group.rotation.y = -current * step
       group.rotation.x += (mouse.y * 0.12 - group.rotation.x) * 0.05
@@ -191,7 +191,7 @@ export function CategoryRing() {
         end: `+=${(N - 1) * 55}%`,
         pin: true,
         scrub: true,
-        snap: reducedMotion ? undefined : { snapTo: 1 / (N - 1), duration: { min: 0.25, max: 0.7 }, delay: 0.08, ease: 'power2.inOut' },
+        snap: reducedMotion ? undefined : { snapTo: 1 / (N - 1), duration: { min: 0.4, max: 0.9 }, delay: 0.12, ease: 'sine.inOut' },
         onUpdate: (self) => (target.current = self.progress * (N - 1)),
       })
     },
@@ -211,8 +211,8 @@ export function CategoryRing() {
           opacity: 1,
           yPercent: i === active ? 0 : i < active ? -135 : 135,
           rotate: i === active ? 0 : i < active ? -4 : 4,
-          duration: 1,
-          ease: 'expo.out',
+          duration: 1.2,
+          ease: 'power4.out',
         })
       })
     },

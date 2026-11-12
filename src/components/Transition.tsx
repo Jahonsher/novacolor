@@ -27,7 +27,7 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
       gsap
         .timeline({ onComplete: resolve })
         .set(el, { autoAlpha: 1 })
-        .fromTo(panels, { scaleY: 0, transformOrigin: '50% 100%' }, { scaleY: 1, duration: reducedMotion ? 0.01 : 0.8, ease: 'expo.inOut', stagger: 0.07 })
+        .fromTo(panels, { scaleY: 0, transformOrigin: '50% 100%' }, { scaleY: 1, duration: reducedMotion ? 0.01 : 0.9, ease: 'power4.inOut', stagger: 0.06 })
         .fromTo(el.querySelector('[data-mark]'), { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: 'expo.out' }, '-=0.35')
     })
   }, [])
@@ -39,7 +39,7 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
       .timeline({ onComplete: () => void gsap.set(el, { autoAlpha: 0 }) })
       .to(el.querySelector('[data-mark]'), { yPercent: -110, duration: 0.45, ease: 'expo.in' })
       .call(() => setReady(true), [], '+=0.05')
-      .to(panels, { scaleY: 0, transformOrigin: '50% 0%', duration: reducedMotion ? 0.01 : 0.9, ease: 'expo.inOut', stagger: 0.07 }, '<-0.1')
+      .to(panels, { scaleY: 0, transformOrigin: '50% 0%', duration: reducedMotion ? 0.01 : 1, ease: 'power4.inOut', stagger: 0.06 }, '<-0.1')
   }, [])
 
   const run = useCallback(

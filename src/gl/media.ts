@@ -179,8 +179,8 @@ class MediaGL {
       const r = el.getBoundingClientRect()
       gsap.to(uniforms.uMouse.value, { x: (e.clientX - r.left) / r.width, y: 1 - (e.clientY - r.top) / r.height, duration: 0.6, ease: 'power3.out' })
     }
-    const onEnter = () => gsap.to(uniforms.uHover, { value: 1, duration: 0.9, ease: 'expo.out' })
-    const onLeave = () => gsap.to(uniforms.uHover, { value: 0, duration: 0.9, ease: 'expo.out' })
+    const onEnter = () => gsap.to(uniforms.uHover, { value: 1, duration: 1.1, ease: 'power3.out' })
+    const onLeave = () => gsap.to(uniforms.uHover, { value: 0, duration: 1.1, ease: 'power3.out' })
     el.addEventListener('pointermove', onMove)
     el.addEventListener('pointerenter', onEnter)
     el.addEventListener('pointerleave', onLeave)
@@ -223,7 +223,7 @@ class MediaGL {
 
   private tick = (time: number) => {
     if (!this.renderer) return
-    this.velocity += (scroll.velocity - this.velocity) * 0.12
+    this.velocity += (scroll.velocity - this.velocity) * 0.08
     if (Math.abs(this.velocity) < 0.01) this.velocity = 0
     for (const item of this.items) {
       const r = item.el.getBoundingClientRect()

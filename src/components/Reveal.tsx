@@ -36,11 +36,13 @@ export function Reveal({ as: Tag = 'div', children, className = '', by = 'lines'
           gsap.set(el, { autoAlpha: 1 })
           const targets = by === 'chars' ? self.chars : by === 'words' ? self.words : self.lines
           return gsap.from(targets, {
-            yPercent: 120,
-            rotate: by === 'chars' ? 8 : by === 'words' ? 3 : 0,
+            yPercent: 115,
+            opacity: 0,
+            rotate: by === 'chars' ? 6 : by === 'words' ? 2 : 0,
             transformOrigin: '0% 100%',
-            duration: by === 'lines' ? 1.4 : 1.2,
-            ease: 'expo.out',
+            duration: by === 'lines' ? 1.6 : 1.4,
+            ease: 'power4.out',
+            force3D: true,
             stagger: stagger ?? (by === 'chars' ? 0.028 : by === 'words' ? 0.04 : 0.1),
             delay,
             scrollTrigger: immediate ? undefined : { trigger: el, start, once: true },
@@ -98,7 +100,7 @@ export function FadeUp({ children, className = '', delay = 0, y = 60 }: { childr
       if (!ref.current || !ready) return
       gsap.set(ref.current, { autoAlpha: 1 })
       if (reducedMotion) return
-      gsap.from(ref.current, { y, autoAlpha: 0, duration: 1.4, delay, ease: 'expo.out', scrollTrigger: { trigger: ref.current, start: 'top 92%', once: true } })
+      gsap.from(ref.current, { y, autoAlpha: 0, duration: 1.6, delay, ease: 'power4.out', scrollTrigger: { trigger: ref.current, start: 'top 92%', once: true } })
     },
     { dependencies: [ready], scope: ref },
   )

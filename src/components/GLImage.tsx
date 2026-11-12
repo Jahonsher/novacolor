@@ -45,7 +45,7 @@ export function GLImage({ src, alt, className = '', reveal = true, cursor, eager
           return
         }
         if (!ready) return
-        gsap.to(u, { value: 1, duration: 2, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 94%', once: true } })
+        gsap.to(u, { value: 1, duration: 2.2, ease: 'power2.out', scrollTrigger: { trigger: el, start: 'top 94%', once: true } })
       } else if (mode === 'dom' && reveal && ready && !reducedMotion) {
         gsap.fromTo(
           el.querySelector('img'),

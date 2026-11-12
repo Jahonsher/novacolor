@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState, type PointerEvent as RPointerEvent, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as RPointerEvent, type RefObject } from 'react'
 import { useLocation } from 'react-router'
 import { TLink, useTransition } from './Transition'
 import { asset, categories, contacts, pad } from '../data'
 import { useLang, type Key } from '../i18n'
 import { gsap, lenis } from '../lib/motion'
+import { attachLiquid } from '../lib/liquid'
 
 export const NAV: { to: string; key: Key }[] = [
   { to: '/', key: 'nav.home' },
@@ -13,21 +14,118 @@ export const NAV: { to: string; key: Key }[] = [
   { to: '/contact', key: 'nav.contact' },
 ]
 
-/** Segmented UZ / RU control; the active language sits on a glass droplet. */
-function LangSwitch({ glass = false }: { glass?: boolean }) {
+/**
+ * UZ / RU switch with a liquid-glass droplet you can drag (or tap).
+ * While pressed the droplet swells; while moving it stretches with the
+ * velocity like a drop of water, then settles with an elastic wobble.
+ * Releasing past the middle switches the language.
+ */
+function LangSwitch() {
   const { lang, setLang } = useLang()
   const { run } = useTransition()
-  const change = (l: 'uz' | 'ru') => l !== lang && void run(() => setLang(l))
+  const track = useRef<HTMLDivElement>(null)
+  const thumb = useRef<HTMLSpanElement>(null)
+  const labels = useRef<(HTMLButtonElement | null)[]>([])
+  const pos = useRef(lang === 'ru' ? 1 : 0)
+  const drag = useRef<{ x0: number; p0: number; moved: boolean; lastX: number; lastT: number } | null>(null)
+  const anim = useRef<gsap.core.Timeline | null>(null)
+  const PAD = 4
+
+  const span = () => (track.current && thumb.current ? track.current.clientWidth - thumb.current.offsetWidth - PAD * 2 : 0)
+  const render = (p: number) => {
+    gsap.set(thumb.current, { x: PAD + p * span() })
+    labels.current.forEach((el, i) => el && gsap.set(el, { opacity: 0.42 + 0.58 * Math.max(0, 1 - Math.abs(p - i)) }))
+  }
+
+  useLayoutEffect(() => {
+    pos.current = lang === 'ru' ? 1 : 0
+    render(pos.current)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang])
+
+  const settle = (target: 0 | 1) => {
+    anim.current?.kill()
+    const o = { p: pos.current }
+    const dist = Math.min(1, Math.abs(target - o.p))
+    anim.current = gsap
+      .timeline({
+        onComplete: () => {
+          const next = target ? 'ru' : 'uz'
+          if (next !== lang) void run(() => setLang(next))
+        },
+      })
+      .to(o, { p: target, duration: 0.7 + dist * 0.2, ease: 'elastic.out(1, 0.72)', onUpdate: () => ((pos.current = o.p), render(o.p)) }, 0)
+      .to(thumb.current, { scaleX: 1 + 0.3 * dist, scaleY: 1 - 0.14 * dist, duration: 0.2, ease: 'sine.out' }, 0)
+      .to(thumb.current, { scaleX: 1, scaleY: 1, duration: 0.9, ease: 'elastic.out(1.1, 0.4)' }, 0.2)
+  }
+
+  const onDown = (e: RPointerEvent<HTMLDivElement>) => {
+    anim.current?.kill()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    drag.current = { x0: e.clientX, p0: pos.current, moved: false, lastX: e.clientX, lastT: performance.now() }
+    // the droplet swells under the finger
+    gsap.to(thumb.current, { scaleX: 1.16, scaleY: 1.16, duration: 0.45, ease: 'expo.out' })
+  }
+  const onMove = (e: RPointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    if (!d) return
+    const dx = e.clientX - d.x0
+    if (Math.abs(dx) > 3) d.moved = true
+    if (!d.moved) return
+    let p = d.p0 + dx / Math.max(1, span())
+    // rubber-band past the ends
+    if (p < 0) p *= 0.25
+    if (p > 1) p = 1 + (p - 1) * 0.25
+    pos.current = p
+    render(p)
+    const now = performance.now()
+    const v = (e.clientX - d.lastX) / Math.max(1, now - d.lastT)
+    d.lastX = e.clientX
+    d.lastT = now
+    const stretch = Math.min(0.35, Math.abs(v) * 0.25)
+    gsap.to(thumb.current, { scaleX: 1.16 + stretch, scaleY: 1.16 - stretch * 0.5, duration: 0.25, ease: 'power2.out', overwrite: 'auto' })
+  }
+  const onUp = (e: RPointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    drag.current = null
+    if (!d) return
+    let target: 0 | 1
+    if (d.moved) target = pos.current > 0.5 ? 1 : 0
+    else {
+      const r = track.current!.getBoundingClientRect()
+      target = e.clientX > r.left + r.width / 2 ? 1 : 0
+    }
+    settle(target)
+  }
+
   return (
-    <div className={`label flex items-center !text-bone ${glass ? 'gap-0.5 rounded-full bg-white/[0.04] p-1' : 'gap-2'}`}>
-      {(['uz', 'ru'] as const).map((l) => (
+    <div
+      ref={track}
+      role="radiogroup"
+      aria-label="Til / Язык"
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+      className="label relative flex h-[38px] w-[104px] touch-none select-none items-center rounded-full !text-bone shadow-[inset_0_1px_3px_rgb(0_0_0/0.22),inset_0_0_0_0.5px_rgb(255_255_255/0.14)]"
+      data-cursor="link"
+    >
+      <span ref={thumb} className="glass-drop pointer-events-none absolute left-0 top-1 h-[30px] w-[48px] rounded-full will-change-transform" aria-hidden />
+      {(['uz', 'ru'] as const).map((l, i) => (
         <button
           key={l}
-          onClick={() => change(l)}
-          aria-pressed={l === lang}
-          className={`rounded-full px-3 py-1.5 transition-[opacity,background-color,transform] duration-500 active:scale-90 ${
-            l === lang ? `opacity-100 ${glass ? 'glass-chip' : ''}` : 'opacity-50 hover:opacity-90'
-          }`}
+          ref={(n) => {
+            labels.current[i] = n
+          }}
+          role="radio"
+          aria-checked={l === lang}
+          tabIndex={l === lang ? 0 : -1}
+          onClick={(e) => e.detail === 0 && settle(i as 0 | 1)}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowRight') settle(1)
+            if (e.key === 'ArrowLeft') settle(0)
+          }}
+          className="relative z-[1] flex-1 text-center"
         >
           {l.toUpperCase()}
         </button>
@@ -36,34 +134,14 @@ function LangSwitch({ glass = false }: { glass?: boolean }) {
   )
 }
 
-/** SVG filter used by Chromium to refract what's behind the glass. */
-function LiquidFilter() {
-  return (
-    <svg width="0" height="0" className="absolute" aria-hidden>
-      <filter id="nc-liquid" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.006 0.012" numOctaves="2" seed="7" result="noise" />
-        <feGaussianBlur in="noise" stdDeviation="2" result="soft" />
-        <feDisplacementMap in="SourceGraphic" in2="soft" scale="38" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    </svg>
-  )
-}
-
-const supportsRefraction = () =>
-  typeof window !== 'undefined' &&
-  /Chrome\//.test(navigator.userAgent) &&
-  !/Edg\/|OPR\//.test(navigator.userAgent) &&
-  CSS.supports('backdrop-filter', 'url(#a) blur(1px)')
-
 export function Header() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const { pathname } = useLocation()
   const glass = useRef<HTMLDivElement>(null)
   const nav = useRef<HTMLElement>(null)
   const lens = useRef<HTMLSpanElement>(null)
   const [open, setOpen] = useState(false)
   const [light, setLight] = useState(false)
-  const [refract] = useState(supportsRefraction)
   const openRef = useRef(false)
   openRef.current = open
   const activeIndex = NAV.slice(1).findIndex((n) => pathname.startsWith(n.to))
@@ -123,36 +201,39 @@ export function Header() {
     else
       gsap
         .timeline()
-        .to(l, { ...vars, duration: 0.7, ease: 'elastic.out(1, 0.75)' })
-        .fromTo(l, { scaleY: 0.82 }, { scaleY: 1, duration: 0.6, ease: 'elastic.out(1.2, 0.5)' }, 0)
+        .to(l, { ...vars, duration: 0.85, ease: 'elastic.out(0.9, 0.85)', overwrite: 'auto' })
+        .fromTo(l, { scaleY: 0.86 }, { scaleY: 1, duration: 0.8, ease: 'elastic.out(1, 0.6)' }, 0)
   }
   const activeLink = () => (activeIndex >= 0 ? nav.current?.querySelectorAll<HTMLElement>('[data-navlink]')[activeIndex] ?? null : null)
 
   useEffect(() => {
     // after fonts settle, park the lens under the current page
+    // (also after a language change — the link widths change)
     const id = setTimeout(() => moveLens(activeLink(), true), 50)
     return () => clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeIndex])
+  }, [activeIndex, lang])
 
   const isLight = light && !open
 
+  // real edge refraction (Chromium) — clear centre, bending rim
+  useEffect(() => attachLiquid(glass.current!, { radius: 'pill', bezel: 18, strength: 34, blur: 2.5 }), [])
+
   return (
     <>
-      <LiquidFilter />
       <header className="pointer-events-none fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6 md:pt-5">
         <div
           ref={glass}
           onPointerMove={onGlassMove}
           onPointerLeave={onGlassLeave}
-          className={`glass ${refract ? 'glass-refract' : ''} ${isLight ? 'is-light ui-on-light' : ''} pointer-events-auto mx-auto flex max-w-[1240px] items-center justify-between gap-4 rounded-full py-2 pl-5 pr-2 md:py-2.5 md:pl-7 md:pr-2.5`}
+          className={`glass ${isLight ? 'is-light ui-on-light' : ''} pointer-events-auto mx-auto flex max-w-[1240px] items-center justify-between gap-4 rounded-full py-2 pl-5 pr-2 md:py-2.5 md:pl-7 md:pr-2.5`}
         >
           <TLink to="/" aria-label="Novacolor" data-cursor="link" className="shrink-0 transition-transform duration-500 active:scale-95" onClick={() => setOpen(false)}>
             <img src={asset('img/logo.png')} alt="Novacolor" className="logo h-6 w-auto md:h-7" />
           </TLink>
 
           <nav ref={nav} className="relative hidden items-center lg:flex" onPointerLeave={() => moveLens(activeLink())}>
-            <span ref={lens} className="glass-chip pointer-events-none invisible absolute left-0 top-0 h-full rounded-full" aria-hidden />
+            <span ref={lens} className="glass-drop pointer-events-none invisible absolute left-0 top-0 h-full rounded-full will-change-transform" aria-hidden />
             {NAV.slice(1).map((n, i) => (
               <TLink
                 key={n.to}
@@ -170,14 +251,14 @@ export function Header() {
 
           <div className="flex shrink-0 items-center gap-2">
             <div className="hidden sm:block">
-              <LangSwitch glass />
+              <LangSwitch />
             </div>
             <button
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
-              className="glass-chip label group flex items-center gap-3 rounded-full py-2.5 pl-4 pr-3.5 !text-bone transition-transform duration-300 hover:scale-[1.03] active:scale-95"
+              className="glass-drop label group flex items-center gap-3 rounded-full py-2.5 pl-4 pr-3.5 !text-bone transition-transform duration-300 hover:scale-[1.03] active:scale-95"
             >
-              <span className="w-12 text-center">{open ? t('close') : t('menu')}</span>
+              <span className="min-w-12 text-center">{open ? t('close') : t('menu')}</span>
               <span className="relative block h-2.5 w-5">
                 <span
                   className="absolute left-0 h-px w-full bg-bone transition-transform duration-700 ease-[var(--ease-expo)]"
@@ -192,7 +273,7 @@ export function Header() {
           </div>
         </div>
       </header>
-      <Menu open={open} onClose={() => setOpen(false)} capsule={glass} refract={refract} />
+      <Menu open={open} onClose={() => setOpen(false)} capsule={glass} />
     </>
   )
 }
@@ -202,7 +283,7 @@ export function Header() {
  * "pours" downward with an elastic, droplet-shaped bottom edge. It's
  * translucent, so the page stays visible (blurred) behind it.
  */
-function Menu({ open, onClose, capsule, refract }: { open: boolean; onClose: () => void; capsule: RefObject<HTMLDivElement | null>; refract: boolean }) {
+function Menu({ open, onClose, capsule }: { open: boolean; onClose: () => void; capsule: RefObject<HTMLDivElement | null> }) {
   const { t, l } = useLang()
   const panel = useRef<HTMLDivElement>(null)
   const content = useRef<HTMLDivElement>(null)
@@ -239,25 +320,28 @@ function Menu({ open, onClose, capsule, refract }: { open: boolean; onClose: () 
         .set(bd, { autoAlpha: 1 })
         .fromTo(bd, { opacity: 0 }, { opacity: 1, duration: 0.6 }, 0)
         // liquid pours down: elastic stretch…
-        .to(p, { height: target, duration: 1.35, ease: 'elastic.out(1, 0.6)' }, 0)
+        .to(p, { height: target, duration: 1.5, ease: 'elastic.out(0.8, 0.85)' }, 0)
         // …with a droplet-shaped bottom that settles into soft corners
-        .to(p, { borderBottomLeftRadius: `${w * 0.48}px 90px`, borderBottomRightRadius: `${w * 0.48}px 90px`, duration: 0.32, ease: 'power2.out' }, 0)
-        .to(p, { ...all('36px 36px'), duration: 0.9, ease: 'elastic.out(1, 0.45)' }, 0.32)
-        .fromTo(p, { scaleX: 0.97 }, { scaleX: 1, duration: 1.1, ease: 'elastic.out(1, 0.4)' }, 0)
-        .fromTo(items, { yPercent: 120, rotate: 3 }, { yPercent: 0, rotate: 0, duration: 1, ease: 'expo.out', stagger: 0.05 }, 0.2)
-        .fromTo(fades, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'expo.out', stagger: 0.05 }, 0.32)
+        .to(p, { borderBottomLeftRadius: `${w * 0.48}px 90px`, borderBottomRightRadius: `${w * 0.48}px 90px`, duration: 0.4, ease: 'sine.out' }, 0)
+        .to(p, { ...all('36px 36px'), duration: 1.1, ease: 'elastic.out(0.9, 0.6)' }, 0.38)
+        .fromTo(p, { scaleX: 0.975 }, { scaleX: 1, duration: 1.3, ease: 'elastic.out(0.9, 0.55)' }, 0)
+        .fromTo(items, { yPercent: 115, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.2, ease: 'power4.out', stagger: 0.06 }, 0.22)
+        .fromTo(fades, { autoAlpha: 0, y: 16, filter: 'blur(6px)' }, { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 1, ease: 'power3.out', stagger: 0.06 }, 0.36)
     } else {
       lenis?.start()
       gsap
         .timeline()
-        .to(fades, { autoAlpha: 0, duration: 0.2 }, 0)
-        .to(items, { yPercent: -120, duration: 0.35, ease: 'power3.in', stagger: 0.02 }, 0)
-        .to(p, { borderBottomLeftRadius: `${p.offsetWidth * 0.48}px 70px`, borderBottomRightRadius: `${p.offsetWidth * 0.48}px 70px`, duration: 0.25, ease: 'power2.in' }, 0.1)
-        .to(p, { height: capH, ...all(`${r}px ${r}px`), scaleX: 0.985, duration: 0.55, ease: 'power3.inOut' }, 0.18)
-        .to(bd, { autoAlpha: 0, duration: 0.4 }, 0.2)
+        .to(fades, { autoAlpha: 0, filter: 'blur(4px)', duration: 0.25, ease: 'power2.in' }, 0)
+        .to(items, { yPercent: -110, opacity: 0, duration: 0.4, ease: 'power3.in', stagger: 0.025 }, 0)
+        .to(p, { borderBottomLeftRadius: `${p.offsetWidth * 0.48}px 70px`, borderBottomRightRadius: `${p.offsetWidth * 0.48}px 70px`, duration: 0.3, ease: 'sine.in' }, 0.12)
+        .to(p, { height: capH, ...all(`${r}px ${r}px`), scaleX: 0.985, duration: 0.7, ease: 'expo.inOut' }, 0.2)
+        .to(bd, { autoAlpha: 0, duration: 0.5, ease: 'sine.out' }, 0.3)
         .set(p, { autoAlpha: 0, scaleX: 1 })
     }
   }, [open, capsule])
+
+  // panel refraction: a wider, softer rim than the bar
+  useEffect(() => attachLiquid(panel.current!, { radius: 36, bezel: 34, strength: 60, blur: 14, saturate: 165, brightness: 0.97 }), [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -277,7 +361,7 @@ function Menu({ open, onClose, capsule, refract }: { open: boolean; onClose: () 
           aria-modal="true"
           aria-label={t('menu')}
           aria-hidden={!open}
-          className={`glass glass-panel ${refract ? 'glass-refract' : ''} pointer-events-auto invisible mx-auto max-w-[1240px] origin-top overflow-hidden`}
+          className={`glass glass-panel pointer-events-auto invisible mx-auto max-w-[1240px] origin-top overflow-hidden`}
         >
           <div ref={content} className="h-full overflow-y-auto" data-lenis-prevent>
             <div className="grid gap-8 px-6 pb-8 md:grid-cols-12 md:gap-10 md:px-10 md:pb-10">
@@ -326,7 +410,7 @@ function Menu({ open, onClose, capsule, refract }: { open: boolean; onClose: () 
                   <p>{l(contacts.address)}</p>
                 </div>
                 <div data-fade className="sm:hidden">
-                  <LangSwitch glass />
+                  <LangSwitch />
                 </div>
               </div>
             </div>
