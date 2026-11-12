@@ -45,7 +45,7 @@ export const contacts = content.contacts as {
 }
 export const clients = content.clients as string[]
 
-/** Resolve a public asset path against the deploy base (e.g. /jahonsher/). */
+/** Resolve a public asset path against the deploy base (e.g. /novacolor/). */
 export const asset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`
 
 export const productBySlug = (slug: string) => products.find((p) => p.slug === slug)

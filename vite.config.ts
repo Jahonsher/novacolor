@@ -4,8 +4,8 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // GitHub Pages: sayt https://jahonsher.github.io/jahonsher/ manzilida ochiladi
-  base: '/jahonsher/',
+  // GitHub Pages: sayt https://jahonsher.github.io/novacolor/ manzilida ochiladi
+  base: '/novacolor/',
   plugins: [react(), tailwindcss()],
   build: {
     chunkSizeWarningLimit: 700,
