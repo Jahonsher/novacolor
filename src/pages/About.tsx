@@ -2,7 +2,8 @@ import { useRef } from 'react'
 import { GLImage } from '../components/GLImage'
 import { Reveal, ScrubText } from '../components/Reveal'
 import { Clients, ContactCTA, Stats } from '../components/Blocks'
-import { about, categories } from '../data'
+import { DocList } from '../components/Documents'
+import { about, categories, documents, type DocGroup } from '../data'
 import { useLang } from '../i18n'
 import { gsap, useGSAP, reducedMotion } from '../lib/motion'
 
@@ -19,6 +20,12 @@ export default function About() {
     },
     { scope: band },
   )
+
+  const groups: { key: DocGroup; label: string }[] = [
+    { key: 'company', label: t('docs.company') },
+    { key: 'product', label: t('docs.product') },
+    { key: 'epd', label: t('docs.epd') },
+  ]
 
   const milestones = [
     { year: '1982', text: t('about.milestone1') },
@@ -81,6 +88,29 @@ export default function About() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* certificates & declarations */}
+      <section id="sertifikatlar" className="px-5 pb-28 md:px-10 md:pb-40">
+        <Reveal as="p" className="label mb-8">{`— ${t('docs.label')}`}</Reveal>
+        <Reveal as="h2" by="words" className="display mb-16 text-6xl italic text-sand md:mb-24 md:text-8xl">
+          {t('docs.title')}
+        </Reveal>
+        <div className="space-y-20 md:space-y-28">
+          {groups.map((g) => (
+            <div key={g.key} className="grid gap-8 md:grid-cols-12">
+              <div className="md:col-span-3">
+                <Reveal as="p" className="label md:sticky md:top-32">
+                  {g.label}
+                </Reveal>
+              </div>
+              <div className="md:col-span-9">
+                <DocList docs={documents.filter((d) => d.group === g.key)} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="label mt-10">{t('docs.note')}</p>
       </section>
 
       <section className="tone-light panel px-5 py-24 md:px-10 md:py-32">

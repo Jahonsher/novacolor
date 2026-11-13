@@ -45,6 +45,20 @@ export const contacts = content.contacts as {
 }
 export const clients = content.clients as string[]
 
+/** Certificates and declarations (PDFs in public/pdf). */
+export type DocGroup = 'company' | 'product' | 'epd'
+export type Doc = {
+  file: string
+  group: DocGroup
+  title: Localized
+  /** product slugs the document applies to */
+  products: string[]
+  /** size in KB */
+  size: number
+}
+export const documents = content.documents as Doc[]
+export const docsForProduct = (slug: string) => documents.filter((d) => d.products.includes(slug))
+
 /** Resolve a public asset path against the deploy base (e.g. /novacolor/). */
 export const asset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`
 

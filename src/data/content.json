@@ -272,7 +272,9 @@
     "img/products/teodorico-5.jpg",
     "img/products/teodorico-6.jpg",
     "img/products/teodorico-7.jpg",
-    "img/products/teodorico-8.jpg"
+    "img/products/teodorico-8.jpg",
+    "img/products/teodorico-epd.jpg",
+    "img/products/teodorico-qadoq.jpg"
    ],
    "subtitle": {
     "uz": "Oltin, kumush va bronza effektli ohakli dekorativ suvoq",
@@ -297,7 +299,9 @@
     "img/products/archi-3.jpg",
     "img/products/archi-4.jpg",
     "img/products/archi-5.jpg",
-    "img/products/archi-6.jpg"
+    "img/products/archi-6.jpg",
+    "img/products/archi-epd.jpg",
+    "img/products/archi-qadoq.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun tosh effektli gidravlik ohakli kukunsimon qoplama",
@@ -351,7 +355,9 @@
     "img/products/marmorino-6.jpg",
     "img/products/marmorino-7.jpg",
     "img/products/marmorino-8.jpg",
-    "img/products/marmorino-9.jpg"
+    "img/products/marmorino-9.jpg",
+    "img/products/marmorino-epd.jpg",
+    "img/products/marmorino-qadoq.jpg"
    ],
    "subtitle": {
     "uz": "Silliq va atlassimon pardoz uchun so'ndirilgan ohak",
@@ -376,7 +382,9 @@
     "img/products/calce-3.jpg",
     "img/products/calce-4.jpg",
     "img/products/calce-5.jpg",
-    "img/products/calce-6.jpg"
+    "img/products/calce-6.jpg",
+    "img/products/calce-epd.jpg",
+    "img/products/calce-qadoq.jpg"
    ],
    "subtitle": {
     "uz": "Ohak va loy asosidagi mineral dekorativ qoplama",
@@ -537,7 +545,9 @@
     "img/products/supremematt-2.jpg",
     "img/products/supremematt-3.jpg",
     "img/products/supremematt-4.jpg",
-    "img/products/supremematt-5.jpg"
+    "img/products/supremematt-5.jpg",
+    "img/products/supremematt-epd.jpg",
+    "img/products/supremematt-qadoq.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun suv asosidagi past emissiyali mat bo'yoq",
@@ -560,7 +570,9 @@
     "img/products/extramatt-1.jpg",
     "img/products/extramatt-2.jpg",
     "img/products/extramatt-3.jpg",
-    "img/products/extramatt-4.jpg"
+    "img/products/extramatt-4.jpg",
+    "img/products/extramatt-epd.jpg",
+    "img/products/extramatt-qadoq.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun suv asosidagi o'ta yuviluvchan mat bo'yoq",
@@ -583,7 +595,9 @@
     "img/products/eggy-1.jpg",
     "img/products/eggy-2.jpg",
     "img/products/eggy-3.jpg",
-    "img/products/eggy-4.jpg"
+    "img/products/eggy-4.jpg",
+    "img/products/eggy-epd.jpg",
+    "img/products/eggy-qadoq.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun «tuxum po'chog'i» effektli suvda eriydigan emal",
@@ -803,5 +817,281 @@
   "img/clients/client-2.png",
   "img/clients/client-3.png",
   "img/clients/client-4.png"
+ ],
+ "documents": [
+  {
+   "file": "iso-9001.pdf",
+   "group": "company",
+   "title": {
+    "uz": "ISO 9001 — sifat menejmenti tizimi",
+    "ru": "ISO 9001 — система менеджмента качества"
+   },
+   "products": [],
+   "size": 174
+  },
+  {
+   "file": "iso-14001.pdf",
+   "group": "company",
+   "title": {
+    "uz": "ISO 14001 — ekologik menejment tizimi",
+    "ru": "ISO 14001 — система экологического менеджмента"
+   },
+   "products": [],
+   "size": 175
+  },
+  {
+   "file": "iso-45001.pdf",
+   "group": "company",
+   "title": {
+    "uz": "ISO 45001 — mehnat xavfsizligi va salomatlik",
+    "ru": "ISO 45001 — охрана труда и здоровья"
+   },
+   "products": [],
+   "size": 169
+  },
+  {
+   "file": "iac-gold-suv-asosli-boyoqlar.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Indoor Air Comfort Gold — suv asosli bo‘yoqlar",
+    "ru": "Indoor Air Comfort Gold — водные краски"
+   },
+   "products": [
+    "africa",
+    "animamundi",
+    "dune",
+    "dune-opaco",
+    "luce-wall-painting",
+    "swahili",
+    "matmotion-eggy",
+    "matmotion-extra-matt",
+    "matmotion-supreme-matt"
+   ],
+   "size": 1271
+  },
+  {
+   "file": "iac-gold-mineral-qoplamalar.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Indoor Air Comfort Gold — mineral qoplamalar",
+    "ru": "Indoor Air Comfort Gold — минеральные покрытия"
+   },
+   "products": [
+    "calce-cruda",
+    "florenzia",
+    "marmorino-ks",
+    "teodorico"
+   ],
+   "size": 1270
+  },
+  {
+   "file": "iac-usa-mineral-qoplamalar.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Indoor Air Comfort USA — mineral qoplamalar",
+    "ru": "Indoor Air Comfort USA — минеральные покрытия"
+   },
+   "products": [
+    "calce-cruda",
+    "florenzia",
+    "marmorino-ks",
+    "teodorico"
+   ],
+   "size": 1257
+  },
+  {
+   "file": "iac-gold-mineral-kukun-qoplamalar.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Indoor Air Comfort Gold — mineral kukunli qoplamalar (Archi+)",
+    "ru": "Indoor Air Comfort Gold — минеральные порошковые покрытия (Archi+)"
+   },
+   "products": [
+    "archi-pietra",
+    "archi-concrete",
+    "archi-tadelakt"
+   ],
+   "size": 1428
+  },
+  {
+   "file": "iac-usa-mineral-kukun-qoplamalar.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Indoor Air Comfort USA — mineral kukunli qoplamalar (Archi+)",
+    "ru": "Indoor Air Comfort USA — минеральные порошковые покрытия (Archi+)"
+   },
+   "products": [
+    "archi-pietra",
+    "archi-concrete",
+    "archi-tadelakt"
+   ],
+   "size": 1257
+  },
+  {
+   "file": "metallik-formaldegidsiz-deklaratsiya.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Metallik qoplamalar — formaldegid qo‘shilmaganligi haqida deklaratsiya",
+    "ru": "Металлики — декларация об отсутствии формальдегида"
+   },
+   "products": [
+    "africa",
+    "dune",
+    "dune-opaco",
+    "swahili",
+    "luce-wall-painting",
+    "animamundi",
+    "metallo-fuso"
+   ],
+   "size": 135
+  },
+  {
+   "file": "calcecruda-formaldegid-testi.pdf",
+   "group": "product",
+   "title": {
+    "uz": "CalceCruda — formaldegidni kamaytirish testi (ISO 16000-23)",
+    "ru": "CalceCruda — тест снижения формальдегида (ISO 16000-23)"
+   },
+   "products": [
+    "calce-cruda"
+   ],
+   "size": 276
+  },
+  {
+   "file": "archi-plus-argilla-yongin-a1.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Archi+ Argilla — yong‘inga chidamlilik A1 sinfi (EN 13501-1)",
+    "ru": "Archi+ Argilla — класс пожарной безопасности A1 (EN 13501-1)"
+   },
+   "products": [],
+   "size": 321
+  },
+  {
+   "file": "epd-archi-plus.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — Archi+ (Pietra, Concrete, Tadelakt, Argilla)",
+    "ru": "EPD — Archi+ (Pietra, Concrete, Tadelakt, Argilla)"
+   },
+   "products": [
+    "archi-pietra",
+    "archi-concrete",
+    "archi-tadelakt"
+   ],
+   "size": 818
+  },
+  {
+   "file": "epd-calcecruda.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — CalceCruda",
+    "ru": "EPD — CalceCruda"
+   },
+   "products": [
+    "calce-cruda"
+   ],
+   "size": 532
+  },
+  {
+   "file": "epd-marmorino-ks.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — Marmorino KS",
+    "ru": "EPD — Marmorino KS"
+   },
+   "products": [
+    "marmorino-ks"
+   ],
+   "size": 534
+  },
+  {
+   "file": "epd-teodorico.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — Teodorico",
+    "ru": "EPD — Teodorico"
+   },
+   "products": [
+    "teodorico"
+   ],
+   "size": 536
+  },
+  {
+   "file": "epd-matmotion-supreme-matt.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — MATmotion Supreme Matt",
+    "ru": "EPD — MATmotion Supreme Matt"
+   },
+   "products": [
+    "matmotion-supreme-matt"
+   ],
+   "size": 488
+  },
+  {
+   "file": "epd-matmotion-extra-matt.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — MATmotion Extra Matt",
+    "ru": "EPD — MATmotion Extra Matt"
+   },
+   "products": [
+    "matmotion-extra-matt"
+   ],
+   "size": 510
+  },
+  {
+   "file": "epd-matmotion-extra-eggshell.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — MATmotion Extra Eggshell",
+    "ru": "EPD — MATmotion Extra Eggshell"
+   },
+   "products": [
+    "matmotion-eggy"
+   ],
+   "size": 581
+  },
+  {
+   "file": "epd-era-a-pennello.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — Era a Pennello",
+    "ru": "EPD — Era a Pennello"
+   },
+   "products": [],
+   "size": 597
+  },
+  {
+   "file": "epd-marmur-fine.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — Marmur Fine",
+    "ru": "EPD — Marmur Fine"
+   },
+   "products": [],
+   "size": 635
+  },
+  {
+   "file": "epd-decofix.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — Decofix",
+    "ru": "EPD — Decofix"
+   },
+   "products": [],
+   "size": 504
+  },
+  {
+   "file": "epd-puro.pdf",
+   "group": "epd",
+   "title": {
+    "uz": "EPD — Puro Titanium & VOC Free",
+    "ru": "EPD — Puro Titanium & VOC Free"
+   },
+   "products": [],
+   "size": 626
+  }
  ]
 }
