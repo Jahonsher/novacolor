@@ -7,7 +7,8 @@ import { Preloader } from './components/Preloader'
 import { Cursor } from './components/Cursor'
 import { TransitionProvider } from './components/Transition'
 import { useLang } from './i18n'
-import { initSmoothScroll, destroySmoothScroll, reducedMotion } from './lib/motion'
+import { initSmoothScroll, destroySmoothScroll, reducedMotion, useReady } from './lib/motion'
+import { startGovernor } from './lib/perf'
 import Home from './pages/Home'
 import Products from './pages/Products'
 import Product from './pages/Product'
@@ -44,6 +45,12 @@ const titles: Record<string, { uz: string; ru: string }> = {
 export default function App() {
   const { lang } = useLang()
   const { pathname } = useLocation()
+  const ready = useReady()
+
+  // start watching the frame rate once the preloader is gone
+  useEffect(() => {
+    if (ready) startGovernor()
+  }, [ready])
 
   useEffect(() => {
     initSmoothScroll()

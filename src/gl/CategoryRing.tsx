@@ -3,6 +3,8 @@ import * as THREE from 'three'
 import { asset, categories, pad } from '../data'
 import { useLang } from '../i18n'
 import { gsap, ScrollTrigger, useGSAP, reducedMotion } from '../lib/motion'
+import { getQuality, onQuality } from '../lib/perf'
+import { glPixelRatio } from './media'
 import { useTransition } from '../components/Transition'
 import { Reveal } from '../components/Reveal'
 
@@ -80,11 +82,10 @@ export function CategoryRing() {
     const el = canvas.current!
     let renderer: THREE.WebGLRenderer
     try {
-      renderer = new THREE.WebGLRenderer({ canvas: el, antialias: true, alpha: true })
+      renderer = new THREE.WebGLRenderer({ canvas: el, antialias: getQuality() >= 3, alpha: true })
     } catch {
       return
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100)
     const group = new THREE.Group()
@@ -97,6 +98,8 @@ export function CategoryRing() {
     const loader = new THREE.TextureLoader()
     const mats: THREE.ShaderMaterial[] = []
     const geo = new THREE.PlaneGeometry(W, H, 64, 1)
+    // set whenever the next tick must draw even if nothing moves
+    let dirty = true
 
     categories.forEach((c, i) => {
       const uniforms = {
@@ -114,7 +117,7 @@ export function CategoryRing() {
         const img = tex.image as { width: number; height: number }
         uniforms.uTexture.value = tex
         uniforms.uImage.value.set(img.width, img.height)
-        gsap.to(uniforms.uLoaded, { value: 1, duration: 1.2 })
+        gsap.to(uniforms.uLoaded, { value: 1, duration: 1.2, onStart: () => (dirty = true), onComplete: () => (dirty = true) })
       })
       const pivot = new THREE.Object3D()
       pivot.rotation.y = i * step
@@ -126,7 +129,9 @@ export function CategoryRing() {
 
     const resize = () => {
       const { width, height } = el.getBoundingClientRect()
+      renderer.setPixelRatio(glPixelRatio())
       renderer.setSize(width, height, false)
+      dirty = true
       camera.aspect = width / height
       const half = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
       // keep the front panel ~62% of viewport height, and fit width on portrait screens
@@ -138,6 +143,7 @@ export function CategoryRing() {
     resize()
     const ro = new ResizeObserver(resize)
     ro.observe(el)
+    const offQuality = onQuality(resize)
 
     const mouse = new THREE.Vector2()
     const onMove = (e: PointerEvent) => mouse.set(e.clientX / window.innerWidth - 0.5, e.clientY / window.innerHeight - 0.5)
@@ -153,9 +159,16 @@ export function CategoryRing() {
       const prev = current
       current += (target.current - current) * (reducedMotion ? 1 : 0.06)
       const vel = current - prev
+      const dx = (mouse.y * 0.12 - group.rotation.x) * 0.05
+      const dz = (-mouse.x * 0.03 - group.rotation.z) * 0.05
+      const fading = mats.some((m) => m.uniforms.uLoaded.value > 0 && m.uniforms.uLoaded.value < 1)
+      // ring at rest and pointer still: the last frame is still valid
+      const moving = Math.abs(vel) > 1e-5 || Math.abs(dx) > 1e-5 || Math.abs(dz) > 1e-5 || fading
+      if (!moving && !dirty) return
+      dirty = moving // one more frame after motion stops so the final pose is drawn
       group.rotation.y = -current * step
-      group.rotation.x += (mouse.y * 0.12 - group.rotation.x) * 0.05
-      group.rotation.z += (-mouse.x * 0.03 - group.rotation.z) * 0.05
+      group.rotation.x += dx
+      group.rotation.z += dz
       mats.forEach((m, i) => {
         m.uniforms.uFacing.value = Math.cos(i * step - current * step)
         m.uniforms.uVelocity.value = vel * 10
@@ -170,6 +183,7 @@ export function CategoryRing() {
     gsap.ticker.add(tick)
     return () => {
       gsap.ticker.remove(tick)
+      offQuality()
       window.removeEventListener('pointermove', onMove)
       ro.disconnect()
       io.disconnect()

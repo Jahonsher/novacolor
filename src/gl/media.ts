@@ -1,5 +1,12 @@
 import * as THREE from 'three'
 import { gsap, scroll } from '../lib/motion'
+import { getQuality, onQuality } from '../lib/perf'
+
+/** canvas resolution per quality level (the images are the sharpest thing on the page) */
+export const glPixelRatio = () => {
+  const q = getQuality()
+  return Math.min(window.devicePixelRatio, q >= 3 ? 2 : q === 2 ? 1.5 : 1)
+}
 
 /**
  * One full-screen WebGL canvas that draws every registered <GLImage>.
@@ -110,20 +117,27 @@ class MediaGL {
   private velocity = 0
   private w = 0
   private h = 0
+  // idle detection: skip redrawing when nothing on screen changed
+  private lastSig = NaN
+  private drewSomething = true
+  private forceDraw = true
+  private wasAnimating = false
+  private offQuality?: () => void
 
   init(canvas: HTMLCanvasElement) {
     if (this.renderer) return true
     try {
-      this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' })
+      // MSAA on a full-screen canvas is expensive and barely visible on flat image planes
+      this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: getQuality() >= 3, powerPreference: 'high-performance' })
     } catch {
       this.enabled = false
       return false
     }
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.setClearColor(0x000000, 0)
     this.enabled = true
     this.resize()
     window.addEventListener('resize', this.resize)
+    this.offQuality = onQuality(this.resize)
     gsap.ticker.add(this.tick)
     return true
   }
@@ -131,6 +145,7 @@ class MediaGL {
   destroy() {
     gsap.ticker.remove(this.tick)
     window.removeEventListener('resize', this.resize)
+    this.offQuality?.()
     this.items.forEach((i) => this.remove(i))
     this.renderer?.dispose()
     this.renderer = undefined
@@ -140,7 +155,9 @@ class MediaGL {
   private resize = () => {
     this.w = window.innerWidth
     this.h = window.innerHeight
+    this.renderer?.setPixelRatio(glPixelRatio())
     this.renderer?.setSize(this.w, this.h, false)
+    this.forceDraw = true
     Object.assign(this.camera, { left: -this.w / 2, right: this.w / 2, top: this.h / 2, bottom: -this.h / 2 })
     this.camera.updateProjectionMatrix()
   }
@@ -219,24 +236,48 @@ class MediaGL {
     if (!this.items.delete(item)) return
     this.scene.remove(item.mesh)
     item.cleanup()
+    this.forceDraw = true
   }
 
   private tick = (time: number) => {
     if (!this.renderer) return
     this.velocity += (scroll.velocity - this.velocity) * 0.08
     if (Math.abs(this.velocity) < 0.01) this.velocity = 0
+    let count = 0
+    let animating = this.velocity !== 0
+    let sig = 0
     for (const item of this.items) {
       const r = item.el.getBoundingClientRect()
       const visible = item.ready && r.width > 0 && r.bottom > -50 && r.top < this.h + 50 && r.right > 0 && r.left < this.w
       item.mesh.visible = visible
       if (!visible) continue
+      count++
       item.mesh.position.set(r.left + r.width / 2 - this.w / 2, -(r.top + r.height / 2) + this.h / 2, 0)
       item.mesh.scale.set(r.width, r.height, 1)
       const u = item.uniforms
       u.uPlane.value.set(r.width, r.height)
       u.uVelocity.value = this.velocity
       u.uTime.value = time
+      // time-driven effects: hover ripple and the noisy reveal edge
+      if (u.uHover.value > 0.001 || (u.uReveal.value > 0 && u.uReveal.value < 1)) animating = true
+      sig += count * (r.left * 3.1 + r.top * 7.3 + r.width * 1.7 + r.height * 0.9) + u.uMouse.value.x + u.uMouse.value.y
     }
+    // nothing on screen: clear once, then stop drawing a transparent full-screen canvas every frame
+    if (count === 0) {
+      if (this.drewSomething || this.forceDraw) this.renderer.render(this.scene, this.camera)
+      this.drewSomething = false
+      this.forceDraw = false
+      this.lastSig = NaN
+      return
+    }
+    // images on screen but perfectly still (no scroll, hover or reveal): the last frame is still valid
+    // (one extra frame after an animation ends, so its final state is drawn)
+    const still = !animating && !this.wasAnimating && !this.forceDraw && sig === this.lastSig
+    this.wasAnimating = animating
+    if (still) return
+    this.lastSig = sig
+    this.forceDraw = false
+    this.drewSomething = true
     this.renderer.render(this.scene, this.camera)
   }
 }

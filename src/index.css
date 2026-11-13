@@ -282,3 +282,7 @@ html.has-cursor button {
 @media (prefers-reduced-motion: reduce) {
   .grain::after { animation: none; }
 }
+
+/* adaptive quality (see src/lib/perf.ts): weak devices skip the moving grain layer */
+html[data-q="0"] .grain::after,
+html[data-q="1"] .grain::after { animation: none; }

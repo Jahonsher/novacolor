@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { gsap, reducedMotion, useReady } from '../lib/motion'
+import { getQuality, onQuality, type Quality } from '../lib/perf'
 
 /**
  * Full-screen "liquid Venetian plaster" — domain-warped fbm noise lit like a
@@ -25,7 +26,7 @@ const fragment = /* glsl */ `
   float fbm(vec2 p) {
     float v = 0.0, a = 0.5;
     mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
-    for (int i = 0; i < 5; i++) { v += a * noise(p); p = m * p; a *= 0.5; }
+    for (int i = 0; i < OCTAVES; i++) { v += a * noise(p); p = m * p; a *= 0.5; }
     return v;
   }
   float pattern(vec2 p, out vec2 q, out vec2 r) {
@@ -77,6 +78,19 @@ const fragment = /* glsl */ `
   }
 `
 
+/**
+ * Per quality level: fbm octaves, render scale (× min(dpr, 1.5)) and frame rate.
+ * The material is soft and moves slowly, so fewer octaves, a lower internal
+ * resolution and 30 fps are hard to tell apart — but far cheaper on weak GPUs.
+ * Level 0 freezes the material (renders only when something actually changes).
+ */
+const LEVELS: Record<Quality, { octaves: number; scale: number; fps: number }> = {
+  3: { octaves: 5, scale: 0.6, fps: 0 },
+  2: { octaves: 4, scale: 0.45, fps: 30 },
+  1: { octaves: 3, scale: 0.32, fps: 30 },
+  0: { octaves: 4, scale: 0.5, fps: -1 },
+}
+
 const vertex = /* glsl */ `
   varying vec2 vUv;
   void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }
@@ -105,20 +119,34 @@ export function HeroCanvas({ className = '' }: { className?: string }) {
     const u = uniforms.current
     const scene = new THREE.Scene()
     const camera = new THREE.Camera()
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: vertex, fragmentShader: fragment, uniforms: u }))
+    let cfg = LEVELS[getQuality()]
+    const material = new THREE.ShaderMaterial({ vertexShader: vertex, fragmentShader: fragment, uniforms: u, defines: { OCTAVES: cfg.octaves } })
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material)
     scene.add(mesh)
 
+    // forces the next tick to draw (used by the frozen level 0)
+    let dirty = true
+    let lastDraw = 0
+
     // the material is soft, so render at reduced resolution for speed
-    const quality = Math.min(window.devicePixelRatio, 1.5) * 0.6
     const resize = () => {
       const { width, height } = el.getBoundingClientRect()
-      renderer.setPixelRatio(quality)
+      const scale = Math.min(window.devicePixelRatio, 1.5) * cfg.scale
+      renderer.setPixelRatio(scale)
       renderer.setSize(width, height, false)
-      u.uRes.value.set(width * quality, height * quality)
+      u.uRes.value.set(width * scale, height * scale)
+      dirty = true
     }
     resize()
     const ro = new ResizeObserver(resize)
     ro.observe(el)
+
+    const offQuality = onQuality(() => {
+      cfg = LEVELS[getQuality()]
+      material.defines.OCTAVES = cfg.octaves
+      material.needsUpdate = true
+      resize()
+    })
 
     const target = new THREE.Vector2(0.5, 0.5)
     const onMove = (e: PointerEvent) => {
@@ -131,23 +159,44 @@ export function HeroCanvas({ className = '' }: { className?: string }) {
     const io = new IntersectionObserver(([entry]) => (visible = entry.isIntersecting))
     io.observe(el)
 
+    let lastIntro = -1
+    let lastScroll = -1
     const tick = (time: number) => {
       if (!visible) return
-      u.uTime.value = reducedMotion ? 4 : time
-      u.uMouse.value.lerp(target, 0.04)
       const r = el.getBoundingClientRect()
-      u.uScroll.value = Math.max(0, -r.top / Math.max(1, r.height))
+      const scrollV = Math.max(0, -r.top / Math.max(1, r.height))
+      if (cfg.fps < 0 || reducedMotion) {
+        // frozen: a still frame, redrawn only when scroll / intro / size change
+        const intro = u.uIntro.value
+        if (!dirty && intro === lastIntro && Math.abs(scrollV - lastScroll) < 0.002) return
+        dirty = false
+        lastIntro = intro
+        lastScroll = scrollV
+        u.uTime.value = 4
+        u.uScroll.value = scrollV
+        renderer.render(scene, camera)
+        return
+      }
+      const now = performance.now()
+      if (cfg.fps > 0 && !dirty && now - lastDraw < 1000 / cfg.fps - 4) return
+      lastDraw = now
+      dirty = false
+      u.uTime.value = time
+      // mouse easing is tuned per 60 fps frame — keep the same feel at 30 fps
+      u.uMouse.value.lerp(target, cfg.fps > 0 ? 0.08 : 0.04)
+      u.uScroll.value = scrollV
       renderer.render(scene, camera)
     }
     gsap.ticker.add(tick)
 
     return () => {
       gsap.ticker.remove(tick)
+      offQuality()
       window.removeEventListener('pointermove', onMove)
       ro.disconnect()
       io.disconnect()
       mesh.geometry.dispose()
-      mesh.material.dispose()
+      material.dispose()
       renderer.dispose()
     }
   }, [])

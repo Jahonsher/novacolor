@@ -5,6 +5,7 @@ import { asset, categories, contacts, pad } from '../data'
 import { useLang, type Key } from '../i18n'
 import { gsap, lenis } from '../lib/motion'
 import { attachLiquid } from '../lib/liquid'
+import { useQuality } from '../lib/perf'
 
 export const NAV: { to: string; key: Key }[] = [
   { to: '/', key: 'nav.home' },
@@ -319,7 +320,10 @@ export function Header() {
   const isLight = light && !open
 
   // real edge refraction (Chromium) — clear centre, bending rim
-  useEffect(() => attachLiquid(glass.current!, { radius: 'pill', bezel: 18, strength: 34, blur: 2.5 }), [])
+  // it re-filters the backdrop every frame while the hero animates behind it, so
+  // only strong devices get it — the rest keep the plain CSS frosted glass
+  const liquid = useQuality() >= 3
+  useEffect(() => (liquid ? attachLiquid(glass.current!, { radius: 'pill', bezel: 18, strength: 34, blur: 2.5 }) : undefined), [liquid])
 
   return (
     <>
@@ -455,7 +459,8 @@ function Menu({ open, onClose, capsule }: { open: boolean; onClose: () => void; 
   }, [open, capsule])
 
   // panel refraction: a wider, softer rim than the bar
-  useEffect(() => attachLiquid(panel.current!, { radius: 36, bezel: 34, strength: 60, blur: 14, saturate: 165, brightness: 0.97 }), [])
+  const liquid = useQuality() >= 3
+  useEffect(() => (liquid ? attachLiquid(panel.current!, { radius: 36, bezel: 34, strength: 60, blur: 14, saturate: 165, brightness: 0.97 }) : undefined), [liquid])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
