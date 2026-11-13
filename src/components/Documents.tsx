@@ -13,7 +13,7 @@ export function DocList({ docs }: { docs: Doc[] }) {
         <li key={d.file}>
           <FadeUp y={24}>
             <a
-              href={asset(`pdf/${d.file}`)}
+              href={asset(d.path ?? `pdf/${d.file}`)}
               target="_blank"
               rel="noopener"
               data-cursor="link"

@@ -54,7 +54,8 @@ function Hero() {
               <span className="absolute inset-x-0 top-0 h-1/2 animate-[scrollcue_2s_var(--ease-expo)_infinite] bg-bone" />
             </span>
           </div>
-          <p data-hero-fade className="label invisible text-right">
+          {/* server build: keep the label clear of the fixed AI-chat launcher (bottom-right) */}
+          <p data-hero-fade className={`label invisible text-right ${import.meta.env.VITE_API ? 'pr-16 md:pr-20' : ''}`}>
             {t('hero.location')}
           </p>
         </div>

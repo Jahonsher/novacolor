@@ -1,0 +1,28 @@
+# Caddy: automatic HTTPS (Let's Encrypt) for ${DOMAIN} -> NovaColor app container.
+# Used by: docker compose --profile https up -d
+# Requirements: DNS A-record of DOMAIN points to this server; ports 80 and 443 are open.
+# The app must run with TRUST_PROXY=1: Caddy replaces any client-sent X-Forwarded-For with the real
+# client IP, and the app believes forwarded headers only from trusted peers (TRUSTED_PROXIES; the default
+# includes the private docker network Caddy connects from).
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# The biggest legitimate request is a 30 MB PDF upload; refuse anything larger before it reaches the app.
+	request_body {
+		max_size 32MB
+	}
+
+	header {
+		# HTTPS only, for a year. No includeSubDomains: other subdomains of the domain may still be plain http.
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	reverse_proxy app:8080
+}
+
+# Optional: send www.<domain> to the main domain. Uncomment if a "www" DNS record exists.
+# www.{$DOMAIN} {
+# 	redir https://{$DOMAIN}{uri} permanent
+# }

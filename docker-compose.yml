@@ -1,0 +1,60 @@
+# NovaColor — see DEPLOY.md (Uzbek, step by step).
+#
+# 1) First test, no domain (site on http://SERVER_IP:8080):
+#      docker compose up -d --build
+# 2) With a domain + automatic HTTPS (Caddy on ports 80/443). In .env set:
+#      DOMAIN=novacolor.uz  PUBLIC_URL=https://novacolor.uz  TRUST_PROXY=1  APP_BIND=127.0.0.1
+#    then:
+#      docker compose --profile https up -d --build
+#
+# Values like ${DOMAIN} / ${APP_BIND} are read from the same .env file that the app uses.
+
+services:
+  app:
+    build: .
+    image: novacolor:latest
+    container_name: novacolor
+    env_file: .env
+    environment:
+      # Fixed inside the container; data is kept on the host in ./data (back it up!).
+      DATA_DIR: /app/data
+      # Listen on all interfaces INSIDE the container (Caddy connects over the compose network; without
+      # this, TRUST_PROXY=1 would default HOST to 127.0.0.1). What the host exposes is set by APP_BIND below.
+      HOST: 0.0.0.0
+      PORT: "8080"
+    volumes:
+      - ./data:/app/data
+    ports:
+      # Default 0.0.0.0 = open to the internet on :8080 (first test without a domain).
+      # Behind Caddy set APP_BIND=127.0.0.1 in .env so :8080 is reachable only from the server itself
+      # (Docker-published ports bypass ufw, so this matters).
+      - "${APP_BIND:-0.0.0.0}:${APP_PORT:-8080}:8080"
+    restart: unless-stopped
+    init: true
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: novacolor-caddy
+    profiles: ["https"]
+    depends_on: [app]
+    environment:
+      DOMAIN: ${DOMAIN:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data        # TLS certificates — keep this volume
+      - caddy_config:/config
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  caddy_data:
+  caddy_config:

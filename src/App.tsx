@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Route, Routes, useLocation } from 'react-router'
 import { mediaGL } from './gl/media'
 import { Header } from './components/Header'
@@ -35,6 +35,11 @@ function GLLayer() {
   return <div ref={host} />
 }
 
+// AI assistant: server build only; its code loads after the preloader and it
+// shows itself only if /api/health reports the AI as available.
+// (`import.meta.env.VITE_API` inline, not API_ENABLED, so the Pages build drops the chunk)
+const AiChat = import.meta.env.VITE_API ? lazy(() => import('./components/AiChat')) : null
+
 const titles: Record<string, { uz: string; ru: string }> = {
   '/products': { uz: 'Mahsulotlar', ru: 'Продукты' },
   '/about': { uz: 'Biz haqimizda', ru: 'О нас' },
@@ -46,6 +51,10 @@ export default function App() {
   const { lang } = useLang()
   const { pathname } = useLocation()
   const ready = useReady()
+
+  // `ready` flips back to false during every page transition — the chat stays mounted once shown
+  const [chatOn, setChatOn] = useState(false)
+  if (AiChat && ready && !chatOn) setChatOn(true)
 
   // start watching the frame rate once the preloader is gone
   useEffect(() => {
@@ -79,6 +88,11 @@ export default function App() {
         </Routes>
         <Footer />
       </main>
+      {AiChat && chatOn && (
+        <Suspense fallback={null}>
+          <AiChat />
+        </Suspense>
+      )}
       <Cursor />
       <Preloader />
     </TransitionProvider>

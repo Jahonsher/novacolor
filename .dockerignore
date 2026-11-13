@@ -1,0 +1,41 @@
+# Keep the build context small and free of secrets / runtime data.
+.git
+.gitignore
+.github
+.vscode
+.idea
+.claude
+**/.DS_Store
+*.log
+npm-debug.log*
+
+# installed / built (rebuilt inside the image)
+node_modules
+**/node_modules
+dist
+dist-ssr
+server-dist
+coverage
+
+# runtime data and secrets: never bake into the image
+data
+backups
+.env
+.env.*
+!.env.example
+*.local
+
+# not needed to build or run
+docs
+*.md
+screenshots
+**/*.png.orig
+server/test
+server/tsconfig.test.json
+.oxlintrc.json
+
+# deployment files themselves (the entrypoint script is the only one the image needs)
+docker-compose*.yml
+Caddyfile
+deploy/*
+!deploy/docker-entrypoint.sh
