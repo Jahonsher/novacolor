@@ -1,4 +1,5 @@
-import { rm } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { rename, rm } from 'node:fs/promises'
 import path from 'node:path'
 import { Hono, type Context } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
@@ -24,12 +25,15 @@ import {
   subscriberPatch,
   subscribersPut,
   telegramSettingsInput,
+  videoInput,
   zodMessage,
   type Content,
+  type Video,
 } from '../schemas.js'
 import { ContentError } from '../store/content.js'
 import { MAX_SUBSCRIBERS, SubscriberError, type Subscriber } from '../store/subscribers.js'
 import { MAX_IMAGE_BYTES, MAX_PDF_BYTES, readUpload, saveImage, savePdf, UploadError } from '../uploads.js'
+import { MAX_VIDEO_BYTES, receiveFile, sniffVideo, transcodedPath, uploadId } from '../video.js'
 import { ADMIN_BODY, jsonBody, maxBody, notFound, SMALL_BODY } from './util.js'
 
 const MB = 1024 * 1024
@@ -53,6 +57,35 @@ function checkProducts(content: Content, slugs: string[]) {
   const known = new Set(content.products.map((p) => p.slug))
   const bad = slugs.find((s) => !known.has(s))
   if (bad !== undefined) throw new ContentError(`Mahsulot topilmadi: ${bad}`)
+}
+
+const UPLOADED_VIDEO_RE = /^uploads\/videos\/[\w.-]+\.(mp4|webm|mov)$/
+
+/**
+ * Uploaded video path as it should be stored: if a background transcode has already replaced the original
+ * (`<id>-720p.mp4` exists), that one; the file must exist. Static `video/…` paths are taken as they are.
+ * Synchronous on purpose: called inside `content.mutate` (under the lock, see VideoTools.transcode).
+ */
+function resolveVideoSrc(uploadsDir: string, src: string): string {
+  if (!UPLOADED_VIDEO_RE.test(src)) return src
+  const onDisk = (rel: string) => existsSync(path.join(uploadsDir, rel.replace(/^uploads\//, '')))
+  const t = transcodedPath(src)
+  if (t !== src && onDisk(t)) return t
+  if (!onDisk(src)) throw new ContentError(`Video fayl topilmadi: ${src} — qayta yuklang`)
+  return src
+}
+
+/** Build a stored video from validated input (no `undefined` keys). */
+function videoItem(id: number, input: z.infer<typeof videoInput>, src: string | undefined): Video {
+  return {
+    id,
+    title: input.title,
+    ...(src ? { src } : {}),
+    ...(input.poster ? { poster: input.poster } : {}),
+    ...(input.instagram ? { instagram: input.instagram } : {}),
+    product: input.product,
+    ...(input.date ? { date: input.date } : {}),
+  }
 }
 
 /** Tashkent (UTC+5) calendar day of an ISO timestamp. */
@@ -136,7 +169,10 @@ export function adminRoutes(ctx: AppContext) {
 
   // JSON bodies of authenticated requests (uploads have their own, bigger limits).
   app.use('*', async (c, next) => {
-    if (c.req.path.endsWith('/upload/image') || (c.req.method === 'POST' && c.req.path.endsWith('/documents'))) return next()
+    // upload/video enforces its own limit while streaming the body to disk
+    if (c.req.path.endsWith('/upload/image') || c.req.path.endsWith('/upload/video') || (c.req.method === 'POST' && c.req.path.endsWith('/documents'))) {
+      return next()
+    }
     return maxBody(ADMIN_BODY)(c, next)
   })
 
@@ -182,6 +218,7 @@ export function adminRoutes(ctx: AppContext) {
       d.products[i] = p
       if (input.slug !== slug) {
         for (const n of d.news) if (n.product === slug) n.product = input.slug
+        for (const v of d.videos) if (v.product === slug) v.product = input.slug
         for (const doc of d.documents) doc.products = doc.products.map((s) => (s === slug ? input.slug : s))
       }
       return p
@@ -196,6 +233,7 @@ export function adminRoutes(ctx: AppContext) {
       d.products = d.products.filter((p) => p.slug !== slug)
       if (d.products.length === before) throw new ContentError('Mahsulot topilmadi', 404)
       for (const n of d.news) if (n.product === slug) n.product = null
+      for (const v of d.videos) if (v.product === slug) v.product = null
       for (const doc of d.documents) doc.products = doc.products.filter((s) => s !== slug)
     })
     return c.json({ ok: true })
@@ -282,6 +320,67 @@ export function adminRoutes(ctx: AppContext) {
     return c.json({ ok: true })
   })
 
+  // ---- Videos ----
+  /** Uploaded files (video, generated poster) no video points at any more → deleted. */
+  const cleanupVideoFiles = async (paths: (string | undefined)[]) => {
+    const used = new Set(content.get().videos.flatMap((v) => [v.src, v.poster]))
+    for (const p of new Set(paths)) {
+      if (!p || used.has(p) || !p.startsWith('uploads/videos/') || p.includes('..')) continue
+      await rm(path.join(ctx.uploadsDir, 'videos', path.basename(p)), { force: true })
+    }
+  }
+
+  app.post('/videos', async (c) => {
+    const input = await jsonBody(c, videoInput)
+    const item = await content.mutate((d) => {
+      if (input.product) checkProducts(d, [input.product])
+      const v = videoItem(nextId(d.videos), input, input.src && resolveVideoSrc(ctx.uploadsDir, input.src))
+      d.videos.push(v)
+      return v
+    })
+    return c.json(item, 201)
+  })
+
+  app.put('/videos/:id', async (c) => {
+    const id = Number(c.req.param('id'))
+    const input = await jsonBody(c, videoInput)
+    const { item, old } = await content.mutate((d) => {
+      const i = d.videos.findIndex((v) => v.id === id)
+      if (i < 0) throw new ContentError('Video topilmadi', 404)
+      if (input.product) checkProducts(d, [input.product])
+      const old = d.videos[i]!
+      d.videos[i] = videoItem(id, input, input.src && resolveVideoSrc(ctx.uploadsDir, input.src))
+      return { item: d.videos[i]!, old }
+    })
+    await cleanupVideoFiles([old.src, old.poster])
+    return c.json(item)
+  })
+
+  app.delete('/videos/:id', async (c) => {
+    const id = Number(c.req.param('id'))
+    const removed = await content.mutate((d) => {
+      const v = d.videos.find((x) => x.id === id)
+      if (!v) throw new ContentError('Video topilmadi', 404)
+      d.videos = d.videos.filter((x) => x !== v)
+      return v
+    })
+    await cleanupVideoFiles([removed.src, removed.poster])
+    return c.json({ ok: true })
+  })
+
+  app.put('/videos-order', async (c) => {
+    const { ids } = await jsonBody(c, z.object({ ids: z.array(z.int().positive()).max(5000) }))
+    await content.mutate((d) => {
+      const byId = new Map(d.videos.map((v) => [v.id, v]))
+      const unknown = ids.find((i) => !byId.has(i))
+      if (unknown !== undefined) throw new ContentError(`Video topilmadi: ${unknown}`)
+      const seen = new Set<number>()
+      const ordered = ids.filter((i) => !seen.has(i) && seen.add(i)).map((i) => byId.get(i)!)
+      d.videos = [...ordered, ...d.videos.filter((v) => !seen.has(v.id))]
+    })
+    return c.json({ ok: true })
+  })
+
   // ---- Contacts / about ----
   app.put('/contacts', async (c) => {
     const input = await jsonBody(c, contactsInput)
@@ -309,6 +408,32 @@ export function adminRoutes(ctx: AppContext) {
     const saved = await saveImage(ctx.uploadsDir, bytes)
     log.info(`Rasm yuklandi: ${saved.path} (${saved.width}x${saved.height})`)
     return c.json(saved, 201)
+  })
+
+  // Video: streamed to disk (never buffered), type by magic bytes, ≤ 200 MB. With ffmpeg: a poster JPEG and,
+  // for big / non-MP4 files, a background H.264 720p transcode (`processing: true`).
+  app.post('/upload/video', async (c) => {
+    const dir = path.join(ctx.uploadsDir, 'videos')
+    const up = await receiveFile(c.req.raw, {
+      dir,
+      maxBytes: MAX_VIDEO_BYTES,
+      what: 'Video',
+      sniff: sniffVideo,
+      badType: 'Faqat MP4, MOV yoki WEBM video yuklash mumkin',
+    })
+    const id = uploadId()
+    const name = `${id}.${up.kind}`
+    try {
+      await rename(up.tmp, path.join(dir, name))
+    } catch (e) {
+      await rm(up.tmp, { force: true })
+      throw e
+    }
+    const rel = `uploads/videos/${name}`
+    const poster = (await ctx.media.poster(path.join(dir, name), path.join(dir, `${id}.jpg`))) ? `uploads/videos/${id}.jpg` : null
+    const processing = await ctx.media.maybeTranscode(rel, up.bytes, up.kind)
+    log.info(`Video yuklandi: ${rel} (${(up.bytes / MB).toFixed(1)} MB${poster ? ', poster' : ''}${processing ? ', siqilmoqda' : ''})`)
+    return c.json({ path: rel, poster, bytes: up.bytes, type: up.kind, processing }, 201)
   })
 
   // ---- Documents ----
@@ -570,6 +695,7 @@ export function adminRoutes(ctx: AppContext) {
     return c.json({
       products: cnt.products.length,
       documents: cnt.documents.length,
+      videos: cnt.videos.length,
       leadsNew: leads.filter((l) => l.status === 'new').length,
       leadsTotal: leads.length,
       chatsToday: ctx.chats.get().filter((s) => tashkentDay(s.updatedAt) === today).length,

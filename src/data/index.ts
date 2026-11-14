@@ -30,6 +30,23 @@ export type NewsItem = {
   product: string | null
 }
 
+/**
+ * Video for the "From Instagram" section: a self-hosted file (`src`) and/or an Instagram post/reel link.
+ * Items with only `instagram` show Instagram's own embed player.
+ */
+export type Video = {
+  id: number
+  title: Localized
+  /** `uploads/videos/x.mp4` (admin upload) or `video/x.mp4` (public/video) */
+  src?: string
+  poster?: string
+  /** `https://www.instagram.com/p/<id>/` */
+  instagram?: string
+  /** product slug the video belongs to (shown on that product's page) */
+  product?: string | null
+  date?: string
+}
+
 export const products = content.products as Product[]
 export const categories = content.categories as Category[]
 export const news = content.news as NewsItem[]
@@ -45,6 +62,14 @@ export const contacts = content.contacts as {
   map: string
 }
 export const clients = content.clients as string[]
+export const videos = (content.videos ?? []) as Video[]
+export const videosForProduct = (slug: string) => videos.filter((v) => v.product === slug)
+
+/** The company's Instagram profile (the section's "follow" button). */
+export const INSTAGRAM_PROFILE = 'https://www.instagram.com/novacolor.uz/'
+/** Shortcode of an Instagram post / reel URL. */
+export const instagramId = (url: string | undefined) =>
+  url ? /instagram\.com\/(?:[\w.]+\/)?(?:p|reels?|tv)\/([\w-]+)/.exec(url)?.[1] : undefined
 
 /** Certificates and declarations (PDFs in public/pdf, or uploaded through the admin panel). */
 export type DocGroup = 'company' | 'product' | 'epd'
@@ -106,6 +131,7 @@ export async function loadRuntimeContent(): Promise<boolean> {
     replaceArray(stats, c.stats)
     replaceArray(clients, c.clients)
     replaceArray(documents, c.documents)
+    replaceArray(videos, c.videos)
     replaceObject(about, c.about)
     replaceObject(contacts, c.contacts)
     computeFeatured()

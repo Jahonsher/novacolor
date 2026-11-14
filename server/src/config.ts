@@ -41,6 +41,11 @@ export type Config = {
   }
   /** New leads per hour across all visitors (contact form + AI). */
   leadsHourlyLimit: number
+  /**
+   * ffmpeg binary for video posters / transcoding (FFMPEG_PATH, default `ffmpeg` from PATH; `off` disables).
+   * Optional: when it can't be run, uploads still work, just without a generated poster.
+   */
+  ffmpeg: string | null
 }
 
 export class ConfigError extends Error {}
@@ -165,5 +170,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       globalDailyLimit: count(env.AI_GLOBAL_DAILY_LIMIT, 500),
     },
     leadsHourlyLimit: count(env.LEADS_HOURLY_LIMIT, 60),
+    ffmpeg: /^(off|0|false|no)$/i.test(str(env.FFMPEG_PATH) ?? '') ? null : (str(env.FFMPEG_PATH) ?? 'ffmpeg'),
   }
 }

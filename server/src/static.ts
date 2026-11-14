@@ -57,11 +57,37 @@ export function safeJoin(root: string, urlPath: string): string | null {
   return full
 }
 
-/** Stream a regular file, or return null if it doesn't exist / isn't a file. */
+/**
+ * Single byte range from a `Range` header: `{ start, end }` (inclusive), `'unsatisfiable'` (→ 416), or null
+ * when the header is absent / malformed / multi-range (→ the whole file, 200 — allowed by RFC 9110).
+ */
+export function parseRange(header: string | undefined, size: number): { start: number; end: number } | 'unsatisfiable' | null {
+  if (!header) return null
+  const m = /^bytes=(\d*)-(\d*)$/.exec(header.trim())
+  if (!m || (m[1] === '' && m[2] === '')) return null
+  if (m[1] === '') {
+    // suffix: the last N bytes
+    const n = Number(m[2])
+    if (n === 0 || size === 0) return 'unsatisfiable'
+    return { start: Math.max(0, size - n), end: size - 1 }
+  }
+  const start = Number(m[1])
+  const end = m[2] === '' ? size - 1 : Number(m[2])
+  if (start >= size) return 'unsatisfiable'
+  if (end < start) return null
+  return { start, end: Math.min(end, size - 1) }
+}
+
+/**
+ * Stream a regular file, or return null if it doesn't exist / isn't a file.
+ * Supports single `Range` requests (206 / 416) — video playback needs it (iOS Safari won't play MP4s
+ * from a server without it; seeking fetches only the needed part). `If-Range` with another date → whole file.
+ */
 export async function fileResponse(
   file: string,
   method: string,
   cacheControl: string,
+  req?: { range?: string; ifRange?: string },
 ): Promise<Response | null> {
   let st
   try {
@@ -70,16 +96,29 @@ export async function fileResponse(
     return null
   }
   if (!st.isFile()) return null
+  const lastModified = st.mtime.toUTCString()
   const headers = new Headers({
     'content-type': contentType(file),
     'content-length': String(st.size),
     'cache-control': cacheControl,
-    'last-modified': st.mtime.toUTCString(),
+    'last-modified': lastModified,
+    'accept-ranges': 'bytes',
     'x-content-type-options': 'nosniff',
   })
-  if (method === 'HEAD') return new Response(null, { status: 200, headers })
-  const body = Readable.toWeb(createReadStream(file)) as ReadableStream<Uint8Array>
-  return new Response(body, { status: 200, headers })
+  const range = req?.ifRange && req.ifRange !== lastModified ? null : parseRange(req?.range, st.size)
+  if (range === 'unsatisfiable') {
+    headers.set('content-range', `bytes */${st.size}`)
+    headers.set('content-length', '0')
+    return new Response(null, { status: 416, headers })
+  }
+  if (range) {
+    headers.set('content-range', `bytes ${range.start}-${range.end}/${st.size}`)
+    headers.set('content-length', String(range.end - range.start + 1))
+  }
+  const status = range ? 206 : 200
+  if (method === 'HEAD') return new Response(null, { status, headers })
+  const stream = range ? createReadStream(file, { start: range.start, end: range.end }) : createReadStream(file)
+  return new Response(Readable.toWeb(stream) as ReadableStream<Uint8Array>, { status, headers })
 }
 
 export const CACHE_IMMUTABLE = 'public, max-age=31536000, immutable'

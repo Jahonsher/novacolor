@@ -44,11 +44,26 @@ export function Cursor() {
       gsap.to(d, { scale: big ? 0 : next === 'text' ? 0.5 : 1, duration: 0.3 })
     }
     const leave = () => gsap.to([d, r], { autoAlpha: 0, duration: 0.3 })
+    // pointer events stop inside an iframe (Instagram player): hide the custom cursor there, the iframe
+    // shows the native one; the next move in this document brings it back
+    let inFrame = false
+    const over = (e: PointerEvent) => {
+      if ((e.target as Element | null)?.tagName !== 'IFRAME') return
+      inFrame = true
+      leave()
+    }
+    const back = () => {
+      if (!inFrame) return
+      inFrame = false
+      gsap.to([d, r], { autoAlpha: 1, duration: 0.3 })
+    }
     const enter = () => gsap.to([d, r], { autoAlpha: 1, duration: 0.3 })
     const down = () => gsap.to(r, { scale: 0.85, duration: 0.2 })
     const up = () => gsap.to(r, { scale: 1, duration: 0.4, ease: 'expo.out' })
 
     window.addEventListener('pointermove', move)
+    window.addEventListener('pointermove', back)
+    window.addEventListener('pointerover', over)
     document.addEventListener('pointerleave', leave)
     document.addEventListener('pointerenter', enter)
     window.addEventListener('pointerdown', down)
@@ -56,6 +71,8 @@ export function Cursor() {
     return () => {
       document.documentElement.classList.remove('has-cursor')
       window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointermove', back)
+      window.removeEventListener('pointerover', over)
       document.removeEventListener('pointerleave', leave)
       document.removeEventListener('pointerenter', enter)
       window.removeEventListener('pointerdown', down)

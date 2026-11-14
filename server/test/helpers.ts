@@ -42,6 +42,8 @@ export async function makeApp(env: Record<string, string> = {}, overrides: Conte
     STATIC_DIR: staticDir,
     TRUST_PROXY: '1',
     AI_PROVIDER: 'off',
+    // tests never depend on a real ffmpeg (videos.test.ts uses a fake one explicitly)
+    FFMPEG_PATH: 'off',
     ...env,
   })
   const ctx = await createContext(config, overrides)

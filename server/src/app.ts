@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { Hono } from 'hono'
+import { Hono, type Context } from 'hono'
 import { compress } from 'hono/compress'
 import type { AppContext } from './context.js'
 import { HttpError } from './errors.js'
@@ -10,7 +10,10 @@ import { publicRoutes } from './routes/public.js'
 import { telegramRoutes } from './routes/telegram.js'
 import { CACHE_DEFAULT, CACHE_IMMUTABLE, CACHE_NO_CACHE, fileResponse, safeJoin } from './static.js'
 
-const QUIET_PREFIXES = ['/assets/', '/img/', '/uploads/', '/fonts/', '/favicon']
+/** Range / If-Range of a static file request (videos are fetched in byte ranges). */
+const rangeOf = (c: Context) => ({ range: c.req.header('range'), ifRange: c.req.header('if-range') })
+
+const QUIET_PREFIXES = ['/assets/', '/img/', '/uploads/', '/video/', '/fonts/', '/favicon']
 
 export function createApp(ctx: AppContext) {
   const app = new Hono()
@@ -57,7 +60,7 @@ export function createApp(ctx: AppContext) {
   app.on(['GET', 'HEAD'], '/uploads/*', async (c) => {
     const rel = c.req.path.slice('/uploads/'.length)
     const file = safeJoin(ctx.uploadsDir, rel)
-    const res = file && (await fileResponse(file, c.req.method, CACHE_IMMUTABLE))
+    const res = file && (await fileResponse(file, c.req.method, CACHE_IMMUTABLE, rangeOf(c)))
     return res || c.text('Topilmadi', 404)
   })
 
@@ -69,7 +72,7 @@ export function createApp(ctx: AppContext) {
     const file = safeJoin(root, p)
     if (file && file !== path.resolve(root) && file !== indexHtml) {
       const cache = p.startsWith('/assets/') ? CACHE_IMMUTABLE : CACHE_DEFAULT
-      const res = await fileResponse(file, c.req.method, cache)
+      const res = await fileResponse(file, c.req.method, cache, rangeOf(c))
       if (res) return res
       // Missing file-like paths (/img/x.jpg) get a real 404 instead of the HTML shell.
       if (path.extname(p) && !p.startsWith('/admin')) return c.text('Topilmadi', 404)

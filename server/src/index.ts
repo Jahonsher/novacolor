@@ -41,9 +41,19 @@ async function main() {
   // /start → subscribers: long polling if the bot has no webhook (never touches an existing webhook)
   ctx.telegram.startUpdates()
 
-  const server = serve({ fetch: app.fetch, port: config.port, hostname: config.host }, (info) => {
-    log.info(`NovaColor server ishga tushdi: http://${info.address === '0.0.0.0' ? 'localhost' : info.address}:${info.port}`)
-  })
+  const server = serve(
+    {
+      fetch: app.fetch,
+      port: config.port,
+      hostname: config.host,
+      // Node's default (5 min for the whole request) would cut a 200 MB video upload on a slow connection.
+      // Slow-header attacks are still bounded by headersTimeout (60 s); request bodies are size-limited.
+      serverOptions: { requestTimeout: 30 * 60_000 },
+    },
+    (info) => {
+      log.info(`NovaColor server ishga tushdi: http://${info.address === '0.0.0.0' ? 'localhost' : info.address}:${info.port}`)
+    },
+  )
 
   let closing = false
   const shutdown = (sig: string) => {

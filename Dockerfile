@@ -24,7 +24,10 @@ RUN node -e "const s=require('sharp'); console.log('sharp', s.versions.sharp, 'l
 # ---------- runtime ----------
 FROM node:${NODE_VERSION}-alpine AS runtime
 # su-exec: the entrypoint starts as root only to fix /app/data ownership, then runs node as user "node".
-RUN apk add --no-cache su-exec
+# ffmpeg (optional, ~+70 MB): poster frames for uploaded videos and background 720p re-encoding of big ones.
+# Without it uploads still work (no automatic poster). Build without: --build-arg WITH_FFMPEG=0
+ARG WITH_FFMPEG=1
+RUN apk add --no-cache su-exec $([ "$WITH_FFMPEG" = "1" ] && echo ffmpeg)
 WORKDIR /app
 ENV NODE_ENV=production \
     APP_DIR=/app \

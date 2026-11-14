@@ -345,6 +345,7 @@ ichida qayta yuborilsa — yangi ariza ochilmaydi (mavjudi yangilanadi, Telegram
 
 `PORT`, `HOST`, `DATA_DIR`, `STATIC_DIR`, `SEED_CONTENT` — **Docker'da o'zgartirmang** (konteyner ichida to'g'ri o'rnatilgan).
 `TRUST_PROXY` — hozircha o'chiq qoldiring; 8-bo'limda yoqamiz. `TRUSTED_PROXIES` — odatda kerak emas (8.2 ga qarang).
+`FFMPEG_PATH` — video posterlari/siqish uchun ffmpeg (standart: o'rnatilgan `ffmpeg`; `off` — o'chirish). 11-bo'lim, "Video yuklash".
 
 ---
 
@@ -426,7 +427,11 @@ sudo ufw delete allow 8080/tcp
 ```
 
 Bir daqiqadan keyin `https://novacolor.uz` va `https://novacolor.uz/admin` ochiladi (yashil qulf bilan).
-Caddy HTTPS'ni majburiy qiladi (HSTS, 1 yil) va 32 MB dan katta so'rovlarni serverga o'tkazmaydi.
+Caddy HTTPS'ni majburiy qiladi (HSTS, 1 yil) va 32 MB dan katta so'rovlarni serverga o'tkazmaydi — faqat video yuklash
+(`/api/admin/upload/video`) uchun 201 MB gacha ruxsat (`Caddyfile`dagi ikkita `request_body`; birini o'zgartirsangiz, matcherlar
+bir-birini istisno qilishi shart, aks holda kichik chegara ikkalasiga ham qo'llanadi). Caddy o'rniga nginx bo'lsa:
+`location = /api/admin/upload/video { client_max_body_size 201m; proxy_request_buffering off; proxy_read_timeout 30m; … }`,
+qolgan joylarda `client_max_body_size 32m`.
 Sertifikat olinmasa: `docker compose logs caddy` (odatda DNS hali yangilanmagan yoki 80/443 port yopiq).
 
 `www.novacolor.uz` ham ishlashi kerak bo'lsa: `Caddyfile`dagi `www` blokidan `#` larni olib tashlang va
@@ -579,7 +584,22 @@ Yoki `.env`ga `APP_PORT=8081` yozib, boshqa portdan foydalaning.
 - `Unsupported CPU` / `requires v2 microarchitecture` → server protsessori juda eski yoki virtual CPU turi cheklangan.
   Provayder panelida boshqa CPU turini tanlang yoki boshqa tarif/provayderga o'ting.
 - "Faqat JPG, PNG yoki WEBP" → boshqa formatdagi rasm (HEIC, GIF). Telefonda rasmni JPG qilib saqlang.
-- Rasm hajmi — 15 MB gacha, PDF — 30 MB gacha.
+- Rasm hajmi — 15 MB gacha, PDF — 30 MB gacha, video — 200 MB gacha.
+
+**Video yuklash**
+
+- Admin panel → **Videolar** → "+ Video qo'shish": sarlavha (uz, ru), so'ng **video fayl** (MP4 / MOV / WEBM, 200 MB gacha,
+  vertikal 9:16 eng yaxshi) yuklang **yoki** Instagram post / Reels havolasini qo'ying (ilovada "Ulashish → Havolani nusxalash").
+  Ixtiyoriy: poster rasmi, mahsulot (video o'sha mahsulot sahifasida ham chiqadi), sana. Tartib — ↑/↓ tugmalari.
+- Instagram havolasi bo'lsa, saytda Instagram'ning o'z pleyeri ko'rsatiladi (bosilganda o'ynaydi). O'z faylingiz bo'lsa — sayt o'zi
+  ovozsiz aylantirib ko'rsatadi, bosilganda ovoz bilan to'liq ekranda ochiladi. Bo'limda video bo'lmasa, u saytda ko'rinmaydi.
+- **ffmpeg** (Docker image'da standart o'rnatiladi; `--build-arg WITH_FFMPEG=0` — o'rnatmaslik; Docker'siz serverda:
+  `sudo apt install ffmpeg`): yuklangan videodan poster rasmini avtomatik oladi, 25 MB dan katta yoki MOV/WEBM videolarni fonda
+  720p MP4'ga siqadi (bir necha daqiqa; saqlashni kutish shart emas — tayyor bo'lgach sayt o'zi yangisiga o'tadi). ffmpeg bo'lmasa ham
+  yuklash ishlaydi, faqat poster avtomatik chiqmaydi (o'zingiz rasm yuklashingiz mumkin). `FFMPEG_PATH=off` — o'chirish.
+- "Fayl juda katta (413)" 200 MB dan kichik faylda → server oldidagi proxy chegarasi (Caddy/nginx — 8.3-bo'lim).
+- Sekin internetda 200 MB yuklash uzoq davom etadi (masalan 10 Mbit/s — ~3 daqiqa): sahifani yopmang, foiz ko'rinib turadi.
+- Video fayllar `data/uploads/videos/` da — zaxira nusxasi (10-bo'lim) ular bilan birga kattalashadi; diskda joy yetarli bo'lsin.
 
 **Telegram'ga xabar kelmayapti**
 

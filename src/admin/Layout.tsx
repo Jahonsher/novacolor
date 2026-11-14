@@ -13,6 +13,7 @@ const NAV = [
   { to: '/admin/categories', label: 'Kategoriyalar', icon: 'categories' },
   { to: '/admin/documents', label: 'Sertifikatlar', icon: 'docs' },
   { to: '/admin/news', label: 'Yangiliklar', icon: 'news' },
+  { to: '/admin/videos', label: 'Videolar', icon: 'video' },
   { to: '/admin/leads', label: 'Arizalar', icon: 'leads', badge: true },
   { to: '/admin/chats', label: 'AI suhbatlar', icon: 'chats' },
   { to: '/admin/settings', label: 'Sozlamalar', icon: 'settings' },

@@ -5,7 +5,7 @@
  * State lives in sessionStorage (survives reloads of the tab). Password: `novacolor`.
  */
 import seed from '../../data/content.json'
-import type { AdminDoc, ChatSession, Content, Lead, Stats, TelegramMode, TelegramSettings, TelegramSubscriber } from '../api'
+import type { AdminDoc, ChatSession, Content, Lead, Stats, TelegramMode, TelegramSettings, TelegramSubscriber, Video, VideoInput } from '../api'
 
 type DB = {
   content: Content
@@ -98,7 +98,11 @@ function withCounts(c: Content): Content {
 let db: DB = (() => {
   try {
     const s = sessionStorage.getItem(KEY)
-    if (s) return JSON.parse(s) as DB
+    if (s) {
+      const saved = JSON.parse(s) as DB
+      saved.content.videos ??= [] // saved before videos existed
+      return saved
+    }
   } catch {
     /* ignore */
   }
@@ -184,6 +188,7 @@ export async function handle(url: string, init: RequestInit): Promise<Response> 
         if (old.slug !== p.slug) {
           c.documents.forEach((d) => (d.products = d.products.map((s) => (s === old.slug ? p.slug : s))))
           c.news.forEach((n) => n.product === old.slug && (n.product = p.slug))
+        c.videos.forEach((v) => v.product === old.slug && (v.product = p.slug))
         }
         return json(200, c.products[i])
       }
@@ -191,6 +196,7 @@ export async function handle(url: string, init: RequestInit): Promise<Response> 
         const [old] = c.products.splice(i, 1)
         c.documents.forEach((d) => (d.products = d.products.filter((s) => s !== old.slug)))
         c.news.forEach((n) => n.product === old.slug && (n.product = null))
+        c.videos.forEach((v) => v.product === old.slug && (v.product = null))
         return json(200, { ok: true })
       }
     }
@@ -239,6 +245,48 @@ export async function handle(url: string, init: RequestInit): Promise<Response> 
       }
     }
 
+    if (r === 'videos') {
+      const input = b as unknown as VideoInput
+      const toVideo = (id: number): Video => {
+        const ig = /instagram\.com\/(?:[\w.]+\/)?(?:p|reels?|tv)\/([\w-]{5,64})/.exec(input.instagram ?? '')?.[1]
+        return {
+          id,
+          title: input.title,
+          ...(input.src ? { src: input.src } : {}),
+          ...(input.poster ? { poster: input.poster } : {}),
+          ...(ig ? { instagram: `https://www.instagram.com/p/${ig}/` } : {}),
+          product: input.product ?? null,
+          ...(input.date ? { date: input.date } : {}),
+        }
+      }
+      if (method === 'POST' || method === 'PUT') {
+        if (!input.title?.uz?.trim()) return err(400, 'title.uz: Sarlavhani kiriting')
+        if (!input.src && !input.instagram) return err(400, 'src: Video fayl (src) yoki Instagram havolasi kerak')
+        if (input.instagram && !/instagram\.com\/(?:[\w.]+\/)?(?:p|reels?|tv)\/[\w-]{5,64}/.test(input.instagram))
+          return err(400, 'instagram: Instagram havolasi noto‘g‘ri')
+      }
+      if (method === 'POST') {
+        const v = toVideo(nextId(c.videos))
+        c.videos.push(v)
+        return json(201, v)
+      }
+      const i = c.videos.findIndex((x) => x.id === Number(id))
+      if (i < 0) return err(404, 'Video topilmadi')
+      if (method === 'PUT') {
+        c.videos[i] = toVideo(c.videos[i].id)
+        return json(200, c.videos[i])
+      }
+      if (method === 'DELETE') {
+        c.videos.splice(i, 1)
+        return json(200, { ok: true })
+      }
+    }
+    if (r === 'videos-order' && method === 'PUT') {
+      const ids = b.ids as number[]
+      c.videos.sort((x, y) => ids.indexOf(x.id) - ids.indexOf(y.id))
+      return json(200, { ok: true })
+    }
+
     if (r === 'contacts' && method === 'PUT') {
       c.contacts = b as Content['contacts']
       return json(200, c.contacts)
@@ -252,6 +300,13 @@ export async function handle(url: string, init: RequestInit): Promise<Response> 
       const f = (body as FormData).get('file') as File
       if (!f || !/^image\/(jpeg|png|webp)$/.test(f.type)) return err(400, 'Faqat JPG/PNG/WEBP')
       return json(200, { path: URL.createObjectURL(f), width: 1200, height: 900 })
+    }
+
+    if (r === 'upload' && id === 'video' && method === 'POST') {
+      const f = (body as FormData).get('file') as File
+      if (!f || !/^video\/(mp4|quicktime|webm)$/.test(f.type)) return err(400, 'Faqat MP4, MOV yoki WEBM video yuklash mumkin')
+      const type = f.type === 'video/quicktime' ? 'mov' : f.type === 'video/webm' ? 'webm' : 'mp4'
+      return json(201, { path: URL.createObjectURL(f), poster: null, bytes: f.size, type, processing: false })
     }
 
     if (r === 'documents') {

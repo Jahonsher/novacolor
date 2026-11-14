@@ -8,8 +8,16 @@
 {$DOMAIN} {
 	encode zstd gzip
 
-	# The biggest legitimate request is a 30 MB PDF upload; refuse anything larger before it reaches the app.
-	request_body {
+	# Request body limits, refused before they reach the app. The matchers are mutually exclusive on
+	# purpose: two request_body directives on one request would both apply (the smaller one wins).
+	# Video uploads (admin panel): up to 200 MB (+ multipart overhead).
+	@videoUpload path /api/admin/upload/video
+	request_body @videoUpload {
+		max_size 201MB
+	}
+	# Everything else: the biggest legitimate request is a 30 MB PDF upload.
+	@notVideoUpload not path /api/admin/upload/video
+	request_body @notVideoUpload {
 		max_size 32MB
 	}
 

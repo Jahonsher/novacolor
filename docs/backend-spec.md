@@ -27,6 +27,7 @@ NovaColor/
     content.json       sayt kontenti (birinchi ishga tushganda src/data/content.json'dan nusxa)
     uploads/images/    admin yuklagan rasmlar
     uploads/pdf/       admin yuklagan PDF'lar
+    uploads/videos/    admin yuklagan videolar (+ ffmpeg yaratgan poster .jpg)
     leads.json         arizalar
     chats.json         AI suhbatlari
     settings.json      avtomatik sozlamalar (sessiya siri, Telegram chat_id va rejimi)
@@ -53,6 +54,7 @@ NovaColor/
 | `TRUST_PROXY` | yo'q | `1` — reverse proxy (nginx/Caddy) ortida: cheklovlar uchun IP **eng o'ngdagi** `X-Forwarded-For` yozuvidan (proxy qo'shgan; chapdagilar — mijoz yuborgan, ishonchsiz) yoki `X-Real-IP`dan olinadi — faqat so'rov soketi `TRUSTED_PROXIES` ichidan kelgan bo'lsa. Aks holda soket manzili. Proxy'siz o'chiq qoldiring |
 | `TRUSTED_PROXIES` | yo'q | vergul bilan IP/CIDR ro'yxati. Standart: loopback + xususiy tarmoqlar (`127.0.0.0/8, ::1, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fc00::/7`) — shu serverdagi nginx va docker-compose tarmog'idagi Caddy uchun |
 | `ENV_FILE` | yo'q | `.env` yo'li (standart `<app>/.env`; muhitdagi o'zgaruvchilar ustun) |
+| `FFMPEG_PATH` | yo'q | ffmpeg (video posteri va katta videolarni siqish). Standart `ffmpeg` (PATH'dan); `off` — o'chirish. Topilmasa yuklash baribir ishlaydi, faqat poster avtomatik yaratilmaydi (Videolar bo'limi) |
 | `ADMIN_PASSWORD` | **ha** | admin panel paroli (kamida 8 belgi; bo'lmasa server ishga tushmaydi) |
 | `SESSION_SECRET` | yo'q | cookie imzosi; bo'lmasa `DATA_DIR/settings.json`ga tasodifiy yaratiladi |
 | `PUBLIC_URL` | yo'q | masalan `https://novacolor.uz` — Telegram xabaridagi havolalar uchun |
@@ -119,14 +121,16 @@ Barcha javoblar JSON. Xato: `{ "error": "matn (o'zbekcha)" }` + mos HTTP status.
 | Metod | Yo'l | Tavsif |
 |---|---|---|
 | GET | `/api/health` | `{ ok: true, ai: boolean, telegram: boolean }` |
-| GET | `/api/content` | butun kontent: `{ products, categories, news, stats, about, contacts, clients, documents }` (`Cache-Control: no-cache`) |
+| GET | `/api/content` | butun kontent: `{ products, categories, news, stats, about, contacts, clients, documents, videos }` (`Cache-Control: no-cache`) |
 | POST | `/api/leads` | aloqa formasi. Body: `{ name, phone, product?, message? }` → `201 { ok: true }`. Validatsiya: name 1–100, phone 5–30 (raqam/+/bo'sh joy/-/()), message ≤ 2000. IP bo'yicha 5/10daq cheklov (429) — tana o'qilishidan **oldin** sanaladi. Honeypot maydoni `website` bo'sh bo'lmasa — jim `201`, saqlamaydi. **Takror**: xuddi shu telefon (raqamlari) 10 daqiqa ichida → yangi ariza emas, mavjudiga xabar qo'shiladi, Telegram'ga ikkinchi marta yuborilmaydi. Jami soatlik limit (`LEADS_HOURLY_LIMIT`) yoki ro'yxat to'la (10 000, o'chiriladigan `done` yo'q) → `503 { error: "… qo'ng'iroq qiling: <telefon>" }` |
 | POST | `/api/telegram/webhook/:secret` | faqat `TELEGRAM_WEBHOOK_SECRET` (va token) bo'lsa; aks holda `404`. `:secret` mos emas → `404`; `X-Telegram-Bot-Api-Secret-Token` sarlavhasi yo'q/mos emas → `401` (ikkalasi ham vaqt bo'yicha xavfsiz solishtiriladi). Tana ≤ 64 KB, `update_id` yo'q → `400`. Yangilanish polling'dagidek ishlanadi (Telegram bo'limi), `update_id < offset` (qayta yuborilgan) — e'tiborsiz. Javob doim `200 { ok: true }` (ichki xato logga yoziladi). Sir loglarda `***` bilan yashiriladi |
 | POST | `/api/ai/chat` | Body: `{ sessionId, lang: 'uz'|'ru', page?, message }` (`page` — faqat sayt yo'li `^/[\w/-]{0,200}$`, `//` bilan boshlanmaydi; boshqa qiymat jimgina tashlab yuboriladi) → `{ reply: string, lead?: boolean }`. Server suhbat tarixini o'zi saqlaydi (`chats.json`), so'nggi 20 xabarni modelga yuboradi. message ≤ 1000 belgi. IP kunlik limiti (`AI_DAILY_LIMIT`) → 429 `{ error, limit: true }` (limit tugagan IP'ning tanasi o'qilmaydi). Shu sessiyada oldingi xabarga javob hali tayyorlanayotgan bo'lsa → `409 { error }`. AI o'chiq/xato → 503 `{ error }`. Sessiyada 100 ta tashrifchi xabaridan keyin AI chaqirilmaydi: muloyim "qo'ng'iroq qiling / telefon qoldiring" javobi. Jami kunlik limit — `AI_GLOBAL_DAILY_LIMIT` |
 
 **Tana hajmi**: `/api/ai/chat`, `/api/leads`, `/api/admin/login` — ≤ 16 KB; boshqa admin JSON — ≤ 1 MB (faqat kirgan
 admin uchun o'qiladi); yuklashlar — o'z cheklovlari (rasm 15 MB, PDF 30 MB). Kattarog'i → `413 { error }`: `Content-Length`
-katta bo'lsa tana umuman o'qilmaydi, `chunked` bo'lsa chegaragacha o'qiladi. Caddy'da qo'shimcha `request_body max_size 32MB`.
+katta bo'lsa tana umuman o'qilmaydi, `chunked` bo'lsa chegaragacha o'qiladi. Video (`/api/admin/upload/video`) — ≤ 200 MB, tana xotiraga yig'ilmaydi: diskka oqim bilan yoziladi.
+Caddy'da qo'shimcha `request_body`: video yuklash yo'li uchun 201 MB, qolgan hammasi 32 MB (matcherlar bir-birini istisno qiladi).
+Node `requestTimeout` — 30 daqiqa (standart 5 daqiqa sekin internetda 200 MB yuklashni uzib qo'yardi; sarlavhalar uchun `headersTimeout` 60 s qoladi).
 
 **Xavfsizlik sarlavhalari** (hamma javoblarda): `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`;
 `/admin*` va `/api/*` — `X-Frame-Options: DENY` + `Content-Security-Policy: frame-ancestors 'none'`; qolgan sayt —
@@ -179,6 +183,9 @@ hisobini tozalaydi. Qo'shimcha: barcha IP'lardan jami 50 ta noto'g'ri urinish/10
 | PUT | `/api/admin/contacts` | aloqa ma'lumotlari |
 | PUT | `/api/admin/about` | `{ lead{uz,ru}, extra{uz,ru} }` |
 | POST | `/api/admin/upload/image` | multipart `file` (jpg/png/webp, ≤ 15 MB, ≤ ~40 MP, magic-bytes tekshiruvi) → max 2000px, EXIF bo'yicha buriladi, metadata o'chiriladi, webp q82 → `{ path: 'uploads/images/<id>.webp', width, height }`. Istisno: JPEG/WebP allaqachon ≤ 2000px, burish/metadata yo'q va WebP kattaroq chiqsa — asl fayl saqlanadi (`<id>.jpg` / `<id>.webp`) |
+| POST | `/api/admin/upload/video` | multipart `file` — Videolar bo'limiga qarang |
+| POST/PUT/DELETE | `/api/admin/videos[/:id]` | videolar (Videolar bo'limi) |
+| PUT | `/api/admin/videos-order` | `{ ids: number[] }` — tartib (noma'lum id → 400; ro'yxatda yo'qlari oxirida eski tartibda) |
 | POST | `/api/admin/documents` | multipart: `file` (PDF ≤ 30 MB, `%PDF` bilan boshlanishi shart), `title_uz`, `title_ru`, `group`, `products` (JSON massiv) → 201 Doc |
 | PUT | `/api/admin/documents/:file` | meta yangilash (title, group, products) |
 | DELETE | `/api/admin/documents/:file` | ro'yxatdan o'chirish; fayl `uploads/` ichida bo'lsa — o'zi ham o'chadi |
@@ -196,7 +203,7 @@ hisobini tozalaydi. Qo'shimcha: barcha IP'lardan jami 50 ta noto'g'ri urinish/10
 | DELETE | `/api/admin/telegram/subscribers/:chatId` | `{ ok: true }`; topilmasa 404 |
 | GET | `/api/admin/telegram/chats` | `single` rejimi uchun yordamchi: botga yaqinda yozgan chatlar (`getUpdates`; polling/o'z webhook'imiz ishlayotgan bo'lsa — obunachilar ro'yxatidan) → `{ ok: true, chats: [{ id, type, name, username }] }` yoki `{ ok: false, error }` (webhook bo'lsa 409 sababi). **Hech narsa saqlanmaydi** |
 | POST | `/api/admin/telegram/test` | sinov xabari hozirgi barcha qabul qiluvchilarga → `{ ok, total, sent, failed, results: [{ chatId, name?, ok, error?, deactivated? }], error? }` (`ok` — kamida bittasiga yetdi) |
-| GET | `/api/admin/stats` | `{ products, documents, leadsNew, leadsTotal, chatsToday }` |
+| GET | `/api/admin/stats` | `{ products, documents, videos, leadsNew, leadsTotal, chatsToday }` |
 
 Har bir kontent o'zgarishi: validatsiya (zod) → `backups/content-<ISO>.json` (30 tadan oshsa eskisi o'chadi) → atomik yozish.
 (ISO'dagi `:` va `.` → `-`, masalan `content-2026-11-14T10-20-30-123Z.json` — Windows'da ham ishlashi uchun; backup — o'zgarishdan **oldingi** holat.)
@@ -231,6 +238,61 @@ Har bir kontent o'zgarishi: validatsiya (zod) → `backups/content-<ISO>.json` (
   Istisno: kengaytmali topilmagan fayl (`/img/x.jpg`, `/admin*` dan tashqari) → `404` (HTML emas).
 - `/api/*` dagi noma'lum yo'l → `404 { error }`.
 - `dist/assets/*` uzoq kesh, `index.html` — `no-cache`.
+- **Range** (`/uploads/*` va `dist/` fayllari): `Accept-Ranges: bytes`; bitta oraliq `bytes=a-b`, `bytes=a-`, `bytes=-n` → `206` +
+  `Content-Range`; fayldan tashqari → `416` (`Content-Range: bytes */<hajm>`); bir nechta oraliq yoki noto'g'ri sarlavha → butun fayl `200`;
+  `If-Range` (Last-Modified bilan) mos kelmasa → `200`. 206 javoblar siqilmaydi. (iOS Safari Range'siz serverdan MP4 o'ynatmaydi.)
+
+## Videolar ("Instagram'dan" bo'limi)
+
+Kompaniya Instagram videolari saytda **video sifatida** ko'rsatiladi: o'zimizda saqlangan fayl (`src`) yoki Instagram'ning
+rasmiy embed pleyeri (faqat `instagram` havolasi bo'lsa).
+
+```ts
+type Video = {
+  id: number
+  title: { uz: string; ru: string }   // ru bo'sh bo'lishi mumkin → saytda uz ko'rsatiladi
+  src?: string        // 'uploads/videos/<id>.mp4|webm|mov' (admin yuklagan) yoki 'video/<nom>.mp4' (public/video)
+  poster?: string     // rasm yo'li (img/…, uploads/…) — yuklashda ffmpeg yaratgan 'uploads/videos/<id>.jpg' yoki admin yuklagan rasm
+  instagram?: string  // 'https://www.instagram.com/p/<shortcode>/' (normallashtirilgan)
+  product?: string | null  // mahsulot slug — video o'sha mahsulot sahifasida ham chiqadi
+  date?: string       // 'YYYY-MM-DD'
+}
+```
+
+- `content.json`dagi `videos` massivi. `src` yoki `instagram`dan kamida bittasi shart. Eski `content.json`da `videos` kaliti umuman
+  bo'lmasa (bu funksiyadan oldingi o'rnatish) — server ishga tushganda **bir marta** `SEED_CONTENT`dagi videolar qo'shiladi (backup bilan);
+  kalit bor bo'lsa (bo'sh massiv ham) — tegilmaydi.
+- **Instagram havolasi**: `https://(www.)instagram.com/[<user>/](p|reel|reels|tv)/<shortcode>/…` (query/fragment mumkin) →
+  `https://www.instagram.com/p/<shortcode>/` ko'rinishida saqlanadi. Boshqa host, `http:`, profil/stories havolasi → 400.
+- `POST /videos` body: `{ title{uz,ru}, src?, poster?, instagram?, product?: slug|null, date? }` (`''` — "yo'q") → `201 Video`;
+  `PUT /videos/:id` — to'liq almashtirish → `200 Video`; `DELETE` → `{ ok: true }`; topilmasa 404; noma'lum mahsulot → 400.
+  `src` `uploads/videos/…` bo'lsa fayl diskda bo'lishi shart (yo'q → 400); fon siqishi tugagan bo'lsa (`<id>-720p.mp4` bor) — o'sha saqlanadi.
+  PUT/DELETE'dan keyin hech bir video ishlatmayotgan `uploads/videos/` fayllari (video, generatsiya qilingan poster) o'chiriladi.
+  Mahsulot slug'i o'zgarsa/o'chirilsa — `videos[].product` ham yangilanadi / `null`.
+- `POST /upload/video` — multipart `file`. Tana **oqim bilan** diskka (`uploads/videos/.upload-*.tmp`) yoziladi, xotiraga yig'ilmaydi.
+  Turi magic bytes bo'yicha: `ftyp` box (offset 4) → MP4 (`qt  ` brendi → MOV; HEIC/AVIF kabi rasm brendlari rad etiladi), EBML
+  `1A 45 DF A3` + DocType `webm` → WebM (Matroska `.mkv` rad etiladi). Nom/kengaytma/MIME e'tiborga olinmaydi; tur birinchi baytlarda
+  aniqlanadi — noto'g'ri fayl oxirigacha qabul qilinmaydi. ≤ 200 MB: `Content-Length` katta bo'lsa tana o'qilmaydi (`413`), aks holda
+  o'qish paytida sanaladi. Nomi `uploads/videos/<base36 vaqt>-<10 hex>.<mp4|mov|webm>` → **`201`**
+  `{ path, poster: string|null, bytes, type: 'mp4'|'mov'|'webm', processing: boolean }`.
+- **ffmpeg (ixtiyoriy)**: bor bo'lsa — 1-soniyadagi kadr (qisqa videoda birinchi kadr), uzun tomoni ≤ 1080px, `uploads/videos/<id>.jpg`
+  (`poster`). Fayl > 25 MB yoki MP4 emas (MOV/WebM) bo'lsa — fonda (navbat, bittadan, eng past CPU ustuvorligida) H.264 720p
+  (qisqa tomoni ≤ 720, kattalashtirilmaydi), CRF 28, AAC 128k, `+faststart` → `<id>-720p.mp4`. MP4 uchun natija kichikroq bo'lsagina
+  almashtiriladi (MOV/WebM — har doim, moslik uchun). Tugagach `content.json`dagi havolalar yangilanadi va asl fayl o'chiriladi;
+  hali saqlanmagan forma eski yo'l bilan kelsa — server uni yangi faylga o'zi bog'laydi. ffmpeg yo'q / xato → asl fayl qoladi, poster `null`.
+- Sayt (bosh sahifa, Featured'dan keyin, `videos.length > 0` bo'lsa; keyingi bo'lim raqamlari bittaga suriladi):
+  - vertikal 9:16 kartalar, gorizontal surish (mobil — swipe, `data-lenis-prevent-horizontal`; desktop — strelkalar), profil tugmasi
+    `https://www.instagram.com/novacolor.uz/`. WebGL rasm qatlami ishlatilmaydi; har kadr JS yo'q (faqat IntersectionObserver va hodisalar).
+  - `src`: `<video muted loop playsInline preload="none" poster>` (poster yo'q → `preload="metadata"` + `#t=0.1`), ≥ 50% ko'rinsa o'ynaydi,
+    aks holda pauza; tab yashirilsa — hammasi pauza. Sifat darajasi ≤ 1 yoki `prefers-reduced-motion` → avtomatik o'ynamaydi (poster + ▶).
+    Bosilganda — to'liq ekran pleyer (ovoz, `controls`, ←/→, Esc).
+  - faqat `instagram`: kartaning ichida `https://www.instagram.com/p/<id>/embed/` iframe, Instagram interfeysi qirqilgan (o'lchangan:
+    54px sarlavha, keyin to'liq kenglikdagi 4:5 media, ~154px pastki qism; 9:16 reel 4:5 ichida chetlari qora — shuning uchun iframe kengligi
+    `kartaBalandligi / 1.25`, markazlashtirilgan, `top: -54px`). Iframe faqat karta ~1 ekran yaqinlashganda yaratiladi (gorizontal qatorda
+    ham ±1 qator kengligi), bir vaqtda ≤ 3 ta; uzoqlashganlari olib tashlanadi. Undan oldin instagram.com'ga **bitta ham so'rov yo'q**.
+    Iframe ostida poster/placeholder; 20 s ichida yuklanmasa — placeholder qoladi. Video bosilganda iframe ichida o'ynaydi
+    (Instagram avtomatik o'ynatishga ruxsat bermaydi). Har karta ostida "Instagram'da ochish ↗".
+  - Mahsulot sahifasi: `product` shu mahsulot bo'lgan videolar galereyadan keyin ("Videolar").
 
 ## Telegram
 
@@ -292,7 +354,7 @@ Har bir kontent o'zgarishi: validatsiya (zod) → `backups/content-<ISO>.json` (
 
 - Admin panel chat sahifasini (`page`) faqat shu saytdagi yo'l bo'lsa havola qiladi, aks holda oddiy matn.
 - Yo'llar: `/admin` (kirish), `/admin/products`, `/admin/products/new`, `/admin/products/:slug`,
-  `/admin/categories`, `/admin/documents`, `/admin/news`, `/admin/leads`, `/admin/chats`, `/admin/settings` (aloqa ma'lumotlari, about, Telegram, AI holati).
+  `/admin/categories`, `/admin/documents`, `/admin/news`, `/admin/videos`, `/admin/leads`, `/admin/chats`, `/admin/settings` (aloqa ma'lumotlari, about, Telegram, AI holati).
 - Til: o'zbekcha. Oddiy, toza, mobilga mos (telefondan boshqarish mumkin bo'lsin).
 - Bosh sahifa (dashboard): yangi arizalar soni, mahsulotlar, hujjatlar, bugungi suhbatlar.
 - Arizalar ro'yxati 30 s'da avtomatik yangilanadi. `/admin/leads?id=<id>` — o'sha arizaga aylantiradi va ajratib ko'rsatadi

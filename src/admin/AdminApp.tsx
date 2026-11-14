@@ -15,6 +15,7 @@ import ProductForm from './pages/ProductForm'
 import Categories from './pages/Categories'
 import Documents from './pages/Documents'
 import News from './pages/News'
+import Videos from './pages/Videos'
 import Leads from './pages/Leads'
 import Chats, { ChatDetail } from './pages/Chats'
 import Settings from './pages/Settings'
@@ -98,6 +99,7 @@ export default function AdminApp() {
                   <Route path="categories" element={<Categories />} />
                   <Route path="documents" element={<Documents />} />
                   <Route path="news" element={<News />} />
+                  <Route path="videos" element={<Videos />} />
                   <Route path="leads" element={<Leads />} />
                   <Route path="chats" element={<Chats />} />
                   <Route path="chats/:id" element={<ChatDetail />} />

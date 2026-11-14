@@ -1093,5 +1093,25 @@
    "products": [],
    "size": 626
   }
+ ],
+ "videos": [
+  {
+   "id": 1,
+   "title": {
+    "uz": "Brasserie, Mirobod — bizning obyekt",
+    "ru": "Brasserie в Мирабадском районе — наш объект"
+   },
+   "instagram": "https://www.instagram.com/p/DcdNuX_tz1J/",
+   "product": null
+  },
+  {
+   "id": 2,
+   "title": {
+    "uz": "NovaColor mutaxassisi bilan intervyu",
+    "ru": "Интервью с экспертом NovaColor"
+   },
+   "instagram": "https://www.instagram.com/p/Dee5vk1sJxE/",
+   "product": null
+  }
  ]
 }

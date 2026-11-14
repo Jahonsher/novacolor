@@ -81,6 +81,71 @@ const newsFields = (asset: z.ZodType<string>) => ({
 export const newsInput = z.object(newsFields(assetPath))
 export const newsSchema = z.object({ id: z.int().positive(), ...newsFields(storedAsset) })
 
+/**
+ * Video file: uploaded `uploads/videos/<name>.(mp4|webm|mov)` or static `video/<name>.(mp4|webm|mov)` (public/video).
+ */
+export const VIDEO_PATH_RE = /^(uploads\/videos|video)\/[\w.-]+\.(mp4|webm|mov)$/
+export const isVideoPath = (s: string) => VIDEO_PATH_RE.test(s) && !s.includes('..')
+
+/**
+ * Instagram post / reel / IGTV link: `https://(www.)instagram.com/[<user>/](p|reel|reels|tv)/<id>/…`
+ * (query string and fragment allowed). Returns the shortcode or null.
+ */
+const INSTAGRAM_POST_RE = /^https:\/\/(?:www\.)?instagram\.com\/(?:[A-Za-z0-9_.]{1,30}\/)?(?:p|reels?|tv)\/([A-Za-z0-9_-]{5,64})\/?(?:[?#].*)?$/i
+export function instagramShortcode(url: string): string | null {
+  const m = INSTAGRAM_POST_RE.exec(url.trim())
+  return m ? m[1]! : null
+}
+/** Canonical form stored in content.json: `https://www.instagram.com/p/<id>/` (embeds work for reels too). */
+export const instagramPostUrl = (shortcode: string) => `https://www.instagram.com/p/${shortcode}/`
+
+/** '' / missing → undefined. */
+const optionalNonEmpty = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), schema.optional())
+
+const videoPath = z
+  .string()
+  .trim()
+  .max(300)
+  .refine(isVideoPath, { message: "Video yo'li noto'g'ri: uploads/videos/… yoki video/… (.mp4, .webm, .mov) bo'lishi kerak" })
+const instagramUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .transform((s, ctx) => {
+    const code = instagramShortcode(s)
+    if (!code) {
+      ctx.addIssue({
+        code: 'custom',
+        message: "Instagram havolasi https://www.instagram.com/p/… yoki https://www.instagram.com/reel/… ko'rinishida bo'lishi kerak",
+      })
+      return z.NEVER
+    }
+    return instagramPostUrl(code)
+  })
+const dateField = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Sana YYYY-MM-DD formatida bo‘lishi kerak' })
+
+export const videoInput = z
+  .object({
+    // ru may be left empty — the site then shows the Uzbek title
+    title: z.object({ uz: text(300).min(1), ru: text(300) }),
+    src: optionalNonEmpty(videoPath),
+    poster: optionalNonEmpty(assetPath),
+    instagram: optionalNonEmpty(instagramUrl),
+    product: z.preprocess((v) => (v === '' ? null : v), slugSchema.nullable().default(null)),
+    date: optionalNonEmpty(dateField),
+  })
+  .refine((v) => !!v.src || !!v.instagram, { message: 'Video fayl (src) yoki Instagram havolasi kerak', path: ['src'] })
+export const videoSchema = z.object({
+  id: z.int().positive(),
+  title: localized(300),
+  src: z.string().max(300).optional(),
+  poster: storedAsset.optional(),
+  instagram: z.string().max(500).optional(),
+  product: z.string().max(100).nullable().default(null),
+  date: z.string().max(20).optional(),
+})
+
 export const statSchema = z.object({ id: z.int(), value: z.number(), label: localized(200) })
 
 export const aboutSchema = z.object({ lead: localized(10000), extra: localized(10000) })
@@ -133,6 +198,8 @@ export const contentSchema = z.looseObject({
   contacts: contactsSchema,
   clients: z.array(z.string()),
   documents: z.array(docSchema),
+  // added later: content.json files written before videos existed have no `videos`
+  videos: z.array(videoSchema).default([]),
 })
 
 export type Localized = z.infer<ReturnType<typeof localized>>
@@ -140,6 +207,7 @@ export type Product = z.infer<typeof productSchema>
 export type Category = z.infer<typeof categorySchema>
 export type NewsItem = z.infer<typeof newsSchema>
 export type Doc = z.infer<typeof docSchema>
+export type Video = z.infer<typeof videoSchema>
 export type Contacts = z.infer<typeof contactsSchema>
 export type Content = z.infer<typeof contentSchema>
 

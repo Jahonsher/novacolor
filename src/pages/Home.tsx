@@ -5,7 +5,8 @@ import { GLImage } from '../components/GLImage'
 import { Reveal, ScrubText, FadeUp } from '../components/Reveal'
 import { TLink } from '../components/Transition'
 import { Clients, ContactCTA, NewsList, SectionHead, Stats } from '../components/Blocks'
-import { about, featured, pad } from '../data'
+import { VideoSection } from '../components/Videos'
+import { about, featured, pad, videos } from '../data'
 import { useLang } from '../i18n'
 import { gsap, useGSAP, reducedMotion, useReady } from '../lib/motion'
 
@@ -151,6 +152,9 @@ function Featured() {
 
 export default function Home() {
   const { t } = useLang()
+  // the Instagram section only exists when there are videos; later section numbers shift with it
+  const hasVideos = videos.length > 0
+  const n = (i: number) => pad(hasVideos ? i + 1 : i)
   return (
     <>
       <Hero />
@@ -163,8 +167,9 @@ export default function Home() {
         <Stats />
       </section>
       <Featured />
+      {hasVideos && <VideoSection items={videos} index="04" />}
       <section className="px-5 py-28 md:px-10 md:py-36">
-        <SectionHead index="04" label={t('news.label')}>
+        <SectionHead index={n(4)} label={t('news.label')}>
           <TLink to="/news" className="label link-line !text-bone">
             {t('news.all')} →
           </TLink>
@@ -172,7 +177,7 @@ export default function Home() {
         <NewsList limit={5} />
       </section>
       <section className="tone-light panel">
-        <p className="label px-5 pt-10 md:px-10">{`05 — ${t('clients.label')}`}</p>
+        <p className="label px-5 pt-10 md:px-10">{`${n(5)} — ${t('clients.label')}`}</p>
         <Clients />
       </section>
       <ContactCTA />

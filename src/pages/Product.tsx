@@ -5,7 +5,8 @@ import { GLImage } from '../components/GLImage'
 import { Reveal, FadeUp } from '../components/Reveal'
 import { TLink } from '../components/Transition'
 import { DocList } from '../components/Documents'
-import { asset, categoryById, docsForProduct, pad, productBySlug, products } from '../data'
+import { VideoRow } from '../components/Videos'
+import { asset, categoryById, docsForProduct, pad, productBySlug, products, videosForProduct } from '../data'
 import { useLang } from '../i18n'
 import { gsap, useGSAP, lenis, reducedMotion, useMedia } from '../lib/motion'
 import NotFound from './NotFound'
@@ -25,6 +26,7 @@ function ProductView({ slug }: { slug: string }) {
   const cats = p.categories.map((c) => categoryById(c)).filter(Boolean)
   const paragraphs = l(p.description).split(/\n\n+/)
   const docs = docsForProduct(p.slug)
+  const clips = videosForProduct(p.slug)
   const gallery = useRef<HTMLDivElement>(null)
   const wide = useMedia('(min-width: 768px)')
   const [lightbox, setLightbox] = useState<number | null>(null)
@@ -120,6 +122,19 @@ function ProductView({ slug }: { slug: string }) {
           ))}
         </div>
       </section>
+
+      {/* videos of this product (admin: Videolar → product) */}
+      {clips.length > 0 && (
+        <section className="px-5 pb-24 md:px-10 md:pb-32">
+          <div className="mb-10 flex items-end justify-between gap-6 border-b border-line pb-5">
+            <Reveal as="h2" by="words" className="display text-5xl md:text-7xl">
+              {t('videos.product')}
+            </Reveal>
+            <span className="label">{pad(clips.length)}</span>
+          </div>
+          <VideoRow items={clips} wide />
+        </section>
+      )}
 
       {/* certificates & declarations for this product */}
       {docs.length > 0 && (

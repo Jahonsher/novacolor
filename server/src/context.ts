@@ -13,6 +13,7 @@ import { tryChmod } from './store/fs-utils.js'
 import { ChatsStore, LeadsStore, SettingsStore } from './store/stores.js'
 import { SubscribersStore } from './store/subscribers.js'
 import { Telegram, type FetchLike } from './telegram.js'
+import { VideoTools } from './video.js'
 
 /** Lead notifications per hour across all visitors (spam must not flood the chat or hit Telegram limits). */
 export const TELEGRAM_HOURLY_LIMIT = 60
@@ -32,6 +33,8 @@ export type AppContext = {
   /** Current cookie signing key (depends on ADMIN_PASSWORD and the session epoch). */
   sessionKey(): string
   uploadsDir: string
+  /** Optional ffmpeg: video posters and background transcoding. */
+  media: VideoTools
   limits: {
     /** per IP: login attempts (counted before the password check, reset on success) */
     login: RateLimiter
@@ -75,6 +78,7 @@ export async function createContext(config: Config, overrides: ContextOverrides 
   const uploadsDir = path.join(config.dataDir, 'uploads')
   await mkdir(path.join(uploadsDir, 'images'), { recursive: true })
   await mkdir(path.join(uploadsDir, 'pdf'), { recursive: true })
+  await mkdir(path.join(uploadsDir, 'videos'), { recursive: true })
 
   const content = new ContentStore(config.dataDir, config.seedContent)
   const leads = new LeadsStore(config.dataDir)
@@ -115,6 +119,14 @@ export async function createContext(config: Config, overrides: ContextOverrides 
   })
   const ai = overrides.ai !== undefined ? overrides.ai : createProvider(config.ai)
 
+  // a finished transcode replaces `from` with `to`: rewrite the videos that point at the original
+  const media = new VideoTools(config.ffmpeg, uploadsDir, async (from, to) => {
+    if (!content.get().videos.some((v) => v.src === from)) return
+    await content.mutate((d) => {
+      for (const v of d.videos) if (v.src === from) v.src = to
+    })
+  })
+
   let keyCache = { epoch: -1, key: '' }
 
   const idle = async () => {
@@ -138,9 +150,11 @@ export async function createContext(config: Config, overrides: ContextOverrides 
       return keyCache.key
     },
     uploadsDir,
+    media,
     limits,
     idle,
     async close() {
+      media.close()
       await telegram.stopUpdates()
       for (const l of Object.values(limits)) l.stop()
       await idle()

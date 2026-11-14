@@ -55,9 +55,25 @@ export class ContentStore {
       log.info(`content.json yaratildi (nusxa: ${this.seedFile})`)
       raw = parsed.data
     }
+    // One-time migration: a content.json from before videos existed (no `videos` key at all) takes the
+    // seed's videos. After that the key exists — an admin who deleted every video keeps an empty list.
+    let migrated = false
+    if (raw && typeof raw === 'object' && !Array.isArray(raw) && !('videos' in raw)) {
+      const seed = await readFile(this.seedFile, 'utf8').then(
+        (s) => JSON.parse(s) as { videos?: unknown },
+        () => null,
+      )
+      ;(raw as Record<string, unknown>).videos = Array.isArray(seed?.videos) ? seed.videos : []
+      migrated = true
+    }
     const parsed = contentSchema.safeParse(raw)
     if (!parsed.success) throw new Error(`${this.file} noto'g'ri: ${zodMessage(parsed.error)}`)
     this.current = withCounts(parsed.data)
+    if (migrated) {
+      await this.backup()
+      await atomicWrite(this.file, serialize(this.current))
+      log.info(`content.json: videolar ro'yxati qo'shildi (${this.current.videos.length} ta, nusxa: ${this.seedFile})`)
+    }
     this.version++
   }
 
