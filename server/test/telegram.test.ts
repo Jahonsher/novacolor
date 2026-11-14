@@ -7,7 +7,7 @@ import { fakeTelegram, makeApp, TOKEN } from './helpers.js'
 const update = (id: number, chatId: number, type = 'private') => ({ update_id: id, message: { chat: { id: chatId, type } } })
 
 describe('telegram', () => {
-  test('no auto-discovery: a stranger writing to the bot never receives leads', async () => {
+  test('sending never reads updates: a chat that only wrote to the bot (not polled, no /start handled) gets nothing', async () => {
     const tg = fakeTelegram({ updates: [update(1, 111), update(2, 222)] })
     const t = await makeApp({ TELEGRAM_BOT_TOKEN: TOKEN }, { telegramFetch: tg.fetchImpl })
     try {
@@ -23,11 +23,21 @@ describe('telegram', () => {
       const test1 = await t.json('/api/admin/telegram/test', 'POST', {}, { cookie })
       const body = (await test1.json()) as { ok: boolean; error?: string }
       assert.equal(body.ok, false)
-      assert.match(body.error ?? '', /Chat ID/)
+      assert.match(body.error ?? '', /obunachi yo'q.*Chat ID/)
       assert.ok(!JSON.stringify(body).includes(TOKEN))
 
       const s = (await (await t.request('/api/admin/settings', { cookie })).json()) as any
-      assert.deepEqual(s.telegram, { configured: true, chatId: null, chatIdSource: null, botUsername: 'novacolor_test_bot' })
+      assert.deepEqual(s.telegram, {
+        configured: true,
+        mode: 'subscribers',
+        modeSource: 'default',
+        chatId: null,
+        chatIdSource: null,
+        botUsername: 'novacolor_test_bot',
+        subscribers: { active: 0, total: 0 },
+        updates: { state: 'off', webhookHost: null, checkedAt: null, error: null },
+        webhookReceiver: false,
+      })
       assert.ok(!JSON.stringify(s).includes(TOKEN))
     } finally {
       await t.close()
@@ -50,12 +60,17 @@ describe('telegram', () => {
       }
       const r = await t.json('/api/admin/settings/telegram', 'PUT', { chatId: ' 222 ' }, { cookie })
       assert.equal(r.status, 200)
-      assert.deepEqual(await r.json(), { configured: true, chatId: '222', chatIdSource: 'settings', botUsername: 'novacolor_test_bot' })
+      const info = (await r.json()) as any
+      assert.deepEqual(
+        { configured: info.configured, chatId: info.chatId, chatIdSource: info.chatIdSource, botUsername: info.botUsername, mode: info.mode },
+        { configured: true, chatId: '222', chatIdSource: 'settings', botUsername: 'novacolor_test_bot', mode: 'single' },
+        'a saved chat ID (no explicit mode) keeps the old single-chat behaviour',
+      )
       const settings = JSON.parse(await readFile(path.join(t.dataDir, 'settings.json'), 'utf8'))
       assert.equal(settings.telegramChatId, '222')
 
       const ok = await t.json('/api/admin/telegram/test', 'POST', {}, { cookie })
-      assert.deepEqual(await ok.json(), { ok: true })
+      assert.deepEqual(await ok.json(), { ok: true, total: 1, sent: 1, failed: 0, results: [{ chatId: '222', ok: true }] })
       assert.equal(tg.calls.at(-1)!.body.chat_id, '222')
       await t.json('/api/leads', 'POST', { name: 'Ali', phone: '+998901234567' })
       assert.equal(t.ctx.leads.get()[0]!.telegram, 'sent')
@@ -92,8 +107,9 @@ describe('telegram', () => {
     try {
       const cookie = await t.login()
       const res = await t.json('/api/admin/telegram/test', 'POST', {}, { cookie })
-      assert.deepEqual(await res.json(), { ok: true })
+      assert.deepEqual(await res.json(), { ok: true, total: 1, sent: 1, failed: 0, results: [{ chatId: '777', ok: true }] })
       assert.deepEqual(tg.methods(), ['sendMessage'])
+      assert.equal(t.ctx.telegram.mode, 'single', 'TELEGRAM_CHAT_ID → single by default')
       assert.equal(tg.calls[0]!.body.chat_id, '777')
       assert.ok(tg.calls[0]!.url.includes(TOKEN))
     } finally {

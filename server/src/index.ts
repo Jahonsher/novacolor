@@ -28,10 +28,18 @@ async function main() {
   if (!existsSync(path.join(config.staticDir, 'index.html'))) {
     log.warn(`Sayt topilmadi (${config.staticDir}/index.html). 'npm run build:site' ni ishga tushiring.`)
   }
-  const tgChat = ctx.telegram.chatId ? 'chat ID bor' : "chat ID yo'q — admin panel → Sozlamalar'da kiriting"
+  const tgChat =
+    ctx.telegram.mode === 'single'
+      ? ctx.telegram.chatId
+        ? 'bitta chat'
+        : "bitta chat, chat ID yo'q — admin panel → Sozlamalar'da kiriting"
+      : `obunachilarga (${ctx.subscribers.active().length} ta faol)`
   log.info(`DATA_DIR: ${config.dataDir}`)
   log.info(`AI: ${ctx.ai ? `${ctx.ai.name} (${ctx.ai.model})` : "o'chiq"}; Telegram: ${ctx.telegram.configured ? tgChat : 'sozlanmagan'}`)
   if (ctx.ai?.name === 'free') log.warn("AI 'free' provayderi faqat sinov uchun: xabarlar uchinchi tomonga (pollinations.ai) yuboriladi")
+
+  // /start → subscribers: long polling if the bot has no webhook (never touches an existing webhook)
+  ctx.telegram.startUpdates()
 
   const server = serve({ fetch: app.fetch, port: config.port, hostname: config.host }, (info) => {
     log.info(`NovaColor server ishga tushdi: http://${info.address === '0.0.0.0' ? 'localhost' : info.address}:${info.port}`)

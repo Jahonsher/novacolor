@@ -29,7 +29,8 @@ NovaColor/
     uploads/pdf/       admin yuklagan PDF'lar
     leads.json         arizalar
     chats.json         AI suhbatlari
-    settings.json      avtomatik sozlamalar (masalan, Telegram chat_id)
+    settings.json      avtomatik sozlamalar (sessiya siri, Telegram chat_id va rejimi)
+    telegram-subscribers.json  Telegram obunachilari (arizalar kimga boradi) + getUpdates offset
     backups/           content.json'ning oxirgi 30 ta nusxasi (har saqlashda)
 ```
 
@@ -56,7 +57,9 @@ NovaColor/
 | `SESSION_SECRET` | yo'q | cookie imzosi; bo'lmasa `DATA_DIR/settings.json`ga tasodifiy yaratiladi |
 | `PUBLIC_URL` | yo'q | masalan `https://novacolor.uz` — Telegram xabaridagi havolalar uchun |
 | `TELEGRAM_BOT_TOKEN` | yo'q | bot tokeni (alias: `telegram_bot_Token`) |
-| `TELEGRAM_CHAT_ID` | yo'q | arizalar keladigan chat. Bo'lmasa — admin panel → Sozlamalar'da kiritiladi (`settings.json`). Env ustun. **Avtomatik aniqlanmaydi** |
+| `TELEGRAM_CHAT_ID` | yo'q | `single` rejimida arizalar keladigan chat. Bo'lmasa — admin panel → Sozlamalar'da kiritiladi (`settings.json`). Env ustun |
+| `TELEGRAM_MODE` | yo'q | `subscribers` (hamma faol obunachilarga) \| `single` (bitta chat). Env admin paneldagidan ustun. Bo'lmasa: admin panelda tanlangani; u ham bo'lmasa — chat ID (env yoki saqlangan) bor → `single`, yo'q → `subscribers`. Noto'g'ri qiymat → server ishga tushmaydi |
+| `TELEGRAM_WEBHOOK_SECRET` | yo'q | ≥ 16 belgi `[A-Za-z0-9_-]`. Berilsa `POST /api/telegram/webhook/<secret>` yoqiladi (bot shu serverga ulanganda). Webhook'ni server **o'zi o'rnatmaydi** (DEPLOY.md) |
 | `TELEGRAM_API_BASE` | yo'q | standart `https://api.telegram.org` (o'z Bot API serveri yoki testlarda soxta Telegram) |
 | `AI_PROVIDER` | yo'q | `anthropic` \| `openai` \| `free` \| `mock` \| `off`. Bo'lmasa: `ANTHROPIC_API_KEY` bor → `anthropic`; `AI_API_KEY` bor → `openai`; aks holda `off`. `free` faqat aniq yozilganda; `mock` — avtomatik testlar uchun (oflayn, tayyor javob `/products/teodorico` havolasi bilan), `NODE_ENV=production`da server ishga tushmaydi |
 | `ANTHROPIC_API_KEY` | yo'q | Claude uchun |
@@ -118,6 +121,7 @@ Barcha javoblar JSON. Xato: `{ "error": "matn (o'zbekcha)" }` + mos HTTP status.
 | GET | `/api/health` | `{ ok: true, ai: boolean, telegram: boolean }` |
 | GET | `/api/content` | butun kontent: `{ products, categories, news, stats, about, contacts, clients, documents }` (`Cache-Control: no-cache`) |
 | POST | `/api/leads` | aloqa formasi. Body: `{ name, phone, product?, message? }` → `201 { ok: true }`. Validatsiya: name 1–100, phone 5–30 (raqam/+/bo'sh joy/-/()), message ≤ 2000. IP bo'yicha 5/10daq cheklov (429) — tana o'qilishidan **oldin** sanaladi. Honeypot maydoni `website` bo'sh bo'lmasa — jim `201`, saqlamaydi. **Takror**: xuddi shu telefon (raqamlari) 10 daqiqa ichida → yangi ariza emas, mavjudiga xabar qo'shiladi, Telegram'ga ikkinchi marta yuborilmaydi. Jami soatlik limit (`LEADS_HOURLY_LIMIT`) yoki ro'yxat to'la (10 000, o'chiriladigan `done` yo'q) → `503 { error: "… qo'ng'iroq qiling: <telefon>" }` |
+| POST | `/api/telegram/webhook/:secret` | faqat `TELEGRAM_WEBHOOK_SECRET` (va token) bo'lsa; aks holda `404`. `:secret` mos emas → `404`; `X-Telegram-Bot-Api-Secret-Token` sarlavhasi yo'q/mos emas → `401` (ikkalasi ham vaqt bo'yicha xavfsiz solishtiriladi). Tana ≤ 64 KB, `update_id` yo'q → `400`. Yangilanish polling'dagidek ishlanadi (Telegram bo'limi), `update_id < offset` (qayta yuborilgan) — e'tiborsiz. Javob doim `200 { ok: true }` (ichki xato logga yoziladi). Sir loglarda `***` bilan yashiriladi |
 | POST | `/api/ai/chat` | Body: `{ sessionId, lang: 'uz'|'ru', page?, message }` (`page` — faqat sayt yo'li `^/[\w/-]{0,200}$`, `//` bilan boshlanmaydi; boshqa qiymat jimgina tashlab yuboriladi) → `{ reply: string, lead?: boolean }`. Server suhbat tarixini o'zi saqlaydi (`chats.json`), so'nggi 20 xabarni modelga yuboradi. message ≤ 1000 belgi. IP kunlik limiti (`AI_DAILY_LIMIT`) → 429 `{ error, limit: true }` (limit tugagan IP'ning tanasi o'qilmaydi). Shu sessiyada oldingi xabarga javob hali tayyorlanayotgan bo'lsa → `409 { error }`. AI o'chiq/xato → 503 `{ error }`. Sessiyada 100 ta tashrifchi xabaridan keyin AI chaqirilmaydi: muloyim "qo'ng'iroq qiling / telefon qoldiring" javobi. Jami kunlik limit — `AI_GLOBAL_DAILY_LIMIT` |
 
 **Tana hajmi**: `/api/ai/chat`, `/api/leads`, `/api/admin/login` — ≤ 16 KB; boshqa admin JSON — ≤ 1 MB (faqat kirgan
@@ -183,10 +187,15 @@ hisobini tozalaydi. Qo'shimcha: barcha IP'lardan jami 50 ta noto'g'ri urinish/10
 | DELETE | `/api/admin/leads/:id` | |
 | GET | `/api/admin/chats` | `ChatSession[]` qisqa: `{id, createdAt, updatedAt, lang, page, count, preview, leadId}` |
 | GET | `/api/admin/chats/:id` | to'liq `ChatSession` |
-| GET | `/api/admin/settings` | `{ telegram: { configured, chatId, chatIdSource, botUsername }, ai: { provider, model, enabled } }` |
-| PUT | `/api/admin/settings/telegram` | `{ chatId }` — chat ID'ni `settings.json`ga saqlash (`''` — o'chirish). Raqam (`123456789`, guruh `-100…`) yoki `@kanal`; noto'g'ri → 400; `TELEGRAM_CHAT_ID` env'da bo'lsa → 409. Javob: `telegram` bloki (settings'dagi kabi) |
-| GET | `/api/admin/telegram/chats` | botga yaqinda yozgan chatlar (`getUpdates`) → `{ ok: true, chats: [{ id, type, name, username }] }` yoki `{ ok: false, error }` (webhook bo'lsa 409 sababi). **Hech narsa saqlanmaydi** — admin ro'yxatdan o'zi tanlaydi |
-| POST | `/api/admin/telegram/test` | sinov xabari → `{ ok }` |
+| GET | `/api/admin/settings` | `{ telegram: { configured, mode, modeSource, chatId, chatIdSource, botUsername, subscribers: { active, total }, updates: { state, webhookHost, checkedAt, error }, webhookReceiver }, ai: { provider, model, enabled } }` |
+| PUT | `/api/admin/settings/telegram` | `{ chatId?, mode? }` (kamida bittasi). `chatId` — `settings.json`ga (`''` — o'chirish), raqam (`123456789`, guruh `-100…`) yoki `@kanal`; `TELEGRAM_CHAT_ID` env'da bo'lsa → 409. `mode` — `subscribers`\|`single`; `TELEGRAM_MODE` env'da bo'lsa → 409. Noto'g'ri → 400. Javob: `telegram` bloki (settings'dagi kabi) |
+| GET | `/api/admin/telegram/subscribers` | `{ subscribers: Subscriber[] (yangisi birinchi), max: 100, updates }` |
+| POST | `/api/admin/telegram/subscribers` | qo'lda qo'shish `{ chatId (faqat raqam), name (1–100), username?, type? }` → `201 Subscriber` (`source: 'manual'`; `type` berilmasa: `-100…` superguruh, `-…` guruh, aks holda shaxsiy). Bor ID / ro'yxat to'la → 409 |
+| PUT | `/api/admin/telegram/subscribers` | butun ro'yxatni almashtirish `{ subscribers: [{ chatId, name, username?, type?, active }] }` (≤ 100; ma'lum ID'lar `addedAt`/`source`ni saqlaydi) → GET kabi javob |
+| PATCH | `/api/admin/telegram/subscribers/:chatId` | `{ active?, name? }` → `Subscriber`; topilmasa 404 |
+| DELETE | `/api/admin/telegram/subscribers/:chatId` | `{ ok: true }`; topilmasa 404 |
+| GET | `/api/admin/telegram/chats` | `single` rejimi uchun yordamchi: botga yaqinda yozgan chatlar (`getUpdates`; polling/o'z webhook'imiz ishlayotgan bo'lsa — obunachilar ro'yxatidan) → `{ ok: true, chats: [{ id, type, name, username }] }` yoki `{ ok: false, error }` (webhook bo'lsa 409 sababi). **Hech narsa saqlanmaydi** |
+| POST | `/api/admin/telegram/test` | sinov xabari hozirgi barcha qabul qiluvchilarga → `{ ok, total, sent, failed, results: [{ chatId, name?, ok, error?, deactivated? }], error? }` (`ok` — kamida bittasiga yetdi) |
 | GET | `/api/admin/stats` | `{ products, documents, leadsNew, leadsTotal, chatsToday }` |
 
 Har bir kontent o'zgarishi: validatsiya (zod) → `backups/content-<ISO>.json` (30 tadan oshsa eskisi o'chadi) → atomik yozish.
@@ -210,7 +219,8 @@ Har bir kontent o'zgarishi: validatsiya (zod) → `backups/content-<ISO>.json` (
 - `PATCH /leads/:id` → `200 Lead`; `DELETE /leads/:id` → `{ ok: true }`; topilmasa 404.
 - `GET /chats` element: `{ id, createdAt, updatedAt, lang, page: string|null, count, preview, leadId: string|null }`, `updatedAt` bo'yicha yangisi birinchi; `preview` — birinchi foydalanuvchi xabari (≤140 belgi).
 - `GET /settings`: `telegram.chatId`, `telegram.botUsername` — `string | null`; `telegram.chatIdSource` — `'env'|'settings'|null`; `ai.provider` — `'anthropic'|'openai'|'free'|'mock'|'off'`.
-- `POST /telegram/test` → har doim `200 { ok: true }` yoki `{ ok: false, error: "sabab" }`.
+- `GET /settings`: `telegram.mode` — `'subscribers'|'single'`, `modeSource` — `'env'|'settings'|'default'`; `updates.state` — `off|checking|polling|webhook|webhook-self|error`, `updates.webhookHost` — faqat host (URL yo'li/siri ko'rsatilmaydi).
+- `POST /telegram/test` → har doim `200`; qabul qiluvchi yo'q bo'lsa `{ ok: false, total: 0, …, error: "sabab" }`.
 - `GET /stats`: `chatsToday` — bugun (Toshkent vaqti) faol bo'lgan suhbatlar soni.
 - `POST /login` → `{ ok: true }` / 401 / 429; `POST /logout` → `{ ok: true }`.
 
@@ -224,16 +234,39 @@ Har bir kontent o'zgarishi: validatsiya (zod) → `backups/content-<ISO>.json` (
 
 ## Telegram
 
-- `sendMessage` (HTML parse_mode, matn **avval escape qilinadi, keyin** xavfsiz qisqartiriladi — `&amp;` o'rtasidan
-  kesilmaydi; jami ≤ 4000 belgi). Xato bo'lsa lead saqlanadi, `telegram: 'failed'`. Jami soatiga 60 ta xabar;
-  oshsa — `'failed'` (ariza admin panelda bor).
-- Chat ID: `TELEGRAM_CHAT_ID` (env, ustun) yoki admin panel → Sozlamalar'da kiritilgan qiymat (`settings.json`).
-  **Avtomatik aniqlash yo'q**: "botga birinchi yozgan" chatni saqlash begona odamga arizalarni yuborib qo'yishi mumkin edi.
-  Admin panelda yordam: "Chat ID'ni bilish uchun @userinfobot ga yozing"; foydalanuvchi botga oldin `/start` yozgan
-  (yoki bot guruhga qo'shilgan) bo'lishi shart. "Aniqlash" tugmasi `GET /telegram/chats` orqali yozganlar ro'yxatini
-  ko'rsatadi, admin o'zi tanlab saqlaydi. Botda webhook yoqilgan bo'lsa (masalan, bot boshqa saytga ulangan)
-  `getUpdates` 409 qaytaradi — bunda Chat ID qo'lda kiritiladi. Server hech qachon `deleteWebhook`/`setWebhook` chaqirmaydi.
-- Telegram sozlanmagan (token yo'q) → `telegram: 'skipped'`; token bor, lekin yuborib bo'lmadi (chat ID kiritilmagan, xato) → `'failed'`.
+- **Rejimlar** (`telegram.mode`): `subscribers` — ariza **barcha faol obunachilarga** yuboriladi (vaqtinchalik rejim:
+  egasi xohlagan "/start bosgan hammaga"); `single` — bitta chat: `TELEGRAM_CHAT_ID` (env, ustun) yoki admin panelda
+  kiritilgan qiymat (`settings.json`). Tanlash: `TELEGRAM_MODE` (env) → admin panel → standart (chat ID bor → `single`,
+  yo'q → `subscribers`; eski o'rnatishlar o'zgarmaydi).
+- **Obunachilar** — `DATA_DIR/telegram-subscribers.json` (`0600`):
+  `{ subscribers: [{ chatId, name, username?, type: 'private'|'group'|'supergroup', addedAt, source: 'start'|'manual', active, disabledBy?: 'admin'|'user'|'telegram' }], updateOffset? }`.
+  Ko'pi bilan 100 ta (`/start` toshqini ro'yxatni cheksiz kattalashtirmasin; to'lsa yangi `/start` e'tiborsiz, logda ogohlantirish).
+- **Yangilanishlarni olish** (`/start` va h.k.): server ishga tushganda va har 10 daqiqada `getWebhookInfo`.
+  - Webhook **yo'q** → `getUpdates` long polling (`timeout: 25`, `allowed_updates: ['message','my_chat_member']`,
+    `offset` faylda saqlanadi). 409 "webhook" → polling to'xtaydi, qayta tekshiriladi; boshqa 409 (ikkinchi nusxa) → 30 s kutish.
+  - Webhook **boshqa saytga** (hozir @novacolorbot → `novacolor.uz`) → polling **yo'q**, logda bir marta o'zbekcha
+    ogohlantirish, admin panelda sariq ogohlantirish (`updates.state = 'webhook'`, `webhookHost`). Obunachilar qo'lda qo'shiladi.
+  - Webhook **shu serverga** (`…/api/telegram/webhook/<TELEGRAM_WEBHOOK_SECRET>`) → `webhook-self`, yangilanishlar webhook orqali keladi.
+  - Server **hech qachon** `deleteWebhook`/`setWebhook` chaqirmaydi.
+- **Yangilanishni ishlash** (polling va webhook bir xil):
+  - shaxsiy chatda `/start` (`/start payload`, `/start@bot` ham) → obunachi qo'shiladi/qayta yoqiladi (`source: 'start'`)
+    va bitta javob: "Siz NovaColor arizalari xabarnomasiga obuna bo'ldingiz. Bekor qilish: /stop". Admin o'chirgan
+    (`disabledBy: 'admin'`) obunachi `/start` bilan qayta yoqilmaydi va javob olmaydi. Ro'yxatdan **o'chirilgan** odam `/start` bossa qayta qo'shiladi.
+  - `/stop` → `active: false, disabledBy: 'user'` + tasdiq javobi.
+  - `my_chat_member`: bot guruh/superguruhga qo'shildi (`member`/`administrator`) → guruh obunachi; chiqarildi
+    (`left`/`kicked`) → o'chadi; shaxsiy chatda `kicked` (botni bloklagan) → o'chadi. Guruhdagi `/start` va oddiy xabarlar hech narsa qilmaydi.
+  - `migrate_to_chat_id` (guruh superguruhga aylandi) → obunachining ID'si yangilanadi.
+- **Yuborish**: `sendMessage` (HTML parse_mode, matn **avval escape qilinadi, keyin** xavfsiz qisqartiriladi — `&amp;` o'rtasidan
+  kesilmaydi; jami ≤ 4000 belgi). Har bir qabul qiluvchiga alohida, bir vaqtda ≤ 5 ta, ≤ 25 xabar/s; 429 → `retry_after`
+  (≤ 10 s) dan keyin bir marta qayta. Obunachiga 403 (bloklagan / guruhdan chiqarilgan) yoki 400 "chat not found" →
+  obunachi o'chadi (`disabledBy: 'telegram'`); boshqa xatolar o'chirmaydi. Lead `telegram`: kamida bittasiga yetdi → `'sent'`,
+  hech kimga → `'failed'`. Soatiga 60 ta ariza xabari (bitta ariza = bitta hisob, qabul qiluvchilar soniga bog'liq emas);
+  oshsa — `'failed'` (ariza admin panelda bor). Takror (10 daq ichida shu telefon) — qayta yuborilmaydi.
+- **Xavfsizlik**: `subscribers` rejimida botga `/start` bosgan **har qanday** odam mijozlar telefonini oladi. Admin panelda
+  ogohlantirish bor; keraksizlarini "Faol" tugmasi bilan o'chirish kerak (bu doimiy). Doimiy yechim — `single` rejimi + yopiq guruh.
+- `single` rejimida yordam: "Aniqlash" tugmasi `GET /telegram/chats` orqali yozganlar ro'yxatini ko'rsatadi, admin o'zi
+  tanlab saqlaydi; webhook bo'lsa 409 → Chat ID qo'lda (@userinfobot).
+- Telegram sozlanmagan (token yo'q) → `telegram: 'skipped'`; token bor, lekin yuborib bo'lmadi (qabul qiluvchi yo'q, xato) → `'failed'`.
 - Ariza xabari formati:
   ```
   🆕 Yangi ariza — Sayt formasi | AI yordamchi
@@ -267,7 +300,7 @@ Har bir kontent o'zgarishi: validatsiya (zod) → `backups/content-<ISO>.json` (
 
 ## Ma'lumotlar fayllari
 
-- `DATA_DIR` — `0700`; `settings.json` (sessiya siri), `leads.json`, `chats.json` — `0600` (eski fayllar ishga tushishda
+- `DATA_DIR` — `0700`; `settings.json` (sessiya siri), `leads.json`, `chats.json`, `telegram-subscribers.json` — `0600` (eski fayllar ishga tushishda
   tuzatiladi). Docker entrypoint papkani `node` foydalanuvchisiga beradi.
 - `chats.json` har xabarda yoziladi: bir vaqtda kelgan saqlashlar bitta yozuvga birlashtiriladi (atomik `tmp → rename`
   saqlanadi, har `save()` o'z o'zgarishi diskka tushgach qaytadi).

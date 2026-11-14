@@ -1,7 +1,17 @@
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { api, type About, type AdminSettings, type Contacts, type TelegramChat, type TelegramSettings } from '../api'
-import { errText, useAdmin, useToast } from '../lib'
-import { Badge, Button, Card, ErrorBox, Field, Input, PageHeader, PageLoader, SectionTitle, Spinner, Textarea } from '../ui'
+import {
+  api,
+  type About,
+  type AdminSettings,
+  type Contacts,
+  type TelegramChat,
+  type TelegramMode,
+  type TelegramSettings,
+  type TelegramSubscriber,
+  type TelegramUpdates,
+} from '../api'
+import { cx, errText, fmtDate, useAdmin, useConfirm, useToast } from '../lib'
+import { Badge, Button, Card, ErrorBox, Field, Icon, IconButton, Input, PageHeader, PageLoader, SectionTitle, Spinner, Textarea } from '../ui'
 
 export default function Settings() {
   const { content, contentError, reloadContent } = useAdmin()
@@ -210,6 +220,10 @@ function ServiceStatus() {
   const [s, setS] = useState<AdminSettings | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [testing, setTesting] = useState(false)
+  /** mode being saved (shown right away, reverted if saving fails) */
+  const [pendingMode, setPendingMode] = useState<TelegramMode | null>(null)
+  /** bumped after a test message (subscribers may have been switched off by Telegram errors) */
+  const [subsVersion, setSubsVersion] = useState(0)
 
   const fetchSettings = useCallback(
     () =>
@@ -229,17 +243,35 @@ function ServiceStatus() {
     setError(null)
     void fetchSettings()
   }
+  const setTg = (t: TelegramSettings) => setS((cur) => (cur ? { ...cur, telegram: t } : cur))
 
   const test = async () => {
     setTesting(true)
     try {
       const r = await api.telegramTest()
-      if (r.ok) toast.success('Sinov xabari yuborildi — Telegram’ni tekshiring')
+      const counts = r.total ? `: ${r.sent ?? 0}/${r.total} ta qabul qiluvchiga` : ''
+      const failed = r.results?.filter((x) => !x.ok) ?? []
+      const why = failed[0]?.error ? ` — ${failed.length} tasida xato: ${failed[0].error}` : ''
+      if (r.ok) toast.show(failed.length ? 'info' : 'success', `Sinov xabari yuborildi${counts}${why}`)
       else toast.show('error', `Xabar yuborilmadi: ${r.error ?? 'noma’lum xato'}`)
+      if (r.results?.some((x) => x.deactivated)) setSubsVersion((v) => v + 1)
     } catch (e) {
       toast.error(e)
     } finally {
       setTesting(false)
+    }
+  }
+
+  const changeMode = async (mode: TelegramMode) => {
+    if (!s || mode === s.telegram.mode) return
+    setPendingMode(mode)
+    try {
+      setTg(await api.setTelegramMode(mode))
+      toast.success(mode === 'subscribers' ? 'Arizalar endi hamma obunachilarga yuboriladi' : 'Arizalar endi bitta chatga yuboriladi')
+    } catch (e) {
+      toast.error(e)
+    } finally {
+      setPendingMode(null)
     }
   }
 
@@ -252,6 +284,8 @@ function ServiceStatus() {
     )
 
   const { telegram: tg, ai } = s
+  const single = tg.mode === 'single'
+  const noRecipients = single ? !tg.chatId : tg.subscribers.active === 0
   return (
     <div className="flex flex-col gap-5">
       <Card className="p-4 md:p-5">
@@ -269,7 +303,13 @@ function ServiceStatus() {
               '—'
             )}
           </Row>
-          <Row k="Chat ID">{tg.chatId ?? <span className="text-amber-700">yo‘q</span>}</Row>
+          <Row k="Arizalar kimga">
+            {single ? (
+              (tg.chatId ?? <span className="text-amber-700">Chat ID yo‘q</span>)
+            ) : (
+              <span className={tg.subscribers.active ? undefined : 'text-amber-700'}>{tg.subscribers.active} ta faol obunachi</span>
+            )}
+          </Row>
         </dl>
         {!tg.configured && (
           <p className="mt-3 rounded-lg bg-stone-50 p-3 text-sm text-stone-600">
@@ -278,21 +318,32 @@ function ServiceStatus() {
             tushiriladi.
           </p>
         )}
+        {tg.configured && <ModeSwitch tg={tg} value={pendingMode ?? tg.mode} saving={!!pendingMode} onChange={changeMode} />}
         {/* key: a new saved value resets the field */}
-        <ChatIdForm key={tg.chatId ?? ''} tg={tg} onSaved={(t) => setS((cur) => (cur ? { ...cur, telegram: t } : cur))} />
+        {single && <ChatIdForm key={tg.chatId ?? ''} tg={tg} onSaved={setTg} />}
         {tg.configured && (
           <>
-            {!tg.chatId && (
+            {noRecipients && (
               <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200">
-                Arizalar Telegram’ga kelishi uchun yuqorida Chat ID’ni kiriting va saqlang, keyin sinov tugmasini bosing.
+                {single
+                  ? 'Arizalar Telegram’ga kelishi uchun yuqorida Chat ID’ni kiriting va saqlang, keyin sinov tugmasini bosing.'
+                  : 'Hozircha faol obunachi yo‘q — arizalar Telegram’ga bormaydi. Quyidagi ro‘yxatga obunachi qo‘shing.'}
               </p>
             )}
             <Button className="mt-3 w-full" onClick={test} loading={testing}>
-              Sinov xabari yuborish
+              Sinov xabari yuborish{single ? '' : ' (hammaga)'}
             </Button>
           </>
         )}
       </Card>
+
+      {tg.configured && (
+        <Subscribers
+          key={subsVersion}
+          tg={tg}
+          onCounts={(active, total) => setS((cur) => (cur ? { ...cur, telegram: { ...cur.telegram, subscribers: { active, total } } } : cur))}
+        />
+      )}
 
       <Card className="p-4 md:p-5">
         <div className="mb-2 flex items-center justify-between">
@@ -318,6 +369,310 @@ function ServiceStatus() {
         </p>
       </Card>
     </div>
+  )
+}
+
+const MODES: { value: TelegramMode; label: string; hint: string }[] = [
+  { value: 'subscribers', label: 'Hamma obunachilarga', hint: 'Botga /start bosgan har bir kishi va bot qo‘shilgan guruhlar' },
+  { value: 'single', label: 'Bitta chat yoki guruhga', hint: 'Faqat bitta Chat ID (masalan, ish guruhi)' },
+]
+
+function ModeSwitch({
+  tg,
+  value,
+  saving,
+  onChange,
+}: {
+  tg: TelegramSettings
+  value: TelegramMode
+  saving: boolean
+  onChange: (m: TelegramMode) => void
+}) {
+  const fromEnv = tg.modeSource === 'env'
+  return (
+    <fieldset className="mt-3 border-t border-stone-100 pt-3" disabled={fromEnv || saving}>
+      <legend className="mb-2 flex items-center gap-2 text-sm font-medium text-stone-700">
+        Arizalar kimga yuboriladi {saving && <Spinner className="size-4" />}
+      </legend>
+      <div className="grid gap-2">
+        {MODES.map((m) => (
+          <label
+            key={m.value}
+            className={cx(
+              'flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 text-sm transition-colors has-[:disabled]:cursor-not-allowed has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-amber-700',
+              value === m.value ? 'border-stone-800 bg-stone-50' : 'border-stone-200 hover:bg-stone-50',
+            )}
+          >
+            <input
+              type="radio"
+              name="tg-mode"
+              value={m.value}
+              checked={value === m.value}
+              onChange={() => onChange(m.value)}
+              className="mt-0.5 accent-stone-900"
+            />
+            <span>
+              <span className="block font-medium text-stone-900">{m.label}</span>
+              <span className="block text-xs text-stone-500">{m.hint}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      {fromEnv && (
+        <p className="mt-1.5 text-xs text-stone-500">
+          Rejim serverdagi .env faylida (TELEGRAM_MODE) o‘rnatilgan — bu yerda o‘zgartirib bo‘lmaydi.
+        </p>
+      )}
+    </fieldset>
+  )
+}
+
+/** Where /start updates go: shown above the subscribers list. */
+function UpdatesStatus({ u }: { u: TelegramUpdates }) {
+  if (u.state === 'webhook')
+    return (
+      <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200" role="status">
+        Bot hozir {u.webhookHost ?? 'boshqa sayt'} saytiga ulangan, shuning uchun /start bosganlar ro‘yxati bu yerga kelmaydi.
+        Ro‘yxatni qo‘lda qo‘shing yoki botni shu serverga ulang (DEPLOY.md)
+      </p>
+    )
+  if (u.state === 'polling' || u.state === 'webhook-self')
+    return (
+      <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900 ring-1 ring-emerald-200" role="status">
+        Obunachilar avtomatik qo‘shilmoqda
+      </p>
+    )
+  if (u.state === 'error')
+    return (
+      <p className="rounded-lg bg-stone-50 p-3 text-sm text-stone-700 ring-1 ring-stone-200" role="status">
+        Telegram bilan aloqa yo‘q, qayta urinilmoqda{u.error ? `: ${u.error}` : ''}
+      </p>
+    )
+  return (
+    <p className="rounded-lg bg-stone-50 p-3 text-sm text-stone-600 ring-1 ring-stone-200" role="status">
+      Bot holati tekshirilmoqda…
+    </p>
+  )
+}
+
+const TYPE_LABEL: Record<TelegramSubscriber['type'], string> = { private: 'shaxsiy', group: 'guruh', supergroup: 'superguruh' }
+const OFF_REASON: Record<NonNullable<TelegramSubscriber['disabledBy']>, string> = {
+  admin: 'siz o‘chirgansiz',
+  user: 'o‘zi bekor qilgan (/stop yoki bloklagan)',
+  telegram: 'yetkazib bo‘lmadi (bloklagan yoki chat yo‘q)',
+}
+const SUB_ID_RE = /^-?\d{3,20}$/
+
+function Subscribers({ tg, onCounts }: { tg: TelegramSettings; onCounts: (active: number, total: number) => void }) {
+  const toast = useToast()
+  const confirm = useConfirm()
+  const [list, setList] = useState<TelegramSubscriber[] | null>(null)
+  const [updates, setUpdates] = useState<TelegramUpdates>(tg.updates)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [busy, setBusy] = useState<string | null>(null)
+  const [chatId, setChatId] = useState('')
+  const [name, setName] = useState('')
+  const [adding, setAdding] = useState(false)
+
+  const apply = (next: TelegramSubscriber[]) => {
+    setList(next)
+    onCounts(next.filter((x) => x.active).length, next.length)
+  }
+  const fetchList = useCallback(
+    () =>
+      api.telegramSubscribers().then(
+        (r) => {
+          setList(r.subscribers)
+          setUpdates(r.updates)
+          setError(null)
+          return r.subscribers
+        },
+        (e) => {
+          setError(errText(e))
+          return null
+        },
+      ),
+    [],
+  )
+  useEffect(() => {
+    void fetchList()
+  }, [fetchList])
+  const reload = async () => {
+    setLoading(true)
+    const next = await fetchList()
+    if (next) onCounts(next.filter((x) => x.active).length, next.length)
+    setLoading(false)
+  }
+
+  const idTrim = chatId.trim()
+  const idInvalid = idTrim !== '' && !SUB_ID_RE.test(idTrim)
+  const add = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!list || !SUB_ID_RE.test(idTrim) || !name.trim()) return
+    setAdding(true)
+    try {
+      const s = await api.addTelegramSubscriber({ chatId: idTrim, name: name.trim() })
+      apply([s, ...list])
+      setChatId('')
+      setName('')
+      toast.success('Obunachi qo‘shildi')
+    } catch (err) {
+      toast.error(err)
+    } finally {
+      setAdding(false)
+    }
+  }
+  const toggle = async (s: TelegramSubscriber) => {
+    if (!list) return
+    setBusy(s.chatId)
+    try {
+      const u = await api.patchTelegramSubscriber(s.chatId, { active: !s.active })
+      apply(list.map((x) => (x.chatId === s.chatId ? u : x)))
+    } catch (err) {
+      toast.error(err)
+    } finally {
+      setBusy(null)
+    }
+  }
+  const remove = async (s: TelegramSubscriber) => {
+    if (!list) return
+    const ok = await confirm({
+      title: 'Obunachini o‘chirish',
+      text: `${s.name} ro‘yxatdan o‘chiriladi. U botga qayta /start bossa yana qo‘shiladi — butunlay to‘sish uchun o‘chirish o‘rniga «Faol» tugmasini o‘chiring.`,
+      confirmText: 'O‘chirish',
+      danger: true,
+    })
+    if (!ok) return
+    setBusy(s.chatId)
+    try {
+      await api.deleteTelegramSubscriber(s.chatId)
+      apply(list.filter((x) => x.chatId !== s.chatId))
+      toast.success('O‘chirildi')
+    } catch (err) {
+      toast.error(err)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const active = list?.filter((x) => x.active).length ?? tg.subscribers.active
+  return (
+    <Card className="p-4 md:p-5">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <SectionTitle className="mb-0">Telegram obunachilari</SectionTitle>
+        <div className="flex items-center gap-1.5">
+          {list && (
+            <Badge tone={active ? 'green' : 'amber'}>
+              {active} faol / {list.length}
+            </Badge>
+          )}
+          <Button size="sm" variant="ghost" onClick={() => void reload()} loading={loading}>
+            Yangilash
+          </Button>
+        </div>
+      </div>
+      <div className="grid gap-2">
+        {tg.mode === 'single' && (
+          <p className="rounded-lg bg-stone-50 p-3 text-sm text-stone-600 ring-1 ring-stone-200">
+            Hozir «Bitta chat» rejimi: arizalar faqat yuqoridagi Chat ID’ga boradi, bu ro‘yxat ishlatilmaydi.
+          </p>
+        )}
+        <UpdatesStatus u={updates} />
+        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-800 ring-1 ring-red-200">
+          Diqqat: botga /start bosgan har qanday odam mijozlar ma'lumotini oladi. Keraksizlarni o'chiring.
+        </p>
+      </div>
+
+      <form onSubmit={add} className="mt-3 grid gap-2 border-t border-stone-100 pt-3">
+        <div className="grid grid-cols-2 gap-2">
+          <Field label="Chat ID" error={idInvalid ? 'Faqat raqam (guruh: -100…)' : null}>
+            {(id) => (
+              <Input
+                id={id}
+                value={chatId}
+                onChange={(e) => setChatId(e.target.value)}
+                placeholder="123456789"
+                inputMode="numeric"
+                aria-invalid={idInvalid || undefined}
+                className="font-mono text-sm"
+                spellCheck={false}
+                autoComplete="off"
+              />
+            )}
+          </Field>
+          <Field label="Ism">
+            {(id) => <Input id={id} value={name} onChange={(e) => setName(e.target.value)} placeholder="Masalan, Aziz (sotuv)" maxLength={100} />}
+          </Field>
+        </div>
+        <Button type="submit" disabled={!SUB_ID_RE.test(idTrim) || !name.trim() || !list} loading={adding}>
+          <Icon name="plus" /> Qo‘lda qo‘shish
+        </Button>
+        <p className="text-xs text-stone-500">
+          Chat ID’ni bilish: odam Telegram’da @userinfobot ga yozadi. U botga oldin /start bosgan bo‘lishi shart, aks holda bot
+          unga yoza olmaydi.
+        </p>
+      </form>
+
+      <div className="mt-3 border-t border-stone-100 pt-3">
+        {error && <ErrorBox text={error} onRetry={() => void reload()} />}
+        {!error && !list && (
+          <div className="flex items-center justify-center gap-2 py-4 text-sm text-stone-500">
+            <Spinner className="size-4" /> Yuklanmoqda…
+          </div>
+        )}
+        {list && list.length === 0 && <p className="py-3 text-center text-sm text-stone-500">Hali obunachi yo‘q.</p>}
+        {list && list.length > 0 && (
+          <ul className="divide-y divide-stone-100" aria-label="Obunachilar">
+            {list.map((s) => (
+              <li key={s.chatId} className={cx('flex items-center gap-2 py-2.5', !s.active && 'opacity-70')}>
+                <div className="min-w-0 flex-1 text-sm">
+                  <p className="truncate font-medium text-stone-900">
+                    {s.name}
+                    {s.username && <span className="font-normal text-stone-500"> @{s.username}</span>}
+                  </p>
+                  <p className="truncate text-xs text-stone-500">
+                    <span className="font-mono">{s.chatId}</span> · {TYPE_LABEL[s.type]} ·{' '}
+                    {s.source === 'manual' ? 'qo‘lda' : s.type === 'private' ? '/start' : 'bot qo‘shilgan'} · {fmtDate(s.addedAt)}
+                  </p>
+                  {!s.active && s.disabledBy && <p className="text-xs text-amber-800">O‘chiq: {OFF_REASON[s.disabledBy]}</p>}
+                </div>
+                <Switch
+                  checked={s.active}
+                  disabled={busy === s.chatId}
+                  label={`${s.name}: ${s.active ? 'faol' : 'faol emas'}`}
+                  onChange={() => void toggle(s)}
+                />
+                <IconButton label={`${s.name} — o‘chirish`} disabled={busy === s.chatId} onClick={() => void remove(s)}>
+                  <Icon name="trash" />
+                </IconButton>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </Card>
+  )
+}
+
+function Switch({ checked, disabled, label, onChange }: { checked: boolean; disabled?: boolean; label: string; onChange: () => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      title={checked ? 'Faol — arizalar boradi' : 'Faol emas — arizalar bormaydi'}
+      disabled={disabled}
+      onClick={onChange}
+      className={cx(
+        'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700',
+        checked ? 'bg-emerald-600' : 'bg-stone-300',
+      )}
+    >
+      <span className={cx('inline-block size-5 rounded-full bg-white shadow transition-transform', checked ? 'translate-x-5.5' : 'translate-x-0.5')} />
+    </button>
   )
 }
 

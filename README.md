@@ -27,7 +27,7 @@ public/                images, PDFs              rasmlar, PDF'lar
 server/src/            API server (Hono)         server
 server/test/           server tests              testlar
 docs/                  specification             spetsifikatsiya
-data/                  runtime data, gitignored: content.json, uploads/, leads.json, chats.json, settings.json, backups/
+data/                  runtime data, gitignored: content.json, uploads/, leads.json, chats.json, settings.json, telegram-subscribers.json, backups/
 Dockerfile, docker-compose.yml, Caddyfile, deploy/   deployment / joylash
 ```
 

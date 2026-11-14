@@ -7,6 +7,7 @@ import { errMsg, log } from './log.js'
 import { adminRoutes } from './routes/admin.js'
 import { chatRoutes } from './routes/chat.js'
 import { publicRoutes } from './routes/public.js'
+import { telegramRoutes } from './routes/telegram.js'
 import { CACHE_DEFAULT, CACHE_IMMUTABLE, CACHE_NO_CACHE, fileResponse, safeJoin } from './static.js'
 
 const QUIET_PREFIXES = ['/assets/', '/img/', '/uploads/', '/fonts/', '/favicon']
@@ -49,6 +50,7 @@ export function createApp(ctx: AppContext) {
   app.route('/api', publicRoutes(ctx))
   app.route('/api/ai', chatRoutes(ctx))
   app.route('/api/admin', adminRoutes(ctx))
+  app.route('/api/telegram', telegramRoutes(ctx))
   app.all('/api/*', (c) => c.json({ error: 'Topilmadi' }, 404))
 
   // Uploaded files (unique names → immutable cache).

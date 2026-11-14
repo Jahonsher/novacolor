@@ -5,9 +5,16 @@
  * State lives in sessionStorage (survives reloads of the tab). Password: `novacolor`.
  */
 import seed from '../../data/content.json'
-import type { AdminDoc, ChatSession, Content, Lead, Stats } from '../api'
+import type { AdminDoc, ChatSession, Content, Lead, Stats, TelegramMode, TelegramSettings, TelegramSubscriber } from '../api'
 
-type DB = { content: Content; leads: Lead[]; chats: ChatSession[]; chatId: string | null }
+type DB = {
+  content: Content
+  leads: Lead[]
+  chats: ChatSession[]
+  chatId: string | null
+  tgMode?: TelegramMode
+  subscribers?: TelegramSubscriber[]
+}
 
 const KEY = 'ncMockDb'
 const AUTH = 'ncMockAuth'
@@ -311,23 +318,75 @@ export async function handle(url: string, init: RequestInit): Promise<Response> 
       return chat ? json(200, chat) : err(404, 'Suhbat topilmadi')
     }
 
+    const subs = (db.subscribers ??= [
+      { chatId: '123456789', name: 'Aziz', username: 'aziz_uz', type: 'private', addedAt: iso(60 * 30), source: 'start', active: true },
+      { chatId: '-1001234567890', name: 'Sotuv bo‘limi', type: 'supergroup', addedAt: iso(60 * 5), source: 'manual', active: true },
+    ])
+    const tgInfo = (): TelegramSettings => {
+      const mode = db.tgMode ?? (db.chatId ? 'single' : 'subscribers')
+      return {
+        configured: true,
+        mode,
+        modeSource: db.tgMode ? 'settings' : 'default',
+        chatId: db.chatId,
+        chatIdSource: db.chatId ? 'settings' : null,
+        botUsername: 'novacolor_leads_bot',
+        subscribers: { active: subs.filter((x) => x.active).length, total: subs.length },
+        // the real bot is connected to novacolor.uz by webhook
+        updates: { state: 'webhook', webhookHost: 'novacolor.uz', checkedAt: iso(1), error: null },
+        webhookReceiver: false,
+      }
+    }
     if (r === 'settings' && id === 'telegram' && method === 'PUT') {
-      const chatId = String((b as { chatId?: unknown })?.chatId ?? '').trim()
-      if (chatId && !/^-?\d{3,20}$|^@[A-Za-z][A-Za-z0-9_]{4,31}$/.test(chatId)) return err(400, 'chatId: Chat ID noto‘g‘ri')
-      db.chatId = chatId || null
-      return json(200, { configured: true, chatId: db.chatId, chatIdSource: db.chatId ? 'settings' : null, botUsername: 'novacolor_leads_bot' })
+      if (b?.chatId !== undefined) {
+        const chatId = String(b.chatId).trim()
+        if (chatId && !/^-?\d{3,20}$|^@[A-Za-z][A-Za-z0-9_]{4,31}$/.test(chatId)) return err(400, 'chatId: Chat ID noto‘g‘ri')
+        db.chatId = chatId || null
+      }
+      if (b?.mode === 'single' || b?.mode === 'subscribers') db.tgMode = b.mode
+      return json(200, tgInfo())
     }
     if (r === 'settings')
       return json(200, {
-        telegram: { configured: true, chatId: db.chatId, chatIdSource: db.chatId ? 'settings' : null, botUsername: 'novacolor_leads_bot' },
+        telegram: tgInfo(),
         ai: { provider: 'free', model: 'openai', enabled: true },
       })
-    if (r === 'telegram' && id === 'test' && method === 'POST') {
-      if (!db.chatId) {
-        db.chatId = '123456789'
+    if (r === 'telegram' && id === 'subscribers') {
+      const sub = seg[3]
+      if (!sub && method === 'GET') return json(200, { subscribers: subs, max: 100, updates: tgInfo().updates })
+      if (!sub && method === 'POST') {
+        const chatId = String(b?.chatId ?? '').trim()
+        const name = String(b?.name ?? '').trim()
+        if (!/^-?\d{3,20}$/.test(chatId)) return err(400, 'chatId: Chat ID noto‘g‘ri')
+        if (!name) return err(400, 'name: Ism kiriting')
+        if (subs.some((x) => x.chatId === chatId)) return err(409, 'Bu chat ID ro‘yxatda allaqachon bor')
+        const type = chatId.startsWith('-100') ? 'supergroup' : chatId.startsWith('-') ? 'group' : 'private'
+        const s: TelegramSubscriber = { chatId, name, type, addedAt: new Date().toISOString(), source: 'manual', active: true }
+        subs.unshift(s)
+        return json(201, s)
+      }
+      const i = subs.findIndex((x) => x.chatId === sub)
+      if (i < 0) return err(404, 'Obunachi topilmadi')
+      if (method === 'PATCH') {
+        const s = { ...subs[i]! }
+        if (typeof b?.active === 'boolean') {
+          s.active = b.active
+          if (b.active) delete s.disabledBy
+          else s.disabledBy = 'admin'
+        }
+        subs[i] = s
+        return json(200, s)
+      }
+      if (method === 'DELETE') {
+        subs.splice(i, 1)
         return json(200, { ok: true })
       }
-      return json(200, { ok: true })
+    }
+    if (r === 'telegram' && id === 'test' && method === 'POST') {
+      const info = tgInfo()
+      const targets = info.mode === 'single' ? (db.chatId ? [db.chatId] : []) : subs.filter((x) => x.active).map((x) => x.chatId)
+      if (!targets.length) return json(200, { ok: false, total: 0, sent: 0, failed: 0, results: [], error: 'Qabul qiluvchi yo‘q' })
+      return json(200, { ok: true, total: targets.length, sent: targets.length, failed: 0, results: targets.map((chatId) => ({ chatId, ok: true })) })
     }
 
     return err(404, `Mock: ${method} ${path} yo‘q`)

@@ -11,6 +11,7 @@ import { RateLimiter } from './rate-limit.js'
 import { ContentStore } from './store/content.js'
 import { tryChmod } from './store/fs-utils.js'
 import { ChatsStore, LeadsStore, SettingsStore } from './store/stores.js'
+import { SubscribersStore } from './store/subscribers.js'
 import { Telegram, type FetchLike } from './telegram.js'
 
 /** Lead notifications per hour across all visitors (spam must not flood the chat or hit Telegram limits). */
@@ -22,6 +23,8 @@ export type AppContext = {
   leads: LeadsStore
   chats: ChatsStore
   settings: SettingsStore
+  /** Telegram lead-notification subscribers (DATA_DIR/telegram-subscribers.json). */
+  subscribers: SubscribersStore
   telegram: Telegram
   ai: AiProvider | null
   prompts: PromptCache
@@ -55,6 +58,8 @@ export type ContextOverrides = {
   ai?: AiProvider | null
   /** fetch used for Telegram (tests). */
   telegramFetch?: FetchLike
+  /** Gap between broadcast sends (tests). */
+  telegramIntervalMs?: number
 }
 
 export async function createContext(config: Config, overrides: ContextOverrides = {}): Promise<AppContext> {
@@ -75,7 +80,8 @@ export async function createContext(config: Config, overrides: ContextOverrides 
   const leads = new LeadsStore(config.dataDir)
   const chats = new ChatsStore(config.dataDir)
   const settings = new SettingsStore(config.dataDir)
-  await Promise.all([content.init(), leads.load(), chats.load(), settings.load()])
+  const subscribers = new SubscribersStore(config.dataDir)
+  await Promise.all([content.init(), leads.load(), chats.load(), settings.load(), subscribers.load()])
 
   let sessionSecret = config.sessionSecret ?? settings.get().sessionSecret
   if (!sessionSecret) {
@@ -94,21 +100,25 @@ export async function createContext(config: Config, overrides: ContextOverrides 
     aiGlobal: new RateLimiter(config.ai.globalDailyLimit, 24 * 60 * 60_000),
   }
 
-  const telegram = new Telegram(
-    config.telegram.token,
-    config.telegram.chatId,
+  const telegram = new Telegram({
+    token: config.telegram.token,
+    envChatId: config.telegram.chatId,
+    envMode: config.telegram.mode,
+    webhookSecret: config.telegram.webhookSecret,
     settings,
-    config.publicUrl,
-    overrides.telegramFetch,
-    config.telegram.apiBase,
-    () => limits.telegram.hit('global'),
-  )
+    subscribers,
+    publicUrl: config.publicUrl,
+    fetchImpl: overrides.telegramFetch,
+    apiBase: config.telegram.apiBase,
+    allowSend: () => limits.telegram.hit('global'),
+    broadcastIntervalMs: overrides.telegramIntervalMs,
+  })
   const ai = overrides.ai !== undefined ? overrides.ai : createProvider(config.ai)
 
   let keyCache = { epoch: -1, key: '' }
 
   const idle = async () => {
-    await Promise.all([content.idle(), leads.idle(), chats.idle(), settings.idle()])
+    await Promise.all([content.idle(), leads.idle(), chats.idle(), settings.idle(), subscribers.idle()])
   }
 
   return {
@@ -117,6 +127,7 @@ export async function createContext(config: Config, overrides: ContextOverrides 
     leads,
     chats,
     settings,
+    subscribers,
     telegram,
     ai,
     prompts: new PromptCache(),
@@ -130,6 +141,7 @@ export async function createContext(config: Config, overrides: ContextOverrides 
     limits,
     idle,
     async close() {
+      await telegram.stopUpdates()
       for (const l of Object.values(limits)) l.stop()
       await idle()
     },

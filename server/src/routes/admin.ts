@@ -17,12 +17,18 @@ import {
   leadPatch,
   newsInput,
   productInput,
+  inferChatType,
   slugSchema,
-  telegramChatInput,
+  subscriberChatId,
+  subscriberInput,
+  subscriberPatch,
+  subscribersPut,
+  telegramSettingsInput,
   zodMessage,
   type Content,
 } from '../schemas.js'
 import { ContentError } from '../store/content.js'
+import { MAX_SUBSCRIBERS, SubscriberError, type Subscriber } from '../store/subscribers.js'
 import { MAX_IMAGE_BYTES, MAX_PDF_BYTES, readUpload, saveImage, savePdf, UploadError } from '../uploads.js'
 import { ADMIN_BODY, jsonBody, maxBody, notFound, SMALL_BODY } from './util.js'
 
@@ -426,9 +432,15 @@ export function adminRoutes(ctx: AppContext) {
   // ---- Settings / Telegram / stats ----
   const telegramInfo = async () => ({
     configured: ctx.telegram.configured,
+    /** subscribers: every active subscriber; single: one chat (chatId) */
+    mode: ctx.telegram.mode,
+    modeSource: ctx.telegram.modeSource,
     chatId: ctx.telegram.chatId,
     chatIdSource: ctx.telegram.chatIdSource,
     botUsername: await ctx.telegram.getBotUsername(),
+    subscribers: { active: ctx.subscribers.active().length, total: ctx.subscribers.list().length },
+    updates: ctx.telegram.updates,
+    webhookReceiver: ctx.telegram.webhookReceiver,
   })
 
   app.get('/settings', async (c) =>
@@ -438,15 +450,90 @@ export function adminRoutes(ctx: AppContext) {
     }),
   )
 
-  // Chat ID from the admin panel (auto-discovery can't work while the bot has a webhook). Env wins.
+  // `{ chatId?, mode? }`: chat ID for single mode (auto-discovery can't work while the bot has a webhook)
+  // and the mode. Env (TELEGRAM_CHAT_ID / TELEGRAM_MODE) wins.
   app.put('/settings/telegram', async (c) => {
-    const { chatId } = await jsonBody(c, telegramChatInput)
-    if (ctx.config.telegram.chatId) {
+    const { chatId, mode } = await jsonBody(c, telegramSettingsInput)
+    if (chatId !== undefined && ctx.config.telegram.chatId) {
       throw new HttpError(409, "TELEGRAM_CHAT_ID server .env faylida o'rnatilgan va u ustun turadi — o'zgartirish uchun .env'ni tahrirlang")
     }
-    await ctx.telegram.setChatId(chatId || null)
-    log.info(`Admin: Telegram chat ID ${chatId ? "o'rnatildi" : "o'chirildi"}`)
+    if (mode !== undefined && ctx.config.telegram.mode) {
+      throw new HttpError(409, "TELEGRAM_MODE server .env faylida o'rnatilgan va u ustun turadi — o'zgartirish uchun .env'ni tahrirlang")
+    }
+    if (chatId !== undefined) {
+      await ctx.telegram.setChatId(chatId || null)
+      log.info(`Admin: Telegram chat ID ${chatId ? "o'rnatildi" : "o'chirildi"}`)
+    }
+    if (mode !== undefined) {
+      await ctx.telegram.setMode(mode)
+      log.info(`Admin: Telegram rejimi — ${mode === 'single' ? 'bitta chat' : 'hamma obunachilar'}`)
+    }
     return c.json(await telegramInfo())
+  })
+
+  // ---- Telegram subscribers (mode `subscribers`) ----
+  const subscribersError = (e: unknown): never => {
+    if (e instanceof SubscriberError) throw new HttpError(e.status, e.message)
+    throw e
+  }
+  const subscribersList = () => ({
+    subscribers: [...ctx.subscribers.list()].sort((a, b) => b.addedAt.localeCompare(a.addedAt)),
+    max: MAX_SUBSCRIBERS,
+    updates: ctx.telegram.updates,
+  })
+  const chatIdParam = (c: Context) => {
+    const r = subscriberChatId.safeParse(c.req.param('chatId'))
+    if (!r.success) throw new HttpError(400, zodMessage(r.error))
+    return r.data
+  }
+  const logSub = (what: string, s: Pick<Subscriber, 'chatId'>) => log.info(`Admin: Telegram obunachi ${what} (${s.chatId})`)
+
+  app.get('/telegram/subscribers', (c) => c.json(subscribersList()))
+
+  app.post('/telegram/subscribers', async (c) => {
+    const input = await jsonBody(c, subscriberInput)
+    const s = await ctx.subscribers
+      .addManual({
+        chatId: input.chatId,
+        name: input.name,
+        type: input.type ?? inferChatType(input.chatId),
+        ...(input.username ? { username: input.username } : {}),
+      })
+      .catch(subscribersError)
+    logSub("qo'lda qo'shildi", s)
+    return c.json(s, 201)
+  })
+
+  app.put('/telegram/subscribers', async (c) => {
+    const { subscribers } = await jsonBody(c, subscribersPut)
+    await ctx.subscribers
+      .replaceAll(
+        subscribers.map((x) => ({
+          chatId: x.chatId,
+          name: x.name,
+          type: x.type ?? inferChatType(x.chatId),
+          active: x.active,
+          ...(x.username ? { username: x.username } : {}),
+        })),
+      )
+      .catch(subscribersError)
+    log.info(`Admin: Telegram obunachilar ro'yxati almashtirildi (${subscribers.length} ta)`)
+    return c.json(subscribersList())
+  })
+
+  app.patch('/telegram/subscribers/:chatId', async (c) => {
+    const chatId = chatIdParam(c)
+    const input = await jsonBody(c, subscriberPatch)
+    const s = await ctx.subscribers.patch(chatId, input).catch(subscribersError)
+    if (input.active !== undefined) logSub(input.active ? 'yoqildi' : "o'chirildi (faol emas)", s)
+    return c.json(s)
+  })
+
+  app.delete('/telegram/subscribers/:chatId', async (c) => {
+    const chatId = chatIdParam(c)
+    await ctx.subscribers.remove(chatId).catch(subscribersError)
+    logSub("ro'yxatdan o'chirildi", { chatId })
+    return c.json({ ok: true })
   })
 
   // Recent chats that wrote to the bot — the admin picks one explicitly (nothing is saved here).
@@ -461,15 +548,18 @@ export function adminRoutes(ctx: AppContext) {
     }
   })
 
+  // Test message to every current recipient: `{ ok, total, sent, failed, results, error? }` (ok = ≥ 1 delivered).
   app.post('/telegram/test', async (c) => {
     if (!ctx.telegram.configured) return c.json({ ok: false, error: 'Telegram sozlanmagan: TELEGRAM_BOT_TOKEN kiriting' })
     try {
-      await ctx.telegram.send('✅ NovaColor: sinov xabari. Arizalar shu chatga keladi.')
-      return c.json({ ok: true })
+      const r = await ctx.telegram.broadcast('✅ NovaColor: sinov xabari. Arizalar shu chatga keladi.')
+      const error = r.sent ? undefined : r.results[0]?.error
+      if (r.failed) log.warn(`Telegram sinovi: ${r.sent}/${r.total} ta yetdi`)
+      return c.json({ ok: r.sent > 0, total: r.total, sent: r.sent, failed: r.failed, results: r.results, ...(error ? { error } : {}) })
     } catch (e) {
       const error = e instanceof Error ? e.message : String(e)
       log.warn(`Telegram sinovi: ${error}`)
-      return c.json({ ok: false, error })
+      return c.json({ ok: false, total: 0, sent: 0, failed: 0, results: [], error })
     }
   })
 

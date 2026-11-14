@@ -217,8 +217,49 @@ TELEGRAM_BOT_TOKEN=123456789:AAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
    (`Id: 123456789`; guruh ID'si `-100…` bilan boshlanadi).
 5. Sinash: o'sha yerda **"Sinov xabari yuborish"** tugmasi.
 
-- Chat ID **avtomatik aniqlanmaydi** (botga birinchi yozgan begona odam arizalarni olib qolmasligi uchun) — faqat siz tanlaysiz.
 - `.env`da `TELEGRAM_CHAT_ID=...` yozsangiz, u admin paneldagidan **ustun** turadi (panelda o'zgartirib bo'lmaydi).
+
+#### Arizalar kimga boradi: ikki rejim
+
+Admin panel → **Sozlamalar** → **Telegram bot** → "Arizalar kimga yuboriladi":
+
+- **Hamma obunachilarga** (vaqtinchalik rejim) — botga `/start` bosgan har bir kishi va bot qo'shilgan guruhlar arizani oladi.
+  Ro'yxat — "Telegram obunachilari" kartasida: faollikni yoqish/o'chirish, o'chirish, **"Qo'lda qo'shish"** (Chat ID + ism).
+  Obunachi botga `/stop` yozsa — o'zi chiqadi. Botni bloklagan odam keyingi yuborishda avtomatik o'chiriladi.
+- **Bitta chat yoki guruhga** — faqat bitta Chat ID (yuqoridagi 4-qadam). Keyinchalik ish guruhiga o'tganda shuni tanlang.
+
+> **Diqqat:** "Hamma obunachilarga" rejimida botga `/start` bosgan **har qanday** odam mijozlarning telefon raqamlarini oladi.
+> Ro'yxatni tekshirib turing. Begona odamni **"Faol" tugmasi bilan o'chiring** — shunda u qayta `/start` bossa ham yoqilmaydi
+> (ro'yxatdan butunlay o'chirilgan odam esa `/start` bilan qaytib qo'shiladi).
+
+Rejimni `.env`da ham qat'iy belgilash mumkin (`TELEGRAM_MODE=subscribers` yoki `single`) — u paneldagidan ustun.
+
+**/start bosganlar qanday qo'shiladi.** Server har 10 daqiqada botni tekshiradi (`getWebhookInfo`, faqat o'qish):
+
+- botda **webhook yo'q** (alohida yangi bot) → server yangilanishlarni o'zi oladi, `/start` bosganlar **avtomatik** qo'shiladi
+  (panelda yashil "Obunachilar avtomatik qo'shilmoqda");
+- bot **boshqa saytga ulangan** (hozir **@novacolorbot** → **novacolor.uz**) → `/start` bosganlar bu serverga **kelmaydi**:
+  panelda sariq ogohlantirish chiqadi. Bu holda obunachilarni **qo'lda qo'shing** (har bir odam @userinfobot dan o'z ID'sini
+  bilib beradi; u @novacolorbot ga oldin `/start` bosgan bo'lishi shart).
+
+**Botni shu serverga ulash (keyinroq, ixtiyoriy).** Faqat novacolor.uz endi bu botni ishlatmasligi aniq bo'lganda:
+
+> ⚠️ **OGOHLANTIRISH:** quyidagi buyruq botni **novacolor.uz saytidan olib qo'yadi** — o'sha saytning boti darhol ishlamay qoladi.
+> Telegram'da bitta botning faqat bitta webhook'i bo'ladi. Bu server buni hech qachon o'zi qilmaydi.
+
+1. `.env`ga sir qo'shing va qayta ishga tushiring (`docker compose up -d`):
+   ```ini
+   TELEGRAM_WEBHOOK_SECRET=   # openssl rand -hex 32 natijasi
+   ```
+2. Serverda **bir marta** (HTTPS domen ishlayotgan bo'lishi kerak):
+   ```bash
+   source <(grep -E '^(TELEGRAM_BOT_TOKEN|TELEGRAM_WEBHOOK_SECRET)=' .env)
+   curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
+     -d "url=https://SIZNING-DOMEN.uz/api/telegram/webhook/${TELEGRAM_WEBHOOK_SECRET}" \
+     -d "secret_token=${TELEGRAM_WEBHOOK_SECRET}" \
+     -d 'allowed_updates=["message","my_chat_member"]'
+   ```
+   Javob `{"ok":true,...}` bo'lsa — 10 daqiqa ichida (yoki serverni qayta ishga tushirganda) panelda yashil holat chiqadi.
 
 ### 6.4 AI yordamchi
 
@@ -463,7 +504,7 @@ cd ~/novacolor
 
 Natija: `~/novacolor-backups/novacolor-data-YYYYMMDD-HHMM.tar.gz`. Oxirgi 14 tasi saqlanadi, eskilari o'chadi.
 
-`data/` papkasi maxfiy (faqat egasi o'qiy oladi: papka `700`, `settings.json`/`leads.json`/`chats.json` — `600`).
+`data/` papkasi maxfiy (faqat egasi o'qiy oladi: papka `700`, `settings.json`/`leads.json`/`chats.json`/`telegram-subscribers.json` — `600`).
 Egasi — konteynerdagi `node` foydalanuvchisi (uid 1000; odatda serverdagi birinchi foydalanuvchi, masalan `nova`, ham
 uid 1000). `Permission denied` chiqsa, `id -u` ni tekshiring yoki zaxirani `sudo ./deploy/backup.sh` bilan oling
 (cron'da ham — `sudo crontab -e`).
@@ -550,6 +591,7 @@ Yoki `.env`ga `APP_PORT=8081` yozib, boshqa portdan foydalaning.
 5. "Aniqlash"da `webhook yoqilgan` / `409 Conflict` → bot boshqa dasturga (webhook bilan) ulangan, masalan
    **@novacolorbot** — u novacolor.uz saytiniki. **`deleteWebhook` ni chaqirmang** (o'sha sayt boti buziladi).
    Yechim: 6.3-bo'limdagidek **alohida bot** yarating; yoki Chat ID'ni qo'lda kiriting (yuborish webhook bilan ham ishlaydi).
+   "Hamma obunachilarga" rejimida ham shunday: obunachilarni qo'lda qo'shing (6.3, "Arizalar kimga boradi").
 6. Bir soatda 60 tadan ko'p ariza kelsa (spam), qolganlari Telegram'ga yuborilmaydi ("Telegram: xato") — ular admin
    panelda bor.
 7. `.env`ni o'zgartirgandan keyin: `docker compose up -d`.

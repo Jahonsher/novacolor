@@ -18,6 +18,8 @@ export const newId = () => `${Date.now().toString(36)}${randomBytes(6).toString(
 export type Settings = {
   sessionSecret?: string
   telegramChatId?: string
+  /** Chosen in the admin panel; TELEGRAM_MODE (env) wins. */
+  telegramMode?: 'subscribers' | 'single'
   /** Bumped on logout: every session cookie issued before is invalid (log out everywhere). */
   sessionEpoch?: number
 }

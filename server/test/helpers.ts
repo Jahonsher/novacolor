@@ -97,25 +97,65 @@ export class MockProvider implements AiProvider {
 
 export type FetchCall = { url: string; body: any }
 
-/** Fake Telegram Bot API. `updates` is what getUpdates returns. */
-export function fakeTelegram(opts: { updates?: unknown[]; failSend?: boolean } = {}) {
+/**
+ * Fake Telegram Bot API. `updates` is what getUpdates returns (static). With `poll`, getUpdates hands out one
+ * batch per call (respecting `offset`) and then blocks like a long poll until the request is aborted.
+ * `webhookUrl` → getWebhookInfo (and getUpdates answers 409 like the real API). `sendErrors[chatId]` fails that chat.
+ */
+export function fakeTelegram(
+  opts: {
+    updates?: unknown[]
+    failSend?: boolean
+    poll?: { update_id: number }[][]
+    webhookUrl?: string
+    sendErrors?: Record<string, { code: number; description: string }>
+  } = {},
+) {
   const calls: FetchCall[] = []
   const fetchImpl: FetchLike = async (url, init) => {
     const body = init?.body ? JSON.parse(String(init.body)) : {}
     calls.push({ url, body })
     const method = url.split('/').pop()
     const ok = (result: unknown) => new Response(JSON.stringify({ ok: true, result }), { status: 200 })
-    if (method === 'getUpdates') return ok(opts.updates ?? [])
+    const fail = (code: number, description: string) =>
+      new Response(JSON.stringify({ ok: false, error_code: code, description }), { status: code })
+    if (method === 'getWebhookInfo') return ok({ url: opts.webhookUrl ?? '', pending_update_count: 0 })
+    if (method === 'getUpdates') {
+      if (opts.webhookUrl) return fail(409, "Conflict: can't use getUpdates method while webhook is active; use deleteWebhook to delete the webhook first")
+      if (!opts.poll) return ok(opts.updates ?? [])
+      const batch = opts.poll.shift()
+      if (batch) return ok(batch.filter((u) => u.update_id >= (body.offset ?? 0)))
+      // long poll: wait until aborted
+      return new Promise<Response>((_, reject) => {
+        const sig = init?.signal
+        if (sig?.aborted) return reject(new Error('aborted'))
+        sig?.addEventListener('abort', () => reject(new Error('aborted')), { once: true })
+      })
+    }
     if (method === 'getMe') return ok({ username: 'novacolor_test_bot' })
     if (method === 'sendMessage') {
-      if (opts.failSend) {
-        return new Response(JSON.stringify({ ok: false, error_code: 400, description: 'Bad Request: chat not found' }), { status: 400 })
-      }
+      const err = opts.sendErrors?.[String(body.chat_id)]
+      if (err) return fail(err.code, err.description)
+      if (opts.failSend) return fail(400, 'Bad Request: chat not found')
       return ok({ message_id: 1 })
     }
     return new Response('{}', { status: 404 })
   }
-  return { calls, fetchImpl, methods: () => calls.map((c) => c.url.split('/').pop()) }
+  return {
+    calls,
+    fetchImpl,
+    methods: () => calls.map((c) => c.url.split('/').pop()),
+    sent: () => calls.filter((c) => c.url.endsWith('/sendMessage')).map((c) => c.body as { chat_id: string; text: string; parse_mode?: string }),
+  }
+}
+
+/** Wait until `cond()` is true (polling loop in tests). */
+export async function waitFor(cond: () => boolean, ms = 2000) {
+  const end = Date.now() + ms
+  while (!cond()) {
+    if (Date.now() > end) throw new Error('waitFor: timeout')
+    await new Promise((r) => setTimeout(r, 5))
+  }
 }
 
 export const TOKEN = '123456:TEST-token-abcdef'

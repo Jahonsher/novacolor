@@ -68,12 +68,49 @@ export type ChatSummary = {
   leadId: string | null
 }
 
+export type TelegramMode = 'subscribers' | 'single'
+/**
+ * How /start updates reach the server: `polling` / `webhook-self` — subscribers are added automatically;
+ * `webhook` — the bot is connected to another site (`webhookHost`), /start never reaches us.
+ */
+export type TelegramUpdates = {
+  state: 'off' | 'checking' | 'polling' | 'webhook' | 'webhook-self' | 'error'
+  webhookHost: string | null
+  checkedAt: string | null
+  error: string | null
+}
 export type TelegramSettings = {
   configured: boolean
+  /** `subscribers` — every active subscriber; `single` — one chat (chatId) */
+  mode: TelegramMode
+  /** `env` = TELEGRAM_MODE in .env (read-only here) */
+  modeSource: 'env' | 'settings' | 'default'
   chatId: string | null
-  /** `env` = TELEGRAM_CHAT_ID in .env (wins, read-only here); `settings` = saved from the admin panel / auto-detected */
+  /** `env` = TELEGRAM_CHAT_ID in .env (wins, read-only here); `settings` = saved from the admin panel */
   chatIdSource?: 'env' | 'settings' | null
   botUsername: string | null
+  subscribers: { active: number; total: number }
+  updates: TelegramUpdates
+  webhookReceiver: boolean
+}
+export type TelegramSubscriber = {
+  chatId: string
+  name: string
+  username?: string
+  type: 'private' | 'group' | 'supergroup'
+  addedAt: string
+  source: 'start' | 'manual'
+  active: boolean
+  disabledBy?: 'admin' | 'user' | 'telegram'
+}
+export type TelegramSubscribers = { subscribers: TelegramSubscriber[]; max: number; updates: TelegramUpdates }
+export type TelegramTestResult = {
+  ok: boolean
+  error?: string
+  total?: number
+  sent?: number
+  failed?: number
+  results?: { chatId: string; name?: string; ok: boolean; error?: string; deactivated?: boolean }[]
 }
 export type TelegramChat = { id: string; type: string; name: string | null; username: string | null }
 export type AdminSettings = {
@@ -222,8 +259,16 @@ export const api = {
 
   // settings
   settings: () => request<AdminSettings>('GET', 'admin/settings'),
-  telegramTest: () => request<{ ok: boolean; error?: string }>('POST', 'admin/telegram/test'),
+  telegramTest: () => request<TelegramTestResult>('POST', 'admin/telegram/test'),
   telegramChats: () =>
     request<{ ok: boolean; error?: string; chats?: TelegramChat[] }>('GET', 'admin/telegram/chats'),
   setTelegramChat: (chatId: string) => request<TelegramSettings>('PUT', 'admin/settings/telegram', { chatId }),
+  setTelegramMode: (mode: TelegramMode) => request<TelegramSettings>('PUT', 'admin/settings/telegram', { mode }),
+  telegramSubscribers: () => request<TelegramSubscribers>('GET', 'admin/telegram/subscribers'),
+  addTelegramSubscriber: (s: { chatId: string; name: string }) =>
+    request<TelegramSubscriber>('POST', 'admin/telegram/subscribers', s),
+  patchTelegramSubscriber: (chatId: string, patch: { active?: boolean; name?: string }) =>
+    request<TelegramSubscriber>('PATCH', `admin/telegram/subscribers/${enc(chatId)}`, patch),
+  deleteTelegramSubscriber: (chatId: string) =>
+    request<{ ok: true }>('DELETE', `admin/telegram/subscribers/${enc(chatId)}`),
 }

@@ -158,16 +158,52 @@ export const leadInput = z.object({
   website: z.string().optional(),
 })
 
-/** Telegram chat ID: numeric (users, groups `-100…`) or a public channel `@username`; '' clears it. */
-export const telegramChatInput = z.object({
-  chatId: z
-    .string()
-    .trim()
-    .max(64)
-    .regex(/^$|^-?\d{3,20}$|^@[A-Za-z][A-Za-z0-9_]{4,31}$/, {
-      message: "Chat ID noto'g'ri: raqam (masalan 123456789 yoki guruh uchun -100…) yoki @kanal_nomi bo'lishi kerak",
-    }),
+/**
+ * Telegram settings (both optional, at least one): `chatId` for `single` mode — numeric (users, groups `-100…`)
+ * or a public channel `@username`, '' clears it; `mode` — who gets the leads.
+ */
+export const telegramSettingsInput = z
+  .object({
+    chatId: z
+      .string()
+      .trim()
+      .max(64)
+      .regex(/^$|^-?\d{3,20}$|^@[A-Za-z][A-Za-z0-9_]{4,31}$/, {
+        message: "Chat ID noto'g'ri: raqam (masalan 123456789 yoki guruh uchun -100…) yoki @kanal_nomi bo'lishi kerak",
+      })
+      .optional(),
+    mode: z.enum(['subscribers', 'single'], { message: "Rejim noto'g'ri: subscribers yoki single" }).optional(),
+  })
+  .refine((v) => v.chatId !== undefined || v.mode !== undefined, { message: 'chatId yoki mode kerak' })
+
+/** Subscriber chat ID: numeric only (a user, or a group `-…` / supergroup `-100…`). */
+export const subscriberChatId = z
+  .string()
+  .trim()
+  .regex(/^-?\d{3,20}$/, { message: "Chat ID noto'g'ri: raqam bo'lishi kerak (masalan 123456789, guruh uchun -100…)" })
+const subscriberName = text(100).min(1, { message: 'Ism kiriting' })
+const subscriberType = z.enum(['private', 'group', 'supergroup'])
+const tgUsername = z
+  .string()
+  .trim()
+  .transform((v) => v.replace(/^@/, ''))
+  .pipe(z.string().regex(/^$|^[A-Za-z0-9_]{3,64}$/, { message: "Username noto'g'ri" }))
+
+export const subscriberInput = z.object({
+  chatId: subscriberChatId,
+  name: subscriberName,
+  username: tgUsername.optional(),
+  type: subscriberType.optional(),
 })
+export const subscriberPatch = z
+  .object({ active: z.boolean().optional(), name: subscriberName.optional() })
+  .refine((v) => v.active !== undefined || v.name !== undefined, { message: 'active yoki name kerak' })
+export const subscribersPut = z.object({
+  subscribers: z.array(subscriberInput.extend({ active: z.boolean().default(true) })).max(1000),
+})
+
+/** Type from the ID when not given: `-100…` supergroup, `-…` group, else a private chat. */
+export const inferChatType = (chatId: string) => (chatId.startsWith('-100') ? 'supergroup' : chatId.startsWith('-') ? 'group' : 'private')
 
 export const leadStatus = z.enum(['new', 'in_progress', 'done'])
 export const leadPatch = z.object({ status: leadStatus.optional(), note: text(2000).optional() })
