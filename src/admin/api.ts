@@ -3,9 +3,12 @@
  * All requests go to `${BASE_URL}api/...` with the session cookie.
  * In dev, `localStorage.ncMock = '1'` routes requests to an in-browser mock (src/admin/dev/mockApi.ts).
  */
-import type { Category, Doc, DocGroup, Localized, NewsItem, Product, Video } from '../data'
+import type { Category, Doc, DocGroup, Localized, NewsItem, Product as SiteProduct, Video } from '../data'
 
-export type { Category, DocGroup, Localized, NewsItem, Product, Video }
+export type { Category, DocGroup, Localized, NewsItem, Video }
+
+/** Admin view of a product: `ai` = internal notes for the AI consultant (not sent to the public site). */
+export type Product = SiteProduct & { ai?: string }
 
 /** Uploaded PDFs carry their full relative path; bundled ones only have `file`. */
 export type AdminDoc = Doc & { path?: string }
@@ -31,6 +34,8 @@ export type Content = {
   clients: string[]
   documents: AdminDoc[]
   videos: Video[]
+  /** General company knowledge for the AI consultant (internal). */
+  aiKnowledge?: string
 }
 
 export type LeadStatus = 'new' | 'in_progress' | 'done'
@@ -301,6 +306,7 @@ export const api = {
   // site texts
   updateContacts: (c: Contacts) => request<Contacts>('PUT', 'admin/contacts', c),
   updateAbout: (a: About) => request<About>('PUT', 'admin/about', a),
+  updateAiKnowledge: (text: string) => request<{ text: string }>('PUT', 'admin/ai-knowledge', { text }),
 
   // uploads
   uploadImage: (file: File) => {

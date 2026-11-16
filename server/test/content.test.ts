@@ -163,6 +163,37 @@ describe('content & products', () => {
     assert.equal(c.contacts.email, 'a@b.uz')
   })
 
+  test('AI knowledge and product AI notes: saved for the admin, never public', async () => {
+    const unauth = await t.json('/api/admin/ai-knowledge', 'PUT', { text: 'x' })
+    assert.equal(unauth.status, 401)
+    const foreign = await t.json('/api/admin/ai-knowledge', 'PUT', { text: 'x' }, { cookie, headers: { origin: 'https://evil.example' } })
+    assert.equal(foreign.status, 403)
+    const bad = await t.json('/api/admin/ai-knowledge', 'PUT', { text: 'x'.repeat(20001) }, { cookie })
+    assert.equal(bad.status, 400)
+
+    const res = await t.json('/api/admin/ai-knowledge', 'PUT', { text: '  Yetkazib berish: Toshkent bo‘ylab bepul.  ' }, { cookie })
+    assert.equal(res.status, 200)
+    assert.deepEqual(await res.json(), { text: 'Yetkazib berish: Toshkent bo‘ylab bepul.' })
+
+    const created = await t.json('/api/admin/products', 'POST', product({ slug: 'ai-notes', ai: ' Mehmonxonaga mos. ' }), { cookie })
+    assert.equal(created.status, 201)
+    assert.equal(((await created.json()) as Product).ai, 'Mehmonxonaga mos.')
+
+    const admin = (await (await t.request('/api/admin/content', { cookie })).json()) as Content
+    assert.equal(admin.aiKnowledge, 'Yetkazib berish: Toshkent bo‘ylab bepul.')
+    assert.equal(admin.products.find((p) => p.slug === 'ai-notes')!.ai, 'Mehmonxonaga mos.')
+
+    const pub = await t.request('/api/content')
+    const raw = await pub.text()
+    assert.ok(!raw.includes('aiKnowledge'), 'aiKnowledge leaked')
+    assert.ok(!raw.includes('Mehmonxonaga mos.'), 'product ai notes leaked')
+    const c = JSON.parse(raw) as Content
+    assert.ok(c.products.some((p) => p.slug === 'ai-notes'))
+    assert.ok(c.products.every((p) => !('ai' in p)))
+
+    assert.equal((await t.request('/api/admin/products/ai-notes', { method: 'DELETE', cookie })).status, 200)
+  })
+
   test(`backups are capped at ${BACKUPS_KEEP}`, async () => {
     for (let i = 0; i < BACKUPS_KEEP + 3; i++) {
       const r = await t.json('/api/admin/about', 'PUT', { lead: { uz: `v${i}`, ru: 'б' }, extra: { uz: 'c', ru: 'д' } }, { cookie })

@@ -48,6 +48,7 @@ const empty: FormState = {
   gallery: [],
   subtitle: { uz: '', ru: '' },
   description: { uz: '', ru: '' },
+  ai: '',
 }
 const fromProduct = (p: Product): FormState => ({
   name: p.name,
@@ -57,6 +58,7 @@ const fromProduct = (p: Product): FormState => ({
   gallery: [...p.gallery],
   subtitle: { ...p.subtitle },
   description: { ...p.description },
+  ai: p.ai ?? '',
 })
 
 function Editor({ product, content }: { product?: Product; content: Content }) {
@@ -106,6 +108,7 @@ function Editor({ product, content }: { product?: Product; content: Content }) {
       name: f.name.trim(),
       subtitle: { uz: f.subtitle.uz.trim(), ru: f.subtitle.ru.trim() },
       description: { uz: tidy(f.description.uz), ru: tidy(f.description.ru) },
+      ai: tidy(f.ai ?? ''),
     }
     setSaving(true)
     try {
@@ -279,6 +282,30 @@ function Editor({ product, content }: { product?: Product; content: Content }) {
                   rows={9}
                   value={f.description.ru}
                   onChange={(e) => set('description', { ...f.description, ru: e.target.value })}
+                />
+              )}
+            </Field>
+          </Card>
+
+          <Card className="order-3 grid gap-4 p-4 md:p-5">
+            <SectionTitle className="mb-0">AI uchun ma’lumot</SectionTitle>
+            <Field
+              label="AI maslahatchi uchun eslatmalar"
+              hint={
+                <>
+                  AI maslahatchi shu mahsulot haqida mijozlarga javob berishda foydalanadi: qaysi xona/yuzaga mos, sarfi,
+                  afzalliklari, nima bilan birga ishlatiladi. Narx yozmang. Saytda ko‘rinmaydi. ({(f.ai ?? '').length}/5000)
+                </>
+              }
+            >
+              {(id) => (
+                <Textarea
+                  id={id}
+                  rows={6}
+                  maxLength={5000}
+                  value={f.ai ?? ''}
+                  placeholder="Masalan: mehmonxona va yotoqxona uchun; sarfi ~0,2 l/m² (2 qatlam); oldin grunt surtiladi; metall effektli…"
+                  onChange={(e) => set('ai', e.target.value)}
                 />
               )}
             </Field>

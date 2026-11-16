@@ -11,6 +11,7 @@ import { log } from '../log.js'
 import { clientIp, fromTrustedProxy, limitKey } from '../rate-limit.js'
 import {
   aboutSchema,
+  aiKnowledgeInput,
   categoryInput,
   contactsInput,
   docGroup,
@@ -400,6 +401,15 @@ export function adminRoutes(ctx: AppContext) {
       return d.about
     })
     return c.json(about)
+  })
+
+  app.put('/ai-knowledge', async (c) => {
+    const { text } = await jsonBody(c, aiKnowledgeInput)
+    const saved = await content.mutate((d) => {
+      d.aiKnowledge = text
+      return d.aiKnowledge
+    })
+    return c.json({ text: saved })
   })
 
   // ---- Uploads ----

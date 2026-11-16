@@ -16,6 +16,7 @@ const NAV = [
   { to: '/admin/videos', label: 'Videolar', icon: 'video' },
   { to: '/admin/leads', label: 'Arizalar', icon: 'leads', badge: true },
   { to: '/admin/chats', label: 'AI suhbatlar', icon: 'chats' },
+  { to: '/admin/ai', label: 'AI o‘rgatish', icon: 'docs' },
   { to: '/admin/settings', label: 'Sozlamalar', icon: 'settings' },
 ] as const
 

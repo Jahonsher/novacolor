@@ -19,6 +19,7 @@ import Videos from './pages/Videos'
 import Leads from './pages/Leads'
 import Chats, { ChatDetail } from './pages/Chats'
 import Settings from './pages/Settings'
+import AiTraining from './pages/AiTraining'
 
 type Auth = 'checking' | 'in' | 'out'
 
@@ -103,6 +104,7 @@ export default function AdminApp() {
                   <Route path="leads" element={<Leads />} />
                   <Route path="chats" element={<Chats />} />
                   <Route path="chats/:id" element={<ChatDetail />} />
+                  <Route path="ai" element={<AiTraining />} />
                   <Route path="settings" element={<Settings />} />
                   <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
                 </Route>

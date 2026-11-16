@@ -87,7 +87,22 @@ function initial(): DB {
     { id: 'l-4', createdAt: iso(60 * 26 - 4), source: 'ai', name: '', phone: '998977776655', message: 'Венецианская штукатурка для гостиной', chatId: 'c-1003', status: 'done', telegram: 'sent' },
     { id: 'l-5', createdAt: iso(60 * 50), source: 'contact', name: 'Елена', phone: '+998 71 200 30 40', product: 'Velvet', message: 'Сколько стоит доставка?', status: 'done', telegram: 'skipped' },
   ]
+  content.aiKnowledge = MOCK_AI_KNOWLEDGE
+  for (const p of content.products) p.ai = MOCK_AI_NOTES[p.slug] ?? ''
   return { content: withCounts(content), leads, chats, chatId: null }
+}
+
+const MOCK_AI_KNOWLEDGE = `Ish vaqti: dushanba–shanba 9:00–18:00, yakshanba dam olish kuni.
+Showroom: Toshkent, namunalarni jonli ko‘rish va rang tanlash mumkin — oldindan qo‘ng‘iroq qiling.
+Yetkazib berish: Toshkent bo‘ylab, viloyatlarga kelishilgan holda. Narx va muddatni menejer aytadi.
+Ustalar: sertifikatlangan ustalarimiz qoplamani surtib berishi mumkin.
+Qanday tanlash: avval xona (yoki fasad), keyin istalgan effekt (metall, baxmal, beton, marmar) va maydonni so‘rang.`
+
+const MOCK_AI_NOTES: Record<string, string> = {
+  africa:
+    'Mehmonxona, yotoqxona va ofis devorlari uchun. Yumshoq metall jilo va baxmalsimon tekstura. Sarfi taxminan 0,15–0,2 l/m² (ikki qatlam). Oldin maxsus grunt surtiladi.',
+  dune: 'Qum effektli dekorativ qoplama — zamonaviy va minimalistik interyerlarga mos. Yo‘lak va zinapoyalar uchun ham chidamli.',
+  'metallo-fuso': 'Haqiqiy metall (bronza, mis) zarrachali qoplama. Aktsent devor, ustun va eshiklar uchun. Shamol va namlikdan himoyalangan joylarda ishlatiladi.',
 }
 
 function withCounts(c: Content): Content {
@@ -294,6 +309,12 @@ export async function handle(url: string, init: RequestInit): Promise<Response> 
     if (r === 'about' && method === 'PUT') {
       c.about = b as Content['about']
       return json(200, c.about)
+    }
+    if (r === 'ai-knowledge' && method === 'PUT') {
+      const text = String(b.text ?? '').trim()
+      if (text.length > 20000) return err(400, 'text: Matn juda uzun (20000 belgigacha)')
+      c.aiKnowledge = text
+      return json(200, { text })
     }
 
     if (r === 'upload' && id === 'image' && method === 'POST') {

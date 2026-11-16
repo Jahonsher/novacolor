@@ -12,6 +12,17 @@ const clip = (s: string, n: number) => {
   return t.length > n ? `${t.slice(0, n).replace(/\s+\S*$/, '')}…` : t
 }
 
+/** Like clip, but keeps line breaks (the company knowledge is usually a list / FAQ). */
+const clipBlock = (s: string, n: number) => {
+  const t = s
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ ?\n ?/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+  return t.length > n ? `${t.slice(0, n).replace(/\s+\S*$/, '')}…` : t
+}
+
 /**
  * Stable system prompt built from the live catalog. Deterministic for a given content + lang,
  * so it is cache-friendly; rebuilt only when content changes.
@@ -26,6 +37,7 @@ export function buildSystemPrompt(content: Content, lang: Lang, clientsInfo?: Cl
         cats && `  ${lang === 'ru' ? 'Категории' : 'Kategoriya'}: ${cats}`,
         p.subtitle[lang] && `  ${clip(p.subtitle[lang], 200)}`,
         p.description[lang] && `  ${clip(p.description[lang], 300)}`,
+        p.ai && `  AI notes: ${clip(p.ai, 600)}`,
       ]
         .filter(Boolean)
         .join('\n')
@@ -52,6 +64,8 @@ export function buildSystemPrompt(content: Content, lang: Lang, clientsInfo?: Cl
     })
     .join('\n')
 
+  const knowledge = content.aiKnowledge ? clipBlock(content.aiKnowledge, 6000) : ''
+
   const language = lang === 'ru' ? 'Russian (русский)' : "Uzbek (o'zbek tili, Latin script)"
 
   return `You are the online consultant of Novacolor Uzbekistan (Tashkent) — the official seller of Novacolor (Italy) decorative wall coatings and paints. You chat with website visitors.
@@ -76,7 +90,10 @@ Catalog (${content.products.length} products):
 ${products}${clients ? `
 
 Our clients (/clients):
-${clients}` : ''}`
+${clients}` : ''}${knowledge ? `
+
+Company knowledge (written by the company, trust it):
+${knowledge}` : ''}`
 }
 
 export class PromptCache {

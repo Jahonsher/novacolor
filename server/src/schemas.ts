@@ -61,6 +61,8 @@ const productFields = (asset: z.ZodType<string>) => ({
   gallery: z.array(asset).max(100).default([]),
   subtitle: localized(500),
   description: localized(20000),
+  // internal notes for the AI consultant (never sent to the public site)
+  ai: text(5000).default(''),
 })
 export const productInput = z.object(productFields(assetPath))
 export const productSchema = z.object({ id: z.int().positive(), ...productFields(storedAsset) })
@@ -150,6 +152,8 @@ export const statSchema = z.object({ id: z.int(), value: z.number(), label: loca
 
 export const aboutSchema = z.object({ lead: localized(10000), extra: localized(10000) })
 
+export const aiKnowledgeInput = z.object({ text: text(20000) })
+
 export const contactsInput = z.object({
   phone: text(50).min(1),
   // '' / missing → generated from `phone`
@@ -200,6 +204,8 @@ export const contentSchema = z.looseObject({
   documents: z.array(docSchema),
   // added later: content.json files written before videos existed have no `videos`
   videos: z.array(videoSchema).default([]),
+  // general company knowledge for the AI consultant (internal, stripped from the public /api/content)
+  aiKnowledge: z.string().max(20000).default(''),
 })
 
 export type Localized = z.infer<ReturnType<typeof localized>>

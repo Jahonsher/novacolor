@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import type { AppContext } from '../context.js'
 import { HttpError } from '../errors.js'
-import { leadInput } from '../schemas.js'
+import { leadInput, type Content } from '../schemas.js'
 import { log } from '../log.js'
 import { clientIp, limitKey } from '../rate-limit.js'
 import { jsonBody, maxBody, SMALL_BODY } from './util.js'
@@ -13,7 +13,7 @@ export function publicRoutes(ctx: AppContext) {
 
   app.get('/content', (c) => {
     c.header('Cache-Control', 'no-cache')
-    return c.json(ctx.content.get())
+    return c.json(publicContent(ctx.content.get()))
   })
 
   app.post(
@@ -55,4 +55,18 @@ export function publicRoutes(ctx: AppContext) {
   )
 
   return app
+}
+
+/** Content without the internal AI notes (`aiKnowledge`, product `ai`). */
+export function publicContent(content: Content) {
+  const out: Record<string, unknown> = {
+    ...content,
+    products: content.products.map((p) => {
+      const copy: Partial<typeof p> = { ...p }
+      delete copy.ai
+      return copy
+    }),
+  }
+  delete out.aiKnowledge
+  return out
 }

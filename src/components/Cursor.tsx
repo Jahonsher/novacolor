@@ -33,10 +33,10 @@ export function Cursor() {
       const big = next !== '' && next !== 'link' && next !== 'text'
       if (big) label.current!.textContent = next === 'view' ? viewText : next
       gsap.to(r, {
-        width: big ? 96 : next === 'link' ? 56 : 34,
-        height: big ? 96 : next === 'link' ? 56 : 34,
-        backgroundColor: big ? 'rgba(236,231,223,1)' : 'rgba(236,231,223,0)',
-        borderColor: next === 'text' ? 'rgba(236,231,223,0)' : 'rgba(236,231,223,0.5)',
+        width: big ? 104 : next === 'link' ? 68 : 46,
+        height: big ? 104 : next === 'link' ? 68 : 46,
+        backgroundColor: big ? 'rgba(26,25,23,0.92)' : next === 'link' ? 'rgba(194,165,124,0.18)' : 'rgba(194,165,124,0)',
+        borderColor: next === 'text' ? 'rgba(26,25,23,0)' : 'rgba(26,25,23,0.85)',
         duration: 0.5,
         ease: 'expo.out',
       })
@@ -83,12 +83,16 @@ export function Cursor() {
   if (isTouch) return null
   return (
     <div className="tone-dark pointer-events-none fixed inset-0 z-[110]" aria-hidden>
-      <div ref={dot} className="fixed left-0 top-0 -ml-[3px] -mt-[3px] h-1.5 w-1.5 rounded-full bg-bone mix-blend-difference" />
+      {/* dark fill + white outline: readable on the light pages, the video hero and photos alike */}
+      <div
+        ref={dot}
+        className="fixed left-0 top-0 -ml-[6px] -mt-[6px] h-3 w-3 rounded-full bg-[#1a1917] shadow-[0_0_0_2px_rgba(255,255,255,0.95),0_2px_8px_rgba(0,0,0,0.35)]"
+      />
       <div
         ref={ring}
-        className="fixed left-0 top-0 grid h-[34px] w-[34px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-bone/50 mix-blend-difference"
+        className="fixed left-0 top-0 grid h-[46px] w-[46px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-[#1a1917]/85 shadow-[0_0_0_2px_rgba(255,255,255,0.75),inset_0_0_0_1px_rgba(255,255,255,0.6)]"
       >
-        <span ref={label} className="label invisible text-[10px] !tracking-[0.18em] !text-ink" />
+        <span ref={label} className="label invisible text-[10px] !tracking-[0.18em] !text-white" />
       </div>
     </div>
   )

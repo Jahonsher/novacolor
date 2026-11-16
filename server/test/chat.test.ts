@@ -240,6 +240,33 @@ describe('AI chat route (mocked provider)', () => {
     }
   })
 
+  test('buildSystemPrompt includes product AI notes and company knowledge (clipped, deterministic)', async () => {
+    const t = await makeApp()
+    try {
+      const base = t.ctx.content.get()
+      const plain = buildSystemPrompt(base, 'uz')
+      assert.doesNotMatch(plain, /AI notes:|Company knowledge/)
+      const content = {
+        ...base,
+        aiKnowledge: `Ish vaqti: 9:00–18:00\nShowroom: Chilonzor\n${'uzun '.repeat(3000)}`,
+        products: base.products.map((p, i) => (i === 0 ? { ...p, ai: `Yotoqxonaga mos. ${'sarf '.repeat(500)}` } : p)),
+      }
+      const prompt = buildSystemPrompt(content, 'uz')
+      assert.equal(prompt, buildSystemPrompt(content, 'uz'))
+      const note = prompt.split('\n').find((l) => l.startsWith('  AI notes: '))!
+      assert.ok(note.includes('Yotoqxonaga mos.'))
+      assert.ok(note.length < 620, `note length ${note.length}`)
+      assert.equal(prompt.match(/AI notes:/g)!.length, 1)
+      const idx = prompt.indexOf('Company knowledge (written by the company, trust it):\n')
+      assert.ok(idx > 0)
+      const knowledge = prompt.slice(idx).split('\n').slice(1).join('\n')
+      assert.ok(knowledge.startsWith('Ish vaqti: 9:00–18:00\nShowroom: Chilonzor'))
+      assert.ok(knowledge.length <= 6001, `knowledge length ${knowledge.length}`)
+    } finally {
+      await t.close()
+    }
+  })
+
   test('chats.json keeps at most N sessions (oldest dropped)', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'nc-chats-'))
     try {
