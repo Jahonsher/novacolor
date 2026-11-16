@@ -207,7 +207,11 @@ export default function Home() {
       </section>
       <section className="tone-light panel py-20 md:py-28">
         <div className="mb-12 px-5 md:mb-16 md:px-10">
-          <SectionHead index={n(5)} label={t('clients.label')} />
+          <SectionHead index={n(5)} label={t('clients.label')}>
+            <TLink to="/clients" className="label link-line !text-bone">
+              {t('clients.all')} →
+            </TLink>
+          </SectionHead>
           <Reveal as="h2" by="words" className="display mt-10 text-6xl md:text-8xl">
             {t('clients.title')}
           </Reveal>

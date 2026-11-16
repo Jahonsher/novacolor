@@ -11,6 +11,7 @@ export const NAV: { to: string; key: Key }[] = [
   { to: '/', key: 'nav.home' },
   { to: '/products', key: 'nav.products' },
   { to: '/about', key: 'nav.about' },
+  { to: '/clients', key: 'nav.clients' },
   { to: '/news', key: 'nav.news' },
   { to: '/contact', key: 'nav.contact' },
 ]
@@ -145,7 +146,7 @@ export function Header() {
   const [light, setLight] = useState(false)
   const openRef = useRef(false)
   openRef.current = open
-  const activeIndex = NAV.slice(1).findIndex((n) => pathname.startsWith(n.to))
+  const activeIndex = NAV.findIndex((n) => (n.to === '/' ? pathname === '/' : pathname.startsWith(n.to)))
 
   // the bar is always on screen; it turns into light glass over light sections (like iOS)
   useEffect(() => {
@@ -288,7 +289,7 @@ export function Header() {
       .to(l, { scaleX: 1, scaleY: 1, duration: 0.9, ease: 'elastic.out(1.1, 0.45)' }, 0.16)
     if (best !== activeIndex) {
       pending.current = best
-      setTimeout(() => go(NAV[best + 1].to), 420)
+      setTimeout(() => go(NAV[best].to), 420)
     }
   }
 
@@ -341,12 +342,12 @@ export function Header() {
 
           <nav
             ref={nav}
-            className="relative hidden touch-none select-none items-center lg:flex"
+            className="relative hidden touch-none select-none items-center xl:flex"
             onPointerDown={onNavDown}
             onPointerLeave={() => !drag.current && moveLens(activeLink())}
           >
             <span ref={lens} className="glass-drop pointer-events-none invisible absolute left-0 top-0 h-full rounded-full will-change-transform" aria-hidden />
-            {NAV.slice(1).map((n, i) => (
+            {NAV.map((n, i) => (
               <TLink
                 key={n.to}
                 to={n.to}
@@ -360,7 +361,7 @@ export function Header() {
                   setOpen(false)
                 }}
                 onPointerEnter={(e) => !drag.current && moveLens(e.currentTarget)}
-                className="label relative z-[1] flex items-baseline gap-1.5 rounded-full px-4 py-2.5 !text-bone transition-transform duration-300 active:scale-95"
+                className="label relative z-[1] flex items-baseline gap-1.5 whitespace-nowrap rounded-full px-3 py-2.5 !text-bone 2xl:px-4 transition-transform duration-300 active:scale-95"
               >
                 <span className="text-[9px] text-bone/50">{pad(i + 1)}</span>
                 <span className={i === activeIndex ? 'text-bone' : 'text-bone/85'}>{t(n.key)}</span>

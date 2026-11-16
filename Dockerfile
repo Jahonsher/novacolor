@@ -43,6 +43,7 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server-dist ./server-dist
 COPY --from=build /app/src/data/content.json ./src/data/content.json
+COPY --from=build /app/src/data/clients.json ./src/data/clients.json
 COPY deploy/docker-entrypoint.sh /usr/local/bin/novacolor-entrypoint.sh
 RUN chmod 755 /usr/local/bin/novacolor-entrypoint.sh \
  && mkdir -p /app/data && chown node:node /app/data

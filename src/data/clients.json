@@ -1,0 +1,128 @@
+{
+ "sectors": {
+  "dev": {
+   "name": {
+    "uz": "Developerlar va qurilish",
+    "ru": "Девелоперы и строительство"
+   },
+   "text": {
+    "uz": "Turar-joy majmualari va biznes-markazlar: fasadlar, kirish zallari, lift xollari va umumiy hududlar uchun bardoshli dekorativ qoplamalar.",
+    "ru": "Жилые комплексы и бизнес-центры: прочные декоративные покрытия для фасадов, входных групп, лифтовых холлов и общих зон."
+   }
+  },
+  "bank": {
+   "name": {
+    "uz": "Banklar va ofislar",
+    "ru": "Банки и офисы"
+   },
+   "text": {
+    "uz": "Mijozlar zallari va ofislar uchun ishonch uyg‘otadigan, oson tozalanadigan va uzoq yillar xizmat qiladigan pardozlash.",
+    "ru": "Отделка для клиентских залов и офисов: солидно выглядит, легко моется и служит долгие годы."
+   }
+  },
+  "food": {
+   "name": {
+    "uz": "Restoran va kafelar",
+    "ru": "Рестораны и кафе"
+   },
+   "text": {
+    "uz": "Restoran konsepsiyasiga mos o‘ziga xos fakturalar: beton, metall, mineral va “eskirgan” effektlar — namlik va yuvishga chidamli.",
+    "ru": "Фактуры под концепцию заведения: бетон, металл, минеральные и «состаренные» эффекты — устойчивые к влаге и мытью."
+   }
+  },
+  "retail": {
+   "name": {
+    "uz": "Showroom va savdo",
+    "ru": "Шоурумы и ритейл"
+   },
+   "text": {
+    "uz": "Mahsulotni ko‘rsatadigan fon: premium showroom va do‘konlar uchun yorug‘likni chiroyli qaytaradigan metall va silliq qoplamalar.",
+    "ru": "Фон, который подчёркивает товар: металлизированные и гладкие покрытия для премиальных шоурумов и магазинов."
+   }
+  },
+  "industry": {
+   "name": {
+    "uz": "Sanoat brendlari",
+    "ru": "Промышленные бренды"
+   },
+   "text": {
+    "uz": "Ishlab chiqaruvchi kompaniyalarning ofislari, ko‘rgazma zallari va brend-hududlari uchun yechimlar.",
+    "ru": "Решения для офисов, выставочных залов и брендовых пространств производственных компаний."
+   }
+  }
+ },
+ "clients": {
+  "client-1.svg": {
+   "name": "Murad Buildings",
+   "sector": "dev",
+   "about": {
+    "uz": "Toshkentdagi yirik developer kompaniyalaridan biri — zamonaviy turar-joy majmualari va biznes-markazlar quradi.",
+    "ru": "Один из крупных девелоперов Ташкента — строит современные жилые комплексы и бизнес-центры."
+   }
+  },
+  "client-2.png": {
+   "name": "DreamCity Development",
+   "sector": "dev",
+   "about": {
+    "uz": "Toshkentdagi turar-joy majmualari developeri: qulay hovlilar va obodonlashtirilgan hududlarga ega uylar.",
+    "ru": "Девелопер жилых комплексов в Ташкенте: дома с благоустроенными дворами и территорией."
+   }
+  },
+  "client-3.png": {
+   "name": "Imzo (Akfa)",
+   "sector": "industry",
+   "about": {
+    "uz": "Akfa guruhining premium brendi — alyumin deraza, eshik va fasad tizimlari.",
+    "ru": "Премиальный бренд группы Akfa — алюминиевые окна, двери и фасадные системы."
+   }
+  },
+  "client-4.png": {
+   "name": "Akfa",
+   "sector": "industry",
+   "about": {
+    "uz": "O‘zbekistondagi eng yirik sanoat guruhlaridan biri: alyumin va PVX profillar, deraza-eshik tizimlari ishlab chiqaruvchisi.",
+    "ru": "Одна из крупнейших промышленных групп Узбекистана: производитель алюминиевых и ПВХ-профилей, оконных и дверных систем."
+   }
+  },
+  "client-agrobank.png": {
+   "name": "Agrobank",
+   "sector": "bank",
+   "about": {
+    "uz": "O‘zbekistonning eng yirik banklaridan biri — butun mamlakat bo‘ylab filiallar tarmog‘iga ega.",
+    "ru": "Один из крупнейших банков Узбекистана с сетью филиалов по всей стране."
+   }
+  },
+  "client-apexbank.png": {
+   "name": "Apexbank",
+   "sector": "bank",
+   "about": {
+    "uz": "O‘zbekiston tijorat banki — jismoniy shaxslar va biznes uchun zamonaviy bank xizmatlari.",
+    "ru": "Коммерческий банк Узбекистана — современные банковские услуги для частных клиентов и бизнеса."
+   }
+  },
+  "client-kitana.png": {
+   "name": "Kitana Asia Grill",
+   "sector": "food",
+   "about": {
+    "uz": "Osiyo oshxonasi va grill restorani.",
+    "ru": "Ресторан азиатской кухни и гриля."
+   }
+  },
+  "client-prokhinkali.png": {
+   "name": "Pro.Хинкали by Novikov",
+   "sector": "food",
+   "about": {
+    "uz": "Novikov Group’ning gruzin oshxonasi restoranlari tarmog‘i — xinkali va milliy taomlar.",
+    "ru": "Сеть ресторанов грузинской кухни от Novikov Group — хинкали и национальные блюда."
+   }
+  },
+  "client-jaguar.png": {
+   "name": "Jaquar World",
+   "sector": "retail",
+   "about": {
+    "uz": "Premium santexnika, vanna jihozlari va yoritish brendining ko‘rgazma zali.",
+    "ru": "Шоурум премиального бренда сантехники, оборудования для ванных комнат и освещения."
+   }
+  }
+ }
+}

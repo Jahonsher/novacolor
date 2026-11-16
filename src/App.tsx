@@ -13,6 +13,7 @@ import Home from './pages/Home'
 import Products from './pages/Products'
 import Product from './pages/Product'
 import About from './pages/About'
+import Clients from './pages/Clients'
 import News from './pages/News'
 import Contact from './pages/Contact'
 import NotFound from './pages/NotFound'
@@ -43,6 +44,7 @@ const AiChat = import.meta.env.VITE_API ? lazy(() => import('./components/AiChat
 const titles: Record<string, { uz: string; ru: string }> = {
   '/products': { uz: 'Mahsulotlar', ru: 'Продукты' },
   '/about': { uz: 'Biz haqimizda', ru: 'О нас' },
+  '/clients': { uz: 'Mijozlarimiz', ru: 'Наши клиенты' },
   '/news': { uz: 'Yangiliklar', ru: 'Новости' },
   '/contact': { uz: 'Aloqa', ru: 'Контакты' },
 }
@@ -82,6 +84,7 @@ export default function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/products/:slug" element={<Product />} />
           <Route path="/about" element={<About />} />
+          <Route path="/clients" element={<Clients />} />
           <Route path="/news" element={<News />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />

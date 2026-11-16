@@ -1,10 +1,11 @@
 import { randomBytes } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { sessionKey } from './auth.js'
 import type { Config } from './config.js'
 import { createProvider } from './ai/index.js'
-import { PromptCache } from './ai/prompt.js'
+import { PromptCache, type ClientsInfo } from './ai/prompt.js'
 import type { AiProvider } from './ai/types.js'
 import { registerSecret } from './log.js'
 import { RateLimiter } from './rate-limit.js'
@@ -17,6 +18,15 @@ import { VideoTools } from './video.js'
 
 /** Lead notifications per hour across all visitors (spam must not flood the chat or hit Telegram limits). */
 export const TELEGRAM_HOURLY_LIMIT = 60
+
+/** Client names/notes for the AI prompt: src/data/clients.json next to the seed content.json (optional). */
+function loadClientsInfo(seedContent: string): ClientsInfo | undefined {
+  try {
+    return JSON.parse(readFileSync(path.join(path.dirname(seedContent), 'clients.json'), 'utf8')) as ClientsInfo
+  } catch {
+    return undefined
+  }
+}
 
 export type AppContext = {
   config: Config
@@ -142,7 +152,7 @@ export async function createContext(config: Config, overrides: ContextOverrides 
     subscribers,
     telegram,
     ai,
-    prompts: new PromptCache(),
+    prompts: new PromptCache(loadClientsInfo(config.seedContent)),
     sessionSecret,
     sessionKey: () => {
       const epoch = settings.get().sessionEpoch ?? 0
