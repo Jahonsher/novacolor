@@ -82,7 +82,7 @@ export function Cursor() {
 
   if (isTouch) return null
   return (
-    <div className="pointer-events-none fixed inset-0 z-[110]" aria-hidden>
+    <div className="tone-dark pointer-events-none fixed inset-0 z-[110]" aria-hidden>
       <div ref={dot} className="fixed left-0 top-0 -ml-[3px] -mt-[3px] h-1.5 w-1.5 rounded-full bg-bone mix-blend-difference" />
       <div
         ref={ring}

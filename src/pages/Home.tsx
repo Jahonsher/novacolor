@@ -1,14 +1,41 @@
-import { useRef } from 'react'
-import { HeroCanvas } from '../gl/HeroCanvas'
+import { useEffect, useRef } from 'react'
 import { CategoryRing } from '../gl/CategoryRing'
 import { GLImage } from '../components/GLImage'
 import { Reveal, ScrubText, FadeUp } from '../components/Reveal'
 import { TLink } from '../components/Transition'
 import { Clients, ContactCTA, NewsList, SectionHead, Stats } from '../components/Blocks'
 import { VideoSection } from '../components/Videos'
-import { about, featured, pad, videos } from '../data'
+import { about, asset, featured, pad, videos } from '../data'
 import { useLang } from '../i18n'
 import { gsap, useGSAP, reducedMotion, useReady } from '../lib/motion'
+
+/** Full-screen background video (same footage as novacolor.uz); a lighter file on small screens. */
+function HeroVideo() {
+  const ref = useRef<HTMLVideoElement>(null)
+  const small = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+  useEffect(() => {
+    const v = ref.current
+    if (!v) return
+    // pause while the hero is off screen or the tab is hidden
+    const io = new IntersectionObserver(([e]) => (e.isIntersecting && !document.hidden ? v.play().catch(() => undefined) : v.pause()))
+    io.observe(v)
+    return () => io.disconnect()
+  }, [])
+  return (
+    <video
+      ref={ref}
+      className="h-full w-full object-cover"
+      src={asset(small ? 'video/hero-mobile.mp4' : 'video/hero.mp4')}
+      poster={asset('video/hero-poster.jpg')}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      aria-hidden
+    />
+  )
+}
 
 function Hero() {
   const { t } = useLang()
@@ -31,9 +58,11 @@ function Hero() {
   )
 
   return (
-    <section ref={root} className="grain relative h-[100svh] min-h-[600px] overflow-hidden">
+    <section ref={root} className="tone-dark relative h-[100svh] min-h-[600px] overflow-hidden bg-[#0c0b0a]">
       <div className="absolute inset-0">
-        <HeroCanvas />
+        <HeroVideo />
+        {/* soft shade top and bottom so the white text stays readable on the bright footage */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_0_0/0.45)_0%,rgb(0_0_0/0.1)_35%,rgb(0_0_0/0.15)_60%,rgb(0_0_0/0.6)_100%)]" />
       </div>
       <div className="relative flex h-full flex-col justify-between px-5 pb-8 pt-28 md:px-10 md:pb-10 md:pt-36">
         <div data-hero-fade className="invisible flex justify-between">
@@ -176,8 +205,13 @@ export default function Home() {
         </SectionHead>
         <NewsList limit={5} />
       </section>
-      <section className="tone-light panel">
-        <p className="label px-5 pt-10 md:px-10">{`${n(5)} — ${t('clients.label')}`}</p>
+      <section className="tone-light panel py-20 md:py-28">
+        <div className="mb-12 px-5 md:mb-16 md:px-10">
+          <SectionHead index={n(5)} label={t('clients.label')} />
+          <Reveal as="h2" by="words" className="display mt-10 text-6xl md:text-8xl">
+            {t('clients.title')}
+          </Reveal>
+        </div>
         <Clients />
       </section>
       <ContactCTA />

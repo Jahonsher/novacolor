@@ -129,8 +129,8 @@ export default function About() {
         </div>
       </section>
 
-      <section className="tone-light panel">
-        <p className="label px-5 pt-10 md:px-10">{`— ${t('clients.label')}`}</p>
+      <section className="tone-light panel pb-10 md:pb-14">
+        <p className="label px-5 pb-8 pt-12 md:px-10">{`— ${t('clients.label')}`}</p>
         <Clients />
       </section>
       <ContactCTA />

@@ -198,7 +198,7 @@ function Lightbox({ images, index, name, onClose, onIndex }: { images: string[];
   }, { dependencies: [index], scope: root })
 
   return createPortal(
-    <div ref={root} className="fixed inset-0 z-[95] flex flex-col bg-ink/95 backdrop-blur" role="dialog" aria-modal="true" aria-label={name}>
+    <div ref={root} className="tone-dark fixed inset-0 z-[95] flex flex-col bg-ink/95 backdrop-blur" role="dialog" aria-modal="true" aria-label={name}>
       <div className="flex items-center justify-between px-5 py-5 md:px-10">
         <span className="label">
           {name} — {pad(index + 1)} / {pad(images.length)}

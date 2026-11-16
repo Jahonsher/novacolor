@@ -133,14 +133,24 @@ export function NewsList({ limit }: { limit?: number }) {
   )
 }
 
-/** Infinite client-logo strip. */
+/** Infinite strip of client logos in their own colours, each on a white card; hovering pauses it. */
 export function Clients() {
-  const row = [...clients, ...clients, ...clients]
+  // repeat short lists so one half of the track is always wider than the screen
+  const row = clients.length < 8 ? [...clients, ...clients] : clients
   return (
-    <div className="relative overflow-hidden py-10 [mask-image:linear-gradient(90deg,transparent,#000_15%,#000_85%,transparent)]">
-      <div className="flex w-max items-center gap-24 pr-24" style={{ animation: reducedMotion ? 'none' : 'marquee 40s linear infinite' }}>
+    <div className="group/clients relative overflow-hidden py-4 [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
+      <div
+        className="flex w-max items-center gap-4 pr-4 group-hover/clients:[animation-play-state:paused] md:gap-6 md:pr-6"
+        style={{ animation: reducedMotion ? 'none' : `marquee ${row.length * 5}s linear infinite` }}
+      >
         {[...row, ...row].map((c, i) => (
-          <img key={i} src={asset(c)} alt="" className="h-14 w-auto opacity-70 [filter:brightness(0)] md:h-20" loading="lazy" />
+          <div
+            key={i}
+            aria-hidden={i >= row.length || undefined}
+            className="flex h-28 w-48 shrink-0 items-center justify-center rounded-[22px] bg-white p-5 shadow-[0_10px_30px_-18px_rgb(22_21_19/0.35)] md:h-36 md:w-64 md:p-7"
+          >
+            <img src={asset(c)} alt="" className="max-h-full max-w-full object-contain" loading="lazy" draggable={false} />
+          </div>
         ))}
       </div>
     </div>

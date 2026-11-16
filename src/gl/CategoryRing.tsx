@@ -60,8 +60,8 @@ const fragment = /* glsl */ `
     );
     float grey = dot(col, vec3(0.299, 0.587, 0.114));
     float f = smoothstep(-0.1, 1.0, uFacing);
-    col = mix(vec3(grey) * 0.55, col, f);
-    col *= mix(0.18, 1.0, f);
+    col = mix(vec3(grey), col, f);
+    col = mix(vec3(0.98, 0.973, 0.957), col, mix(0.28, 1.0, f));
     gl_FragColor = vec4(col, uLoaded);
   }
 `

@@ -157,12 +157,13 @@ export function Header() {
       if (!g) return
       const r = g.getBoundingClientRect()
       const y = r.top + r.height / 2
-      let over = false
-      if (!openRef.current) {
-        for (const s of document.querySelectorAll<HTMLElement>('.tone-light, .tone-sand')) {
+      // the page is light; the bar goes dark only over dark sections (the video hero) or while the menu is open
+      let over = !openRef.current
+      if (over) {
+        for (const s of document.querySelectorAll<HTMLElement>('main section.tone-dark')) {
           const sr = s.getBoundingClientRect()
           if (sr.top <= y && sr.bottom >= y && sr.left < r.right && sr.right > r.left) {
-            over = true
+            over = false
             break
           }
         }

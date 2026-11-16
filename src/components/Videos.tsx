@@ -469,7 +469,7 @@ function VideoLightbox({ items, index, onIndex, onClose }: { items: Video[]; ind
 
   const nav = 'absolute top-1/2 grid h-14 w-14 -translate-y-1/2 place-items-center rounded-full border border-line bg-ink/40 hover:bg-bone hover:text-ink'
   return createPortal(
-    <div ref={root} className="fixed inset-0 z-[95] flex flex-col bg-ink/95 backdrop-blur" role="dialog" aria-modal="true" aria-label={title}>
+    <div ref={root} className="tone-dark fixed inset-0 z-[95] flex flex-col bg-ink/95 backdrop-blur" role="dialog" aria-modal="true" aria-label={title}>
       <div className="flex items-center justify-between gap-6 px-5 py-5 md:px-10">
         <span className="label min-w-0 truncate">
           {title}

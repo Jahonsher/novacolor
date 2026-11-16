@@ -6,7 +6,7 @@ import { useLang } from '../i18n'
 export default function NotFound() {
   const { t } = useLang()
   return (
-    <section className="grain relative h-[100svh] overflow-hidden">
+    <section className="tone-dark grain relative h-[100svh] overflow-hidden bg-ink">
       <div className="absolute inset-0 opacity-70">
         <HeroCanvas />
       </div>

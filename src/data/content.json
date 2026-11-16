@@ -816,7 +816,12 @@
   "img/clients/client-1.svg",
   "img/clients/client-2.png",
   "img/clients/client-3.png",
-  "img/clients/client-4.png"
+  "img/clients/client-4.png",
+  "img/clients/client-kitana.png",
+  "img/clients/client-agrobank.png",
+  "img/clients/client-apexbank.png",
+  "img/clients/client-jaguar.png",
+  "img/clients/client-prokhinkali.png"
  ],
  "documents": [
   {
@@ -1095,6 +1100,46 @@
   }
  ],
  "videos": [
+  {
+   "id": 3,
+   "title": {
+    "uz": "Fasad dekorativ qoplamasi — tayyor obyekt",
+    "ru": "Декоративное покрытие фасада — готовый объект"
+   },
+   "src": "video/reel-1.mp4",
+   "poster": "video/reel-1.jpg",
+   "product": null
+  },
+  {
+   "id": 4,
+   "title": {
+    "uz": "Xususiy uy fasadi — yakuniy ko‘rinish",
+    "ru": "Фасад частного дома — финальный вид"
+   },
+   "src": "video/reel-2.mp4",
+   "poster": "video/reel-2.jpg",
+   "product": null
+  },
+  {
+   "id": 5,
+   "title": {
+    "uz": "Qoplama teksturasi yaqindan",
+    "ru": "Фактура покрытия крупным планом"
+   },
+   "src": "video/reel-3.mp4",
+   "poster": "video/reel-3.jpg",
+   "product": null
+  },
+  {
+   "id": 6,
+   "title": {
+    "uz": "Ustunlarga qoplama surtish jarayoni",
+    "ru": "Процесс нанесения покрытия на колонны"
+   },
+   "src": "video/reel-4.mp4",
+   "poster": "video/reel-4.jpg",
+   "product": null
+  },
   {
    "id": 1,
    "title": {

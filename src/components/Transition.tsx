@@ -85,7 +85,7 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
   return (
     <TransitionContext.Provider value={{ go, run }}>
       {children}
-      <div ref={overlay} className="pointer-events-none invisible fixed inset-0 z-[90] flex" aria-hidden>
+      <div ref={overlay} className="tone-dark pointer-events-none invisible fixed inset-0 z-[90] flex" aria-hidden>
         {[0, 1, 2, 3].map((i) => (
           <div key={i} data-panel className="h-full flex-1 bg-char" style={{ boxShadow: '1px 0 0 0 #161513' }} />
         ))}

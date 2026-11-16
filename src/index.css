@@ -1,13 +1,16 @@
 @import "tailwindcss";
 
+/* The site is light by default: ink = page background, bone = text.
+ * `.tone-dark` (below) restores the original dark palette for the video hero,
+ * overlays (lightboxes, preloader) and the dark header glass. */
 @theme {
-  --color-ink: #0c0b0a;
-  --color-char: #161513;
-  --color-bone: #ece7df;
-  --color-ash: #9c9a95;
-  --color-mute: #5d5b57;
-  --color-sand: #c2a57c;
-  --color-line: rgb(236 231 223 / 0.14);
+  --color-ink: #faf8f4;
+  --color-char: #efeae2;
+  --color-bone: #1a1917;
+  --color-ash: #5b5750;
+  --color-mute: #8d887f;
+  --color-sand: #8a6a3e;
+  --color-line: rgb(22 21 19 / 0.12);
 
   --font-display: "Cormorant Garamond", "Times New Roman", serif;
   --font-sans: "Manrope Variable", "Helvetica Neue", Arial, sans-serif;
@@ -109,25 +112,38 @@ html.has-cursor button {
 
 @layer components {
 /* ---------- section tones ----------
- * Light / sand sections remap the colour tokens, so every component inside
+ * Sections remap the colour tokens, so every component inside
  * (text-bone, border-line, bg-bone buttons…) flips automatically. */
 .tone-light,
 .tone-sand,
 .ui-on-light {
   --color-bone: #161513;
-  --color-ink: #efeae2;
-  --color-char: #e4ddd2;
+  --color-ink: #f3efe8;
+  --color-char: #e8e1d6;
   --color-ash: #5b5750;
   --color-mute: #8d887f;
   --color-sand: #8a6a3e;
   --color-line: rgb(22 21 19 / 0.14);
+}
+.tone-dark,
+.glass:not(.is-light) {
+  --color-ink: #0c0b0a;
+  --color-char: #161513;
+  --color-bone: #ece7df;
+  --color-ash: #c9c5bd;
+  --color-mute: #8d8a84;
+  --color-sand: #c2a57c;
+  --color-line: rgb(236 231 223 / 0.18);
+}
+.tone-dark {
+  color: var(--color-bone);
 }
 .tone-light,
 .tone-sand {
   color: var(--color-bone);
 }
 .tone-light {
-  background-color: #efeae2;
+  background-color: #f3efe8;
 }
 .tone-sand {
   background-color: #cbb08a;
@@ -136,7 +152,7 @@ html.has-cursor button {
   --color-line: rgb(22 21 19 / 0.2);
 }
 .tone-char {
-  background-color: #161513;
+  background-color: #ece5da;
 }
 /* inset rounded "card" sections */
 .panel {
@@ -226,7 +242,7 @@ html.has-cursor button {
 
 /* the big dropdown panel: still see-through, a bit more blur for legibility */
 .glass.glass-panel {
-  background-color: rgb(14 13 12 / 0.3);
+  background-color: rgb(14 13 12 / 0.72);
   -webkit-backdrop-filter: blur(18px) saturate(170%) brightness(0.96);
   backdrop-filter: blur(18px) saturate(170%) brightness(0.96);
 }

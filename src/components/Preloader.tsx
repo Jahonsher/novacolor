@@ -56,7 +56,7 @@ export function Preloader() {
 
   if (done) return null
   return (
-    <div ref={root} className="fixed inset-0 z-[100] flex flex-col justify-between bg-char p-6 md:p-10" style={{ clipPath: 'inset(0% 0% 0% 0%)' }}>
+    <div ref={root} className="tone-dark fixed inset-0 z-[100] flex flex-col justify-between bg-char p-6 md:p-10" style={{ clipPath: 'inset(0% 0% 0% 0%)' }}>
       <div className="flex justify-between">
         <div className="overflow-hidden">
           <img data-in src={asset('img/logo.png')} alt="Novacolor" className="h-8 w-auto md:h-10" />
