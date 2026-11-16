@@ -334,7 +334,7 @@ export function Header() {
           ref={glass}
           onPointerMove={onGlassMove}
           onPointerLeave={onGlassLeave}
-          className={`glass ${isLight ? 'is-light ui-on-light' : ''} pointer-events-auto mx-auto flex max-w-[1240px] items-center justify-between gap-4 rounded-full py-2 pl-5 pr-2 md:py-2.5 md:pl-7 md:pr-2.5`}
+          className={`glass ${isLight ? 'is-light ui-on-light' : ''} pointer-events-auto mx-auto flex max-w-[1320px] items-center justify-between gap-3 rounded-full py-2 pl-5 pr-2 md:py-2.5 md:pl-7 md:pr-2.5`}
         >
           <TLink to="/" aria-label="Novacolor" data-cursor="link" className="shrink-0 transition-transform duration-500 active:scale-95" onClick={() => setOpen(false)}>
             <img src={asset('img/logo.png')} alt="Novacolor" className="logo h-6 w-auto md:h-7" />
@@ -361,7 +361,7 @@ export function Header() {
                   setOpen(false)
                 }}
                 onPointerEnter={(e) => !drag.current && moveLens(e.currentTarget)}
-                className="label relative z-[1] flex items-baseline gap-1.5 whitespace-nowrap rounded-full px-3 py-2.5 !text-bone 2xl:px-4 transition-transform duration-300 active:scale-95"
+                className="label relative z-[1] flex items-baseline gap-1.5 whitespace-nowrap rounded-full px-3 py-2.5 !text-bone transition-transform duration-300 active:scale-95"
               >
                 <span className="text-[9px] text-bone/50">{pad(i + 1)}</span>
                 <span className={i === activeIndex ? 'text-bone' : 'text-bone/85'}>{t(n.key)}</span>
@@ -482,7 +482,7 @@ function Menu({ open, onClose, capsule }: { open: boolean; onClose: () => void; 
           aria-modal="true"
           aria-label={t('menu')}
           aria-hidden={!open}
-          className={`glass glass-panel pointer-events-auto invisible mx-auto max-w-[1240px] origin-top overflow-hidden`}
+          className={`glass glass-panel pointer-events-auto invisible mx-auto max-w-[1320px] origin-top overflow-hidden`}
         >
           <div ref={content} className="h-full overflow-y-auto" data-lenis-prevent>
             <div className="grid gap-8 px-6 pb-8 md:grid-cols-12 md:gap-10 md:px-10 md:pb-10">

@@ -17,6 +17,11 @@ export type Config = {
   sessionSecret?: string
   publicUrl?: string
   trustProxy: boolean
+  /**
+   * ALLOWED_ORIGINS: extra sites (hosts, e.g. `novacolor.vercel.app`) whose pages may call the admin API —
+   * for a frontend hosted elsewhere that proxies /api to this server (Vercel rewrites).
+   */
+  allowedOrigins: string[]
   /** Peers whose forwarded headers are believed when trustProxy is on (TRUSTED_PROXIES). */
   trustedProxies: TrustedProxies
   telegram: {
@@ -151,6 +156,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     sessionSecret: str(env.SESSION_SECRET),
     publicUrl: str(env.PUBLIC_URL)?.replace(/\/+$/, ''),
     trustProxy,
+    allowedOrigins: (str(env.ALLOWED_ORIGINS) ?? '')
+      .split(',')
+      .map((h) => h.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/+$/, ''))
+      .filter(Boolean),
     trustedProxies,
     telegram: {
       token: str(env.TELEGRAM_BOT_TOKEN) ?? str(env.telegram_bot_Token) ?? str(env.TELEGRAM_BOT_token),

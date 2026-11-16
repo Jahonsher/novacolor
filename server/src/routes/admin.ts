@@ -124,6 +124,7 @@ export function adminRoutes(ctx: AppContext) {
       return false // includes the opaque "null" origin
     }
     if (host === new URL(c.req.url).host.toLowerCase()) return true
+    if (ctx.config.allowedOrigins.includes(host)) return true
     const fwd = fromTrustedProxy(c, ctx.config) ? c.req.header('x-forwarded-host')?.split(',')[0]?.trim().toLowerCase() : undefined
     return !!fwd && host === fwd
   }

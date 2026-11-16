@@ -499,6 +499,21 @@ describe('L8/L9: headers and Origin check', () => {
       await t.close()
     }
   })
+
+  test('ALLOWED_ORIGINS: a frontend on another host (Vercel rewrite) may call the admin API', async () => {
+    const t = await makeApp({ ALLOWED_ORIGINS: 'https://novacolor.vercel.app/, other.example' })
+    try {
+      const cookie = await t.login()
+      const body = { lead: { uz: 'a', ru: 'b' }, extra: { uz: 'c', ru: 'd' } }
+      const put = (origin: string) => t.json('/api/admin/about', 'PUT', body, { cookie, headers: { origin } })
+      assert.equal((await put('https://novacolor.vercel.app')).status, 200)
+      assert.equal((await put('https://other.example')).status, 200)
+      assert.equal((await put('https://evil.example')).status, 403)
+      assert.equal((await put('https://novacolor.vercel.app.evil.example')).status, 403)
+    } finally {
+      await t.close()
+    }
+  })
 })
 
 describe('L11: sharp memory limits', () => {
