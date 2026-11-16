@@ -125,6 +125,7 @@ const dict = {
     'ai.lead': 'Raqamingiz menejerga yuborildi ✓',
     'ai.disclaimer': 'AI xato qilishi mumkin. Aniq ma’lumot uchun menejer bilan bog‘laning.',
     'ai.close': 'Chatni yopish',
+    'ai.offline': 'Rahmat! AI maslahatchi tez orada to‘liq ishga tushadi. Hozircha savolingizga menejerimiz javob beradi: {phone} raqamiga qo‘ng‘iroq qiling yoki /contact sahifasida xabar qoldiring.',
   },
   ru: {
     'nav.home': 'Главная',
@@ -249,6 +250,7 @@ const dict = {
     'ai.lead': 'Ваш номер передан менеджеру ✓',
     'ai.disclaimer': 'AI может ошибаться. Точную информацию уточняйте у менеджера.',
     'ai.close': 'Закрыть чат',
+    'ai.offline': 'Спасибо! AI-консультант скоро заработает в полную силу. Пока на ваш вопрос ответит менеджер: позвоните по номеру {phone} или оставьте сообщение на странице /contact.',
   },
 } satisfies Record<Lang, Record<string, string>>
 

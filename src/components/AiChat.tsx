@@ -4,14 +4,15 @@ import { TLink } from './Transition'
 import { useLang, type Key } from '../i18n'
 import { useQuality } from '../lib/perf'
 import { useMedia } from '../lib/motion'
-import { ApiError, apiGet, apiPost } from '../lib/api'
-import { productBySlug } from '../data'
+import { API_ENABLED, ApiError, apiGet, apiPost } from '../lib/api'
+import { contacts, productBySlug } from '../data'
 
 /**
  * Customer-facing AI assistant (docs/backend-spec.md → POST /api/ai/chat).
  *
- * Loaded lazily from App.tsx only in the server build, after the preloader.
- * Shows nothing unless /api/health reports `ai: true`. No JS animation: all
+ * Loaded lazily from App.tsx after the preloader. With a server whose /api/health reports `ai: true` it
+ * chats with the model; otherwise (static build, server down, no AI key) the button still shows and the
+ * chat answers with a "coming soon — contact a manager" note and the phone number. No JS animation: all
  * motion is CSS transitions, so a closed widget costs nothing per frame.
  */
 
@@ -85,13 +86,13 @@ const checkHealth = () =>
  * as React elements. Line breaks come from `white-space: pre-wrap`. */
 
 const BASE = import.meta.env.BASE_URL
-const ROUTE_RE = /^\/(?:products|about|news|contact)(?:\/[a-z0-9-]+)?\/?$|^\/$/i
+const ROUTE_RE = /^\/(?:products|about|clients|news|contact)(?:\/[a-z0-9-]+)?\/?$|^\/$/i
 
 const LINK_RE = new RegExp(
   [
     /\[([^\]\n]{1,200})\]\(([^)\s]{1,500})\)/.source, // 1,2 markdown link
     /(https?:\/\/[^\s<>()"']*[^\s<>()"'.,;:!?»])/.source, // 3 url
-    /(?<![\w/.:-])(\/(?:products|about|news|contact)(?:\/[a-z0-9-]*[a-z0-9])?)(?![\w/])/.source, // 4 route
+    /(?<![\w/.:-])(\/(?:products|about|clients|news|contact)(?:\/[a-z0-9-]*[a-z0-9])?)(?![\w/])/.source, // 4 route
     /(?<![\w+])(\+?\d[\d \-()]{6,}\d)(?![\w])/.source, // 5 phone-ish
   ].join('|'),
   'gi',
@@ -127,7 +128,7 @@ const routeLabel = (to: string, t: (k: Key) => string) => {
     const p = productBySlug(slug)
     return p ? `${p.name} →` : to
   }
-  const nav: Record<string, Key> = { '': 'nav.home', products: 'nav.products', about: 'nav.about', news: 'nav.news', contact: 'nav.contact' }
+  const nav: Record<string, Key> = { '': 'nav.home', products: 'nav.products', about: 'nav.about', clients: 'nav.clients', news: 'nav.news', contact: 'nav.contact' }
   return nav[section ?? ''] ? `${t(nav[section ?? ''])} →` : to
 }
 const urlLabel = (href: string) => href.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')
@@ -198,18 +199,20 @@ function RichText({ text, onRoute }: { text: string; onRoute: () => void }) {
 const CHIPS: Key[] = ['ai.chip1', 'ai.chip2', 'ai.chip3']
 
 export default function AiChat() {
-  const [enabled, setEnabled] = useState(false)
+  // null = still checking the server; offline = no server / no AI: the widget shows a contact note instead
+  const [mode, setMode] = useState<'online' | 'offline' | null>(API_ENABLED ? null : 'offline')
   useEffect(() => {
+    if (!API_ENABLED) return
     let alive = true
-    void checkHealth().then((ok) => alive && setEnabled(ok))
+    void checkHealth().then((ok) => alive && setMode(ok ? 'online' : 'offline'))
     return () => {
       alive = false
     }
   }, [])
-  return enabled ? <ChatWidget /> : null
+  return mode ? <ChatWidget offline={mode === 'offline'} /> : null
 }
 
-function ChatWidget() {
+function ChatWidget({ offline }: { offline: boolean }) {
   const { t, lang } = useLang()
   const { pathname } = useLocation()
   const quality = useQuality()
@@ -269,6 +272,14 @@ function ChatWidget() {
         setDraft('')
       }
       setPending(true)
+      if (offline) {
+        // no AI yet: a short pause, then the contact note
+        await new Promise((r) => setTimeout(r, 700))
+        setMsgs((m) => [...m, { role: 'assistant', content: t('ai.offline').replace('{phone}', contacts.phone) }])
+        busy.current = false
+        setPending(false)
+        return
+      }
       try {
         const res = await apiPost<{ reply?: string; lead?: boolean }>(
           'ai/chat',
@@ -287,7 +298,7 @@ function ChatWidget() {
         setPending(false)
       }
     },
-    [lang, pathname],
+    [lang, pathname, offline, t],
   )
 
   const onSubmit = (e: FormEvent) => {
