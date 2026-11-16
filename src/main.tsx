@@ -23,8 +23,9 @@ const BASE = import.meta.env.BASE_URL
  * (the admin is still reachable in `npm run dev` without VITE_API).
  */
 // (the env checks are spelled out inline so the Pages build drops the admin chunk entirely)
+// VITE_ADMIN_DEMO=1 (Vercel without a server): the admin UI runs on the in-browser mock API — a demo
 const adminModule =
-  import.meta.env.VITE_API || import.meta.env.DEV
+  import.meta.env.VITE_API || import.meta.env.DEV || import.meta.env.VITE_ADMIN_DEMO
     ? (import.meta.glob<{ default: ComponentType }>('./admin/AdminApp.tsx')['./admin/AdminApp.tsx'] as (() => Promise<{ default: ComponentType }>) | undefined)
     : undefined
 const isAdminPath = new RegExp(`^${BASE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}admin(/|$)`).test(location.pathname)

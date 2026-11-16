@@ -164,7 +164,11 @@ const BASE = `${import.meta.env.BASE_URL}api/`
 
 type Handler = (url: string, init: RequestInit) => Promise<Response>
 let mock: Promise<Handler> | null = null
-if (import.meta.env.DEV && typeof localStorage !== 'undefined' && localStorage.getItem('ncMock') === '1') {
+// demo build (VITE_ADMIN_DEMO, no server): always the mock; in dev: opt-in via localStorage
+if (
+  (import.meta.env.VITE_ADMIN_DEMO && !import.meta.env.VITE_API) ||
+  (import.meta.env.DEV && typeof localStorage !== 'undefined' && localStorage.getItem('ncMock') === '1')
+) {
   mock = import('./dev/mockApi').then((m) => m.handle)
 }
 export const usingMock = () => mock !== null

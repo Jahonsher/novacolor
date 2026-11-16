@@ -136,7 +136,7 @@ export default function Layout({ children, onLogout }: { children: ReactNode; on
         </nav>
         {usingMock() && (
           <p className="m-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-amber-200">
-            Sinov rejimi (mock API) — ma'lumotlar saqlanmaydi
+            Demo rejim — o'zgarishlar faqat shu brauzer oynasida saqlanadi, saytga ta'sir qilmaydi
           </p>
         )}
       </aside>
