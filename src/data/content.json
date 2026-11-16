@@ -1101,61 +1101,102 @@
  ],
  "videos": [
   {
+   "id": 1,
+   "title": {
+    "uz": "Archi + Pietra — Toshkentdagi shourumimizda",
+    "ru": "Archi + Pietra в нашем шоуруме в Ташкенте"
+   },
+   "src": "video/ig-1.mp4",
+   "poster": "video/ig-1.jpg",
+   "instagram": "https://www.instagram.com/p/DfhSHYYtWkB/",
+   "product": "archi-pietra"
+  },
+  {
+   "id": 2,
+   "title": {
+    "uz": "Novacolor mutaxassisi bilan intervyu",
+    "ru": "Интервью с экспертом Novacolor"
+   },
+   "src": "video/ig-2.mp4",
+   "poster": "video/ig-2.jpg",
+   "instagram": "https://www.instagram.com/p/Dee5vk1sJxE/",
+   "product": null
+  },
+  {
    "id": 3,
    "title": {
-    "uz": "Fasad dekorativ qoplamasi — tayyor obyekt",
-    "ru": "Декоративное покрытие фасада — готовый объект"
+    "uz": "MATmotion — ultramat bo‘yoq",
+    "ru": "MATmotion — ультраматовая краска"
    },
-   "src": "video/reel-1.mp4",
-   "poster": "video/reel-1.jpg",
-   "product": null
+   "src": "video/ig-3.mp4",
+   "poster": "video/ig-3.jpg",
+   "instagram": "https://www.instagram.com/p/Dd6GI1SNnp2/",
+   "product": "matmotion-supreme-matt"
   },
   {
    "id": 4,
    "title": {
-    "uz": "Xususiy uy fasadi — yakuniy ko‘rinish",
-    "ru": "Фасад частного дома — финальный вид"
+    "uz": "Marmorino KS va Metallo Fuso",
+    "ru": "Marmorino KS и Metallo Fuso"
    },
-   "src": "video/reel-2.mp4",
-   "poster": "video/reel-2.jpg",
-   "product": null
+   "src": "video/ig-4.mp4",
+   "poster": "video/ig-4.jpg",
+   "instagram": "https://www.instagram.com/p/Ddec6fhtlYH/",
+   "product": "marmorino-ks"
   },
   {
    "id": 5,
    "title": {
-    "uz": "Qoplama teksturasi yaqindan",
-    "ru": "Фактура покрытия крупным планом"
+    "uz": "Mikrotsement — Novacolor",
+    "ru": "Микроцемент от Novacolor"
    },
-   "src": "video/reel-3.mp4",
-   "poster": "video/reel-3.jpg",
+   "src": "video/ig-5.mp4",
+   "poster": "video/ig-5.jpg",
+   "instagram": "https://www.instagram.com/p/DdHBCxVIDMr/",
    "product": null
   },
   {
    "id": 6,
    "title": {
-    "uz": "Ustunlarga qoplama surtish jarayoni",
-    "ru": "Процесс нанесения покрытия на колонны"
+    "uz": "Ironic va Metallo Fuso — metall effekti",
+    "ru": "Ironic и Metallo Fuso — эффект металла"
    },
-   "src": "video/reel-4.mp4",
-   "poster": "video/reel-4.jpg",
+   "src": "video/ig-6.mp4",
+   "poster": "video/ig-6.jpg",
+   "instagram": "https://www.instagram.com/p/DdqWHbCtkwy/",
+   "product": "ironic"
+  },
+  {
+   "id": 7,
+   "title": {
+    "uz": "Verderame va Metallo Fuso",
+    "ru": "Verderame и Metallo Fuso"
+   },
+   "src": "video/ig-7.mp4",
+   "poster": "video/ig-7.jpg",
+   "instagram": "https://www.instagram.com/p/Ddk84W7t6tx/",
+   "product": "verderame"
+  },
+  {
+   "id": 8,
+   "title": {
+    "uz": "Italiya: venetsiya shtukaturkasi",
+    "ru": "Италия: венецианская штукатурка"
+   },
+   "src": "video/ig-8.mp4",
+   "poster": "video/ig-8.jpg",
+   "instagram": "https://www.instagram.com/p/DdB5MLzo4EH/",
    "product": null
   },
   {
-   "id": 1,
+   "id": 9,
    "title": {
     "uz": "Brasserie, Mirobod — bizning obyekt",
     "ru": "Brasserie в Мирабадском районе — наш объект"
    },
+   "src": "video/ig-9.mp4",
+   "poster": "video/ig-9.jpg",
    "instagram": "https://www.instagram.com/p/DcdNuX_tz1J/",
-   "product": null
-  },
-  {
-   "id": 2,
-   "title": {
-    "uz": "NovaColor mutaxassisi bilan intervyu",
-    "ru": "Интервью с экспертом NovaColor"
-   },
-   "instagram": "https://www.instagram.com/p/Dee5vk1sJxE/",
    "product": null
   }
  ]
