@@ -6,6 +6,7 @@ import { Footer } from './components/Footer'
 import { Preloader } from './components/Preloader'
 import { Cursor } from './components/Cursor'
 import { TransitionProvider } from './components/Transition'
+import { productBySlug } from './data'
 import { useLang } from './i18n'
 import { initSmoothScroll, destroySmoothScroll, reducedMotion, useReady } from './lib/motion'
 import { startGovernor } from './lib/perf'
@@ -69,8 +70,12 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.lang = lang
+    // "<page> — NovaColor"; the home page is just "NovaColor"
+    const product = /^\/products\/([^/]+)/.exec(pathname)?.[1]
+    const name = product ? productBySlug(decodeURIComponent(product))?.name : undefined
     const key = Object.keys(titles).find((k) => pathname.startsWith(k))
-    document.title = key ? `${titles[key][lang]} — Novacolor` : 'Novacolor — I colori dell’Architettura'
+    const page = name ?? (key ? titles[key][lang] : pathname === '/' ? null : lang === 'ru' ? 'Страница не найдена' : 'Sahifa topilmadi')
+    document.title = page ? `${page} — NovaColor` : 'NovaColor'
   }, [pathname, lang])
 
   return (
