@@ -73,6 +73,9 @@ function saveMsgs(m: Msg[]) {
   }
 }
 
+/** Server build (VITE_API) or the Vercel build with the /api/ai/chat function (VITE_AI_CHAT). */
+const AI_ENABLED = API_ENABLED || Boolean(import.meta.env.VITE_AI_CHAT)
+
 /* one health check per page load */
 let health: Promise<boolean> | null = null
 const checkHealth = () =>
@@ -200,9 +203,9 @@ const CHIPS: Key[] = ['ai.chip1', 'ai.chip2', 'ai.chip3']
 
 export default function AiChat() {
   // null = still checking the server; offline = no server / no AI: the widget shows a contact note instead
-  const [mode, setMode] = useState<'online' | 'offline' | null>(API_ENABLED ? null : 'offline')
+  const [mode, setMode] = useState<'online' | 'offline' | null>(AI_ENABLED ? null : 'offline')
   useEffect(() => {
-    if (!API_ENABLED) return
+    if (!AI_ENABLED) return
     let alive = true
     void checkHealth().then((ok) => alive && setMode(ok ? 'online' : 'offline'))
     return () => {
@@ -230,7 +233,11 @@ function ChatWidget({ offline }: { offline: boolean }) {
   const button = useRef<HTMLButtonElement>(null)
   const busy = useRef(false)
 
-  useEffect(() => saveMsgs(msgs), [msgs])
+  const msgsRef = useRef(msgs)
+  useEffect(() => {
+    msgsRef.current = msgs
+    saveMsgs(msgs)
+  }, [msgs])
 
   const show = useCallback(() => {
     setMounted(true)
@@ -283,7 +290,8 @@ function ChatWidget({ offline }: { offline: boolean }) {
       try {
         const res = await apiPost<{ reply?: string; lead?: boolean }>(
           'ai/chat',
-          { sessionId: sessionId(), lang, page: pathname, message },
+          // history: the Vercel function keeps no state (the Node server ignores it)
+          { sessionId: sessionId(), lang, page: pathname, message, history: msgsRef.current.slice(-20).map(({ role, content }) => ({ role, content })) },
           { timeout: 45000 },
         )
         const reply = typeof res?.reply === 'string' && res.reply.trim() ? res.reply.trim() : null
