@@ -25,7 +25,17 @@ export class AnthropicProvider implements AiProvider {
     client?: Anthropic,
   ) {
     registerSecret(apiKey)
-    this.client = client ?? new Anthropic({ apiKey, timeout: AI_TIMEOUT_MS, maxRetries: 1 })
+    // ANTHROPIC_BASE_URL (read by the SDK) may point to OpenCode (https://opencode.ai/inference/go/anthropic),
+    // whose Go plan requires a session header for routing.
+    const viaOpenCode = /opencode\.ai/.test(process.env.ANTHROPIC_BASE_URL ?? '')
+    this.client =
+      client ??
+      new Anthropic({
+        apiKey,
+        timeout: AI_TIMEOUT_MS,
+        maxRetries: 1,
+        ...(viaOpenCode ? { defaultHeaders: { 'x-opencode-session': 'novacolor-site' } } : {}),
+      })
   }
 
   async chat(req: ChatRequest): Promise<ChatResult> {
