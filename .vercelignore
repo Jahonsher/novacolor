@@ -1,0 +1,4 @@
+# The site's API is the Node server on the Mac (vercel.json rewrites /api and /uploads to its tunnel).
+# The serverless fallbacks in api/ are kept in the repo but not deployed — to use them instead, delete this
+# line and restore the previous vercel.json (VITE_CONTACT_ENDPOINT=/api/leads VITE_AI_CHAT=1, no proxy).
+/api

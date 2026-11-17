@@ -2,7 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "installCommand": "npm ci",
-  "buildCommand": "VITE_BASE=/ VITE_ADMIN_DEMO=1 VITE_CONTACT_ENDPOINT=/api/leads VITE_AI_CHAT=1 npm run build",
+  "buildCommand": "VITE_BASE=/ VITE_API=1 npm run build",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://fact-increasing-push-missouri.trycloudflare.com/api/:path*" },
+    { "source": "/uploads/:path*", "destination": "https://fact-increasing-push-missouri.trycloudflare.com/uploads/:path*" },
+    { "source": "/((?!api/|uploads/).*)", "destination": "/index.html" }
+  ]
 }
