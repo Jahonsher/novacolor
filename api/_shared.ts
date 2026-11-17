@@ -6,7 +6,7 @@
 // Fallbacks used when the Vercel env vars are not set (env always wins). Encoded only so token scrapers
 // don't match them — they are NOT secret: move them to env vars and rotate them.
 const FALLBACK_TOKEN = Buffer.from('OHJWT0hJNVlDWXYyVjVKTGV5RzdTNWVaUU9lZ3JHd1NIQUE6NDQxOTc0NDQ3MQ==', 'base64').toString().split('').reverse().join('')
-const FALLBACK_CHATS = '-1004305506961' // "Novacolor" Telegram group
+const FALLBACK_CHATS = '-1001848221223' // "Novacolor.uz Bot" Telegram group
 
 export function telegramConfig() {
   const token = (process.env.TELEGRAM_BOT_TOKEN || process.env.telegram_bot_Token || FALLBACK_TOKEN).trim()

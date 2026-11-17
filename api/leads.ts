@@ -26,7 +26,7 @@ const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 // Fallback when the Vercel env vars are not set (env always wins). Encoded only so token scrapers
 // don't match it — it is NOT secret: move it to TELEGRAM_BOT_TOKEN and rotate it in @BotFather.
 const FALLBACK_TOKEN = Buffer.from('OHJWT0hJNVlDWXYyVjVKTGV5RzdTNWVaUU9lZ3JHd1NIQUE6NDQxOTc0NDQ3MQ==', 'base64').toString().split('').reverse().join('')
-const FALLBACK_CHATS = '-1004305506961' // "Novacolor" Telegram group
+const FALLBACK_CHATS = '-1001848221223' // "Novacolor.uz Bot" Telegram group
 
 function config() {
   const token = (process.env.TELEGRAM_BOT_TOKEN || process.env.telegram_bot_Token || FALLBACK_TOKEN).trim()
