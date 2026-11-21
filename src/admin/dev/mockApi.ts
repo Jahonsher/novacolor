@@ -202,6 +202,7 @@ export async function handle(url: string, init: RequestInit): Promise<Response> 
         c.products[i] = { ...p, id: old.id }
         if (old.slug !== p.slug) {
           c.documents.forEach((d) => (d.products = d.products.map((s) => (s === old.slug ? p.slug : s))))
+          c.catalogs?.forEach((k) => (k.products = k.products.map((s) => (s === old.slug ? p.slug : s))))
           c.news.forEach((n) => n.product === old.slug && (n.product = p.slug))
         c.videos.forEach((v) => v.product === old.slug && (v.product = p.slug))
         }
@@ -210,6 +211,7 @@ export async function handle(url: string, init: RequestInit): Promise<Response> 
       if (method === 'DELETE') {
         const [old] = c.products.splice(i, 1)
         c.documents.forEach((d) => (d.products = d.products.filter((s) => s !== old.slug)))
+        c.catalogs?.forEach((k) => (k.products = k.products.filter((s) => s !== old.slug)))
         c.news.forEach((n) => n.product === old.slug && (n.product = null))
         c.videos.forEach((v) => v.product === old.slug && (v.product = null))
         return json(200, { ok: true })

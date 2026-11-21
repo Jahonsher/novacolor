@@ -192,6 +192,22 @@ export const docMetaInput = z.object({
   products: z.array(slugSchema).max(200).optional(),
 })
 
+/**
+ * PDF catalogs / brochures (public/pdf/catalogs, cover in public/img/catalogs). Stored leniently: an unknown
+ * `group` is shown as a product brochure by the site. Older content.json files have no `catalogs` key.
+ */
+export const CATALOG_GROUPS = ['collection', 'colors', 'inspiration', 'technical', 'product'] as const
+export const catalogSchema = z.object({
+  file: z.string().min(1).max(200),
+  path: z.string().max(300).optional(),
+  cover: storedAsset.optional(),
+  group: z.string().max(40),
+  title: localized(300),
+  products: z.array(z.string().max(100)).max(500).default([]),
+  pages: z.int().nonnegative().optional(),
+  size: z.number().nonnegative(),
+})
+
 /** Whole content.json. Unknown top-level keys are preserved. */
 export const contentSchema = z.looseObject({
   products: z.array(productSchema),
@@ -204,6 +220,8 @@ export const contentSchema = z.looseObject({
   documents: z.array(docSchema),
   // added later: content.json files written before videos existed have no `videos`
   videos: z.array(videoSchema).default([]),
+  // added later (PDF catalogs): missing in older files — the store fills it once from SEED_CONTENT
+  catalogs: z.array(catalogSchema).default([]),
   // general company knowledge for the AI consultant (internal, stripped from the public /api/content)
   aiKnowledge: z.string().max(20000).default(''),
 })
@@ -213,6 +231,7 @@ export type Product = z.infer<typeof productSchema>
 export type Category = z.infer<typeof categorySchema>
 export type NewsItem = z.infer<typeof newsSchema>
 export type Doc = z.infer<typeof docSchema>
+export type Catalog = z.infer<typeof catalogSchema>
 export type Video = z.infer<typeof videoSchema>
 export type Contacts = z.infer<typeof contactsSchema>
 export type Content = z.infer<typeof contentSchema>

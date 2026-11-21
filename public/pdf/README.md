@@ -12,3 +12,7 @@ Sayt joylangandan keyin fayl shu manzilda ochiladi:
 **Saytda ko'rinishi uchun:** yangi PDF'ni `src/data/content.json` faylidagi `documents` ro'yxatiga qo'shish kerak
 (`file`, `group`: company / product / epd, `title` uz/ru, `products` — mahsulot slug'lari, `size` KB).
 Shunda u "Biz haqimizda" sahifasidagi sertifikatlar bo'limida va tegishli mahsulot sahifalarida chiqadi.
+
+**Kataloglar** (Novacolor brošyuralari) — `catalogs/` papkasida; muqovalari `public/img/catalogs/<xuddi shu nom>.jpg`.
+Ro'yxat — `src/data/content.json` → `catalogs` (`file`, `group`: collection / colors / inspiration / technical / product,
+`title` uz/ru, `products` — mahsulot slug'lari, `pages`, `size` KB). Saytda «Kataloglar» sahifasida va mahsulot sahifalarida chiqadi.

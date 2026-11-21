@@ -13,6 +13,7 @@ import { startGovernor } from './lib/perf'
 import Home from './pages/Home'
 import Products from './pages/Products'
 import Product from './pages/Product'
+import Catalogs from './pages/Catalogs'
 import About from './pages/About'
 import Clients from './pages/Clients'
 import News from './pages/News'
@@ -43,6 +44,7 @@ const AiChat = lazy(() => import('./components/AiChat'))
 
 const titles: Record<string, { uz: string; ru: string }> = {
   '/products': { uz: 'Mahsulotlar', ru: 'Продукты' },
+  '/catalogs': { uz: 'Kataloglar', ru: 'Каталоги' },
   '/about': { uz: 'Biz haqimizda', ru: 'О нас' },
   '/clients': { uz: 'Mijozlarimiz', ru: 'Наши клиенты' },
   '/news': { uz: 'Yangiliklar', ru: 'Новости' },
@@ -87,6 +89,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
           <Route path="/products/:slug" element={<Product />} />
+          <Route path="/catalogs" element={<Catalogs />} />
           <Route path="/about" element={<About />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/news" element={<News />} />

@@ -461,6 +461,36 @@ docker compose up -d --build
 
 Ma'lumotlar (`data/`) saqlanib qoladi.
 
+### Kataloglar yangilanishi (2026-noyabr, bir martalik)
+
+Bu yangilanish 11 ta yangi mahsulot, mavjud mahsulotlarga yangi rasmlar va 42 ta PDF katalog (`public/pdf/catalogs/`,
+saytda «Kataloglar» sahifasi va mahsulot sahifalaridagi «Kataloglar» bo'limi) qo'shadi. Sayt kontenti serverda
+`data/content.json`da turadi va **yangi koddan avtomatik o'zgarmaydi** — shuning uchun bir marta birlashtirish skripti ishga tushiriladi:
+
+```bash
+cd ~/novacolor
+docker compose stop app                      # server to'xtagan bo'lishi SHART (aks holda keyingi saqlashda o'zgarishlar yo'qoladi)
+git pull
+docker run --rm -u 1000:1000 -v "$PWD:/w" -w /w node:22-alpine node server/scripts/merge-catalogs.mjs data/content.json
+docker compose up -d --build
+```
+
+Docker'siz (masalan, Mac'dagi server — launchd `uz.novacolor.server`):
+
+```bash
+launchctl bootout gui/$(id -u)/uz.novacolor.server        # serverni to'xtatish
+node server/scripts/merge-catalogs.mjs --dry-run           # nima qo'shilishini ko'rish (fayl o'zgarmaydi)
+node server/scripts/merge-catalogs.mjs                     # data/content.json → avval data/backups/ ga zaxira, keyin birlashtirish
+npm run build:all                                          # dist/ + server-dist/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/uz.novacolor.server.plist
+```
+
+- Skript faqat **qo'shadi**: bor mahsulotlar (slug bo'yicha), admin o'zgartirgan matnlar va kategoriya rasmlari tegilmaydi;
+  ikkinchi marta ishga tushirsa hech narsa o'zgarmaydi. Zaxira: `data/backups/content-…-before-catalogs.json`.
+- Skript ishlatilmasa ham, yangi server birinchi ishga tushganda `catalogs` ro'yxatini seed'dan o'zi qo'shadi
+  (faqat mavjud mahsulotlarga bog'lab) — lekin yangi mahsulotlar va rasmlar faqat skript orqali qo'shiladi.
+- Kategoriya rasmlari (`public/img/categories/*.jpg`) shu nomlar bilan almashtirilgan — ular deploy bilan darhol yangilanadi.
+
 ### Loglarni ko'rish
 
 ```bash

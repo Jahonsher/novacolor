@@ -10,6 +10,7 @@ import { useQuality } from '../lib/perf'
 export const NAV: { to: string; key: Key }[] = [
   { to: '/', key: 'nav.home' },
   { to: '/products', key: 'nav.products' },
+  { to: '/catalogs', key: 'nav.catalogs' },
   { to: '/about', key: 'nav.about' },
   { to: '/clients', key: 'nav.clients' },
   { to: '/news', key: 'nav.news' },
@@ -361,9 +362,9 @@ export function Header() {
                   setOpen(false)
                 }}
                 onPointerEnter={(e) => !drag.current && moveLens(e.currentTarget)}
-                className="label relative z-[1] flex items-baseline gap-1.5 whitespace-nowrap rounded-full px-3 py-2.5 !text-bone transition-transform duration-300 active:scale-95"
+                className="label relative z-[1] flex items-baseline gap-1.5 whitespace-nowrap rounded-full px-2.5 py-2.5 min-[1440px]:px-3 !text-bone transition-transform duration-300 active:scale-95"
               >
-                <span className="text-[9px] text-bone/50">{pad(i + 1)}</span>
+                <span className="hidden text-[9px] text-bone/50 min-[1440px]:inline">{pad(i + 1)}</span>
                 <span className={i === activeIndex ? 'text-bone' : 'text-bone/85'}>{t(n.key)}</span>
               </TLink>
             ))}

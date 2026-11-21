@@ -112,6 +112,28 @@ yuklangan PDF'lar uchun ixtiyoriy `Doc.path` maydoni qo'shiladi (`uploads/pdf/<n
 
 Kategoriya `count` — server tomonidan hisoblanadi (mahsulotlar soni), admin kiritmaydi.
 
+**PDF kataloglar** (`content.json` → `catalogs`, saytda `/catalogs` sahifasi va mahsulot sahifasidagi «Kataloglar»):
+
+```ts
+type Catalog = {
+  file: string                 // public/pdf/catalogs/<file>
+  path?: string                // yuklangan PDF bo'lsa: uploads/pdf/<nom>.pdf
+  cover?: string               // muqova; standart img/catalogs/<file>.jpg
+  group: 'collection' | 'colors' | 'inspiration' | 'technical' | 'product'
+  title: { uz: string; ru: string }
+  products: string[]           // mahsulot slug'lari (o'sha mahsulot sahifasida ko'rinadi)
+  pages?: number
+  size: number                 // KB
+}
+```
+
+Saqlangan qiymat yumshoq tekshiriladi (noma'lum `group` saytda mahsulot katalogi sifatida ko'rsatiladi). `catalogs` kaliti yo'q eski
+`content.json` — server ishga tushganda **bir marta** `SEED_CONTENT`dagi ro'yxat qo'shiladi (backup bilan; o'rnatishda yo'q mahsulotlarga
+havolalar tashlab yuboriladi). Mahsulot slug'i o'zgarsa/o'chirilsa `catalogs[].products` ham yangilanadi. Yangi mahsulotlar, galereya
+rasmlari va kataloglarni mavjud `data/content.json`ga qo'shish — `server/scripts/merge-catalogs.mjs` (idempotent, avval backup;
+ma'lumotlar `server/scripts/catalogs-update.json`da; server to'xtatilgan holda ishga tushiriladi, DEPLOY.md 9-bo'lim).
+Admin panelda kataloglar hozircha faqat ko'rinadi (mahsulot formasida «PDF kataloglar»), tahrirlash yo'q.
+
 ## API
 
 Barcha javoblar JSON. Xato: `{ "error": "matn (o'zbekcha)" }` + mos HTTP status.
@@ -121,7 +143,7 @@ Barcha javoblar JSON. Xato: `{ "error": "matn (o'zbekcha)" }` + mos HTTP status.
 | Metod | Yo'l | Tavsif |
 |---|---|---|
 | GET | `/api/health` | `{ ok: true, ai: boolean, telegram: boolean }` |
-| GET | `/api/content` | butun kontent: `{ products, categories, news, stats, about, contacts, clients, documents, videos }` (`Cache-Control: no-cache`) |
+| GET | `/api/content` | butun kontent: `{ products, categories, news, stats, about, contacts, clients, documents, videos, catalogs }` (`Cache-Control: no-cache`) |
 | POST | `/api/leads` | aloqa formasi. Body: `{ name, phone, product?, message? }` → `201 { ok: true }`. Validatsiya: name 1–100, phone 5–30 (raqam/+/bo'sh joy/-/()), message ≤ 2000. IP bo'yicha 5/10daq cheklov (429) — tana o'qilishidan **oldin** sanaladi. Honeypot maydoni `website` bo'sh bo'lmasa — jim `201`, saqlamaydi. **Takror**: xuddi shu telefon (raqamlari) 10 daqiqa ichida → yangi ariza emas, mavjudiga xabar qo'shiladi, Telegram'ga ikkinchi marta yuborilmaydi. Jami soatlik limit (`LEADS_HOURLY_LIMIT`) yoki ro'yxat to'la (10 000, o'chiriladigan `done` yo'q) → `503 { error: "… qo'ng'iroq qiling: <telefon>" }` |
 | POST | `/api/telegram/webhook/:secret` | faqat `TELEGRAM_WEBHOOK_SECRET` (va token) bo'lsa; aks holda `404`. `:secret` mos emas → `404`; `X-Telegram-Bot-Api-Secret-Token` sarlavhasi yo'q/mos emas → `401` (ikkalasi ham vaqt bo'yicha xavfsiz solishtiriladi). Tana ≤ 64 KB, `update_id` yo'q → `400`. Yangilanish polling'dagidek ishlanadi (Telegram bo'limi), `update_id < offset` (qayta yuborilgan) — e'tiborsiz. Javob doim `200 { ok: true }` (ichki xato logga yoziladi). Sir loglarda `***` bilan yashiriladi |
 | POST | `/api/ai/chat` | Body: `{ sessionId, lang: 'uz'|'ru', page?, message }` (`page` — faqat sayt yo'li `^/[\w/-]{0,200}$`, `//` bilan boshlanmaydi; boshqa qiymat jimgina tashlab yuboriladi) → `{ reply: string, lead?: boolean }`. Server suhbat tarixini o'zi saqlaydi (`chats.json`), so'nggi 20 xabarni modelga yuboradi. message ≤ 1000 belgi. IP kunlik limiti (`AI_DAILY_LIMIT`) → 429 `{ error, limit: true }` (limit tugagan IP'ning tanasi o'qilmaydi). Shu sessiyada oldingi xabarga javob hali tayyorlanayotgan bo'lsa → `409 { error }`. AI o'chiq/xato → 503 `{ error }`. Sessiyada 100 ta tashrifchi xabaridan keyin AI chaqirilmaydi: muloyim "qo'ng'iroq qiling / telefon qoldiring" javobi. Jami kunlik limit — `AI_GLOBAL_DAILY_LIMIT` |

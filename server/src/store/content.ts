@@ -66,13 +66,34 @@ export class ContentStore {
       ;(raw as Record<string, unknown>).videos = Array.isArray(seed?.videos) ? seed.videos : []
       migrated = true
     }
+    // Same for the PDF catalogs: a content.json from before catalogs existed takes the seed's list once
+    // (links to products the installation does not have are dropped; server/scripts/merge-catalogs.mjs also
+    // adds the new products and gallery images).
+    let catalogsMigrated = false
+    if (raw && typeof raw === 'object' && !Array.isArray(raw) && !('catalogs' in raw)) {
+      const seed = await readFile(this.seedFile, 'utf8').then(
+        (s) => JSON.parse(s) as { catalogs?: unknown },
+        () => null,
+      )
+      const known = new Set(
+        (Array.isArray((raw as { products?: unknown }).products) ? (raw as { products: { slug?: unknown }[] }).products : []).map((p) => p?.slug),
+      )
+      ;(raw as Record<string, unknown>).catalogs = Array.isArray(seed?.catalogs)
+        ? (seed.catalogs as { products?: unknown }[]).map((c) => ({
+            ...c,
+            products: Array.isArray(c?.products) ? c.products.filter((s) => known.has(s)) : [],
+          }))
+        : []
+      catalogsMigrated = true
+    }
     const parsed = contentSchema.safeParse(raw)
     if (!parsed.success) throw new Error(`${this.file} noto'g'ri: ${zodMessage(parsed.error)}`)
     this.current = withCounts(parsed.data)
-    if (migrated) {
+    if (migrated || catalogsMigrated) {
       await this.backup()
       await atomicWrite(this.file, serialize(this.current))
-      log.info(`content.json: videolar ro'yxati qo'shildi (${this.current.videos.length} ta, nusxa: ${this.seedFile})`)
+      if (migrated) log.info(`content.json: videolar ro'yxati qo'shildi (${this.current.videos.length} ta, nusxa: ${this.seedFile})`)
+      if (catalogsMigrated) log.info(`content.json: kataloglar ro'yxati qo'shildi (${this.current.catalogs.length} ta, nusxa: ${this.seedFile})`)
     }
     this.version++
   }

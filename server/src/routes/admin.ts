@@ -222,6 +222,7 @@ export function adminRoutes(ctx: AppContext) {
         for (const n of d.news) if (n.product === slug) n.product = input.slug
         for (const v of d.videos) if (v.product === slug) v.product = input.slug
         for (const doc of d.documents) doc.products = doc.products.map((s) => (s === slug ? input.slug : s))
+        for (const cat of d.catalogs) cat.products = cat.products.map((s) => (s === slug ? input.slug : s))
       }
       return p
     })
@@ -237,6 +238,7 @@ export function adminRoutes(ctx: AppContext) {
       for (const n of d.news) if (n.product === slug) n.product = null
       for (const v of d.videos) if (v.product === slug) v.product = null
       for (const doc of d.documents) doc.products = doc.products.filter((s) => s !== slug)
+      for (const cat of d.catalogs) cat.products = cat.products.filter((s) => s !== slug)
     })
     return c.json({ ok: true })
   })

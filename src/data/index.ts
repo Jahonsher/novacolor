@@ -87,6 +87,38 @@ export type Doc = {
 export const documents = content.documents as Doc[]
 export const docsForProduct = (slug: string) => documents.filter((d) => d.products.includes(slug))
 
+/**
+ * Novacolor PDF catalogs / brochures (public/pdf/catalogs + cover in public/img/catalogs).
+ * `product` — a product's own brochure; the rest are general catalogs shown on the Kataloglar page.
+ * Older content.json files have no `catalogs` key: everything here is optional on read.
+ */
+export type CatalogGroup = 'collection' | 'colors' | 'inspiration' | 'technical' | 'product'
+export const CATALOG_GROUPS: CatalogGroup[] = ['collection', 'colors', 'inspiration', 'technical', 'product']
+export type Catalog = {
+  /** `x.pdf` in public/pdf/catalogs (or the name of an uploaded file, see `path`) */
+  file: string
+  /** uploaded PDF: path relative to the site root, e.g. `uploads/pdf/x.pdf` */
+  path?: string
+  /** cover image path; default `img/catalogs/<file>.jpg` (bundled) or `<path>.jpg` (uploaded) */
+  cover?: string
+  group: CatalogGroup
+  title: Localized
+  /** product slugs the catalog belongs to (shown on those product pages) */
+  products: string[]
+  pages?: number
+  /** size in KB */
+  size: number
+}
+export const catalogs = ((content as { catalogs?: unknown }).catalogs ?? []) as Catalog[]
+export const catalogPdf = (c: Catalog) => asset(c.path ?? `pdf/catalogs/${c.file}`)
+export const catalogCover = (c: Catalog) =>
+  asset(c.cover ?? (c.path ? c.path.replace(/\.pdf$/i, '.jpg') : `img/catalogs/${c.file.replace(/\.pdf$/i, '.jpg')}`))
+/** Catalogs of a product: its own brochure first, then the collection / colour catalogs it appears in. */
+export const catalogsForProduct = (slug: string) =>
+  catalogs
+    .filter((c) => c.products?.includes(slug))
+    .sort((a, b) => Number(b.group === 'product') - Number(a.group === 'product'))
+
 /** Resolve a public asset path against the deploy base (e.g. /novacolor/). */
 export const asset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`
 
@@ -132,6 +164,8 @@ export async function loadRuntimeContent(): Promise<boolean> {
     replaceArray(clients, c.clients)
     replaceArray(documents, c.documents)
     replaceArray(videos, c.videos)
+    // a server without catalogs yet (no `catalogs` key) keeps the bundled list
+    replaceArray(catalogs, c.catalogs)
     replaceObject(about, c.about)
     replaceObject(contacts, c.contacts)
     computeFeatured()

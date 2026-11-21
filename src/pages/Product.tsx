@@ -5,8 +5,9 @@ import { GLImage } from '../components/GLImage'
 import { Reveal, FadeUp } from '../components/Reveal'
 import { TLink } from '../components/Transition'
 import { DocList } from '../components/Documents'
+import { CatalogGrid } from '../components/Catalogs'
 import { VideoRow } from '../components/Videos'
-import { asset, categoryById, docsForProduct, pad, productBySlug, products, videosForProduct } from '../data'
+import { asset, catalogsForProduct, categoryById, docsForProduct, pad, productBySlug, products, videosForProduct } from '../data'
 import { useLang } from '../i18n'
 import { gsap, useGSAP, lenis, reducedMotion, useMedia } from '../lib/motion'
 import NotFound from './NotFound'
@@ -26,6 +27,7 @@ function ProductView({ slug }: { slug: string }) {
   const cats = p.categories.map((c) => categoryById(c)).filter(Boolean)
   const paragraphs = l(p.description).split(/\n\n+/)
   const docs = docsForProduct(p.slug)
+  const brochures = catalogsForProduct(p.slug)
   const clips = videosForProduct(p.slug)
   const gallery = useRef<HTMLDivElement>(null)
   const wide = useMedia('(min-width: 768px)')
@@ -133,6 +135,22 @@ function ProductView({ slug }: { slug: string }) {
             <span className="label">{pad(clips.length)}</span>
           </div>
           <VideoRow items={clips} wide />
+        </section>
+      )}
+
+      {/* PDF catalogs: the product's own brochure, then collection / colour catalogs it appears in */}
+      {brochures.length > 0 && (
+        <section className="tone-light panel px-5 py-24 md:px-10 md:py-32">
+          <div className="mb-10 flex items-end justify-between gap-6 border-b border-line pb-5 md:mb-14">
+            <Reveal as="h2" by="words" className="display text-5xl md:text-7xl">
+              {t('product.catalogs')}
+            </Reveal>
+            <TLink to="/catalogs" className="label link-line shrink-0 !text-bone" data-cursor="link">
+              {t('catalogs.all')} →
+            </TLink>
+          </div>
+          <CatalogGrid items={brochures} />
+          <p className="label mt-10">{t('catalogs.note')}</p>
         </section>
       )}
 

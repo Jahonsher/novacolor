@@ -4,7 +4,7 @@ import { GLImage } from '../components/GLImage'
 import { Reveal } from '../components/Reveal'
 import { TLink } from '../components/Transition'
 import { ContactCTA } from '../components/Blocks'
-import { categories, categoryById, pad, products } from '../data'
+import { catalogCover, catalogs, categories, categoryById, pad, products } from '../data'
 import { useLang } from '../i18n'
 import { gsap, useGSAP, ScrollTrigger, reducedMotion, useMedia } from '../lib/motion'
 
@@ -75,9 +75,19 @@ export default function Products() {
             )
           })}
         </div>
-        <p className="label mt-6">
-          {list.length} {t('products.count')}
-        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+          <p className="label">
+            {list.length} {t('products.count')}
+          </p>
+          {catalogs.length > 0 && (
+            <TLink to="/catalogs" className="label group inline-flex items-center gap-3 !text-bone" data-cursor="link">
+              <span className="link-line">
+                {t('catalogs.title')} · {catalogs.length} PDF
+              </span>
+              <span className="transition-transform duration-500 group-hover:translate-x-1.5">→</span>
+            </TLink>
+          )}
+        </div>
       </section>
 
       <section className="tone-light panel px-5 py-16 md:px-10 md:py-20">
@@ -96,6 +106,7 @@ export default function Products() {
             : list.map((p, i) => <Card key={p.slug} slug={p.slug} index={i} />)}
         </div>
       </section>
+      <CatalogsTeaser />
       <ContactCTA />
     </>
   )
@@ -117,5 +128,44 @@ function Card({ slug, index }: { slug: string; index: number }) {
         {cat && <span className="label shrink-0">{l(cat.name)}</span>}
       </div>
     </TLink>
+  )
+}
+
+/** Link to the Kataloglar page: a fan of collection catalog covers. */
+function CatalogsTeaser() {
+  const { t } = useLang()
+  const covers = [...catalogs.filter((c) => c.group === 'collection'), ...catalogs.filter((c) => c.group !== 'collection')].slice(0, 4)
+  if (!covers.length) return null
+  return (
+    <section className="px-5 py-24 md:px-10 md:py-32">
+      <TLink to="/catalogs" className="group grid items-center gap-14 md:grid-cols-12" data-cursor="view">
+        <div className="md:col-span-5">
+          <Reveal as="p" className="label mb-6">{`— ${t('catalogs.label')}`}</Reveal>
+          <Reveal as="h2" by="chars" className="display text-[15vw] transition-transform duration-1000 ease-[var(--ease-expo)] group-hover:translate-x-3 group-hover:italic md:text-[7vw]">
+            {t('catalogs.title')}
+          </Reveal>
+          <p className="mt-6 max-w-sm text-sm leading-relaxed text-ash">{t('catalogs.teaser')}</p>
+          <span className="mt-10 inline-flex items-center gap-5">
+            <span className="grid h-14 w-14 place-items-center rounded-full border border-line transition-colors duration-500 group-hover:bg-bone group-hover:text-ink">→</span>
+            <span className="label link-line !text-bone">
+              {t('catalogs.all')} · {catalogs.length}
+            </span>
+          </span>
+        </div>
+        <div className="relative h-[62vw] md:col-span-6 md:col-start-7 md:h-[30vw]">
+          {covers.map((c, i) => (
+            <img
+              key={c.file}
+              src={catalogCover(c)}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="absolute top-1/2 h-auto max-h-[92%] w-[40%] -translate-y-1/2 rounded-sm object-contain shadow-[0_30px_60px_-20px_rgb(0_0_0/0.45)] transition-[rotate,translate] duration-1000 ease-[var(--ease-expo)]"
+              style={{ left: `${i * 20}%`, rotate: `${(i - 1.5) * 5}deg`, zIndex: i }}
+            />
+          ))}
+        </div>
+      </TLink>
+    </section>
   )
 }

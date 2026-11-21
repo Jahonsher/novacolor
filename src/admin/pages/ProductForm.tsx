@@ -95,6 +95,7 @@ function Editor({ product, content }: { product?: Product; content: Content }) {
   }
   const show = (k: keyof typeof errors) => (submitted ? errors[k] : k === 'slug' && f.slug ? errors.slug : null)
   const linkedDocs = product ? content.documents.filter((d) => d.products.includes(product.slug)) : []
+  const linkedCatalogs = product ? (content.catalogs ?? []).filter((k) => k.products?.includes(product.slug)) : []
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -350,6 +351,34 @@ function Editor({ product, content }: { product?: Product; content: Content }) {
               <GuardedLink to="/admin/documents" className="mt-3 inline-block text-sm text-amber-800 hover:underline">
                 Sertifikatlarni boshqarish →
               </GuardedLink>
+            </Card>
+          )}
+
+          {!isNew && linkedCatalogs.length > 0 && (
+            <Card className="order-5 p-4 md:p-5">
+              <SectionTitle>PDF kataloglar</SectionTitle>
+              <ul className="flex flex-col gap-2">
+                {linkedCatalogs.map((k) => (
+                  <li key={k.file}>
+                    <a
+                      href={siteUrl(k.path ?? `pdf/catalogs/${k.file}`)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={cx('flex items-start gap-2 text-sm hover:underline', focusRing)}
+                    >
+                      <Icon name="pdf" className="mt-0.5 size-4 shrink-0 text-red-700" />
+                      <span>
+                        {k.title.uz}
+                        <span className="block text-xs text-stone-500">
+                          {k.pages ? `${k.pages} bet · ` : ''}
+                          {k.size >= 1024 ? `${(k.size / 1024).toFixed(1)} MB` : `${k.size} KB`}
+                        </span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-xs text-stone-500">Mahsulot sahifasidagi «Kataloglar» bo‘limida ko‘rinadi.</p>
             </Card>
           )}
 

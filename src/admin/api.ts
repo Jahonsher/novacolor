@@ -3,9 +3,9 @@
  * All requests go to `${BASE_URL}api/...` with the session cookie.
  * In dev, `localStorage.ncMock = '1'` routes requests to an in-browser mock (src/admin/dev/mockApi.ts).
  */
-import type { Category, Doc, DocGroup, Localized, NewsItem, Product as SiteProduct, Video } from '../data'
+import type { Catalog, Category, Doc, DocGroup, Localized, NewsItem, Product as SiteProduct, Video } from '../data'
 
-export type { Category, DocGroup, Localized, NewsItem, Video }
+export type { Catalog, Category, DocGroup, Localized, NewsItem, Video }
 
 /** Admin view of a product: `ai` = internal notes for the AI consultant (not sent to the public site). */
 export type Product = SiteProduct & { ai?: string }
@@ -34,6 +34,8 @@ export type Content = {
   clients: string[]
   documents: AdminDoc[]
   videos: Video[]
+  /** PDF catalogs (public/pdf/catalogs); missing in content saved before they existed */
+  catalogs?: Catalog[]
   /** General company knowledge for the AI consultant (internal). */
   aiKnowledge?: string
 }

@@ -16,7 +16,9 @@
     "img/products/africa-5.jpg",
     "img/products/africa-6.jpg",
     "img/products/africa-7.jpg",
-    "img/products/africa-8.jpg"
+    "img/products/africa-8.jpg",
+    "img/products/africa-9.jpg",
+    "img/products/africa-10.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun metall effektli dekorativ qoplama",
@@ -44,7 +46,8 @@
     "img/products/dune-6.jpg",
     "img/products/dune-7.jpg",
     "img/products/dune-8.jpg",
-    "img/products/dune-9.jpg"
+    "img/products/dune-9.jpg",
+    "img/products/dune-10.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun metall, oltin va kumush effektli dekorativ qoplama",
@@ -69,7 +72,10 @@
     "img/products/animamundi-3.jpg",
     "img/products/animamundi-4.jpg",
     "img/products/animamundi-5.jpg",
-    "img/products/animamundi-6.jpg"
+    "img/products/animamundi-6.jpg",
+    "img/products/animamundi-7.jpg",
+    "img/products/animamundi-8.jpg",
+    "img/products/animamundi-9.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun sadafsimon effektli yumshoq metall tekstura",
@@ -97,7 +103,9 @@
     "img/products/swahili-6.jpg",
     "img/products/swahili-7.jpg",
     "img/products/swahili-8.jpg",
-    "img/products/swahili-9.jpg"
+    "img/products/swahili-9.jpg",
+    "img/products/swahili-10.jpg",
+    "img/products/swahili-11.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun metall effektli teksturali dekorativ qoplama",
@@ -106,6 +114,30 @@
    "description": {
     "uz": "Interyer uchun metall effektli teksturali dekorativ qoplama. Swahili — metall to'ldiruvchilar va saralangan kvars uni asosidagi ichki pardozlash qoplamasi bo'lib, ular nozik metall effektini hosil qiladi. Ushbu to'ldiruvchilar yorug'lik va aks etgan ranglarning o'zgaruvchan va yoqimli o'yinini yaratadi.\n\nSwahili Novacolor kompaniyasining ekologik barqarorlikka bo'lgan bugungi sodiqligining ifodasidir. «Uglerod izi»ni kamaytirish maqsadida Swahili tarkibiga ekologik toza biomassadan olingan maxsus bog'lovchi modda kiritilgan va u qazilma xomashyo o'rnini bosadi. Bunga REDcert 2 tomonidan sertifikatlangan «massa balansi» deb nomlangan texnik-ishlab chiqarish usuli tufayli erishildi.",
     "ru": "Фактурное декоративное покрытие для интерьеров с эффектом металлик. Swahili — это покрытие для внутренней отделки на основе металлических наполнителей и отборной кварцевой муки, создающих тонкий металлический эффект. Эти наполнители создают меняющуюся и приятную игру света и отраженных цветов.\n\nSwahili представляет собой выражение нынешней приверженности Novacolor экологической устойчивости. Чтобы уменьшить «углеродный след», в состав Swahili входит специальное связующее, полученное из экологически чистой биомассы, которое, таким образом, заменяет ископаемое сырье. Это стало возможным благодаря технически-производственному методу под названием «баланс массы», сертифицированному REDcert 2."
+   }
+  },
+  {
+   "id": 26,
+   "slug": "swahili-opaco",
+   "name": "Swahili Opaco",
+   "categories": [
+    1
+   ],
+   "image": "img/products/swahiliopaco.jpg",
+   "gallery": [
+    "img/products/swahiliopaco-1.jpg",
+    "img/products/swahiliopaco-2.jpg",
+    "img/products/swahiliopaco-3.jpg",
+    "img/products/swahiliopaco-4.jpg",
+    "img/products/swahiliopaco-5.jpg"
+   ],
+   "subtitle": {
+    "uz": "Interyer uchun mat metall effektli teksturali dekorativ qoplama",
+    "ru": "Текстурное декоративное покрытие для интерьеров с эффектом матового металлика"
+   },
+   "description": {
+    "uz": "Interyer uchun mat metall effektli teksturali dekorativ qoplama. Swahili Opaco — Swahili'ning mat versiyasi: teksturali yuza va yumshoq, yaltiramaydigan metall jilo.\n\nNovalux E bilan tayyorlangan asos ustiga «spalter» mo'yqalami bilan bir yoki ikki qatlamda surtiladi. Sarfi: ikki qatlamda 4–5 m²/l.\n\nKatalogda 40 dan ortiq rang tusi (SWO 19100–19140 va SWO Silver) taqdim etilgan.",
+    "ru": "Текстурное декоративное покрытие для интерьеров с эффектом матового металлика. Swahili Opaco — матовая версия Swahili: фактурная поверхность и мягкий, неблестящий металлический отлив.\n\nНаносится в один или два слоя кистью «спальтер» на основание, подготовленное Novalux E. Расход: 4–5 м²/л в два слоя.\n\nВ каталоге представлено более 40 оттенков (SWO 19100–19140 и SWO Silver)."
    }
   },
   {
@@ -121,7 +153,11 @@
     "img/products/metallo-2.jpg",
     "img/products/metallo-3.jpg",
     "img/products/metallo-4.jpg",
-    "img/products/metallo-5.jpg"
+    "img/products/metallo-5.jpg",
+    "img/products/metallo-6.jpg",
+    "img/products/metallo-7.jpg",
+    "img/products/metallo-8.jpg",
+    "img/products/metallo-9.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun metall kukunlari asosidagi dekorativ qoplama",
@@ -148,7 +184,10 @@
     "img/products/luce-5.jpg",
     "img/products/luce-6.jpg",
     "img/products/luce-7.jpg",
-    "img/products/luce-8.jpg"
+    "img/products/luce-8.jpg",
+    "img/products/luce-9.jpg",
+    "img/products/luce-10.jpg",
+    "img/products/luce-11.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun yengil metall effektli teksturali dekorativ qoplama",
@@ -173,7 +212,8 @@
     "img/products/opaco-3.jpg",
     "img/products/opaco-4.jpg",
     "img/products/opaco-5.jpg",
-    "img/products/opaco-6.jpg"
+    "img/products/opaco-6.jpg",
+    "img/products/opaco-7.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun mat metall effektli dekorativ qoplama",
@@ -208,6 +248,56 @@
    }
   },
   {
+   "id": 27,
+   "slug": "r-stone",
+   "name": "R-Stone",
+   "categories": [
+    1
+   ],
+   "image": "img/products/rstone.jpg",
+   "gallery": [
+    "img/products/rstone-1.jpg",
+    "img/products/rstone-2.jpg",
+    "img/products/rstone-3.jpg",
+    "img/products/rstone-4.jpg",
+    "img/products/rstone-5.jpg",
+    "img/products/rstone-6.jpg"
+   ],
+   "subtitle": {
+    "uz": "Interyer va eksteryer uchun tosh effektli dekorativ pardoz",
+    "ru": "Декоративная отделка с эффектом камня для интерьеров и фасадов"
+   },
+   "description": {
+    "uz": "Interyer va eksteryer uchun «qadimiy patina» effektli dekorativ pardoz. R-Stone — bir nechta mahsulotdan iborat dekorativ tizim: asos — R-Stone Fondo; pardozlar — R-Stone Rosso, Verde, Blu va Perla, shuningdek R-Stone Metal Silver va Gold.\n\nAvval zanglamaydigan po'lat shpatel bilan ikki qatlam R-Stone Fondo surtiladi. Asos quriganidan keyin R-Stone pardozlaridan biri ikki qatlamda surtiladi; kerakli effektga qarab po'lat shpatel, gubka yoki mo'yqalam ishlatiladi. Sarfi: R-Stone Fondo — ikki qatlamda 1 kg/m²; R-Stone Rosso, Verde, Blu, Perla, Metal — ikki qatlamda 8–10 m²/l.\n\nR-Stone Fondo qiymat zanjirida qayta tiklanadigan xomashyodan foydalanish hisobiga qazilma resurslar sarfini kamaytiradi.",
+    "ru": "Декоративная отделка для интерьеров и фасадов с эффектом «старинной патины». R-Stone — декоративная система из нескольких продуктов: основа — R-Stone Fondo; финишные покрытия — R-Stone Rosso, Verde, Blu и Perla, а также R-Stone Metal Silver и Gold.\n\nСначала шпателем из нержавеющей стали наносят два слоя R-Stone Fondo. После высыхания основы в два слоя наносят одно из финишных покрытий R-Stone; в зависимости от желаемого эффекта используют шпатель, губку или кисть. Расход: R-Stone Fondo — 1 кг/м² в два слоя; R-Stone Rosso, Verde, Blu, Perla, Metal — 8–10 м²/л в два слоя.\n\nR-Stone Fondo снижает потребление ископаемых ресурсов благодаря использованию возобновляемого сырья в цепочке создания стоимости."
+   }
+  },
+  {
+   "id": 28,
+   "slug": "eclat-wall-painting",
+   "name": "Eclat_Wall Painting",
+   "categories": [
+    1
+   ],
+   "image": "img/products/eclat.jpg",
+   "gallery": [
+    "img/products/eclat-1.jpg",
+    "img/products/eclat-2.jpg",
+    "img/products/eclat-3.jpg",
+    "img/products/eclat-4.jpg",
+    "img/products/eclat-5.jpg",
+    "img/products/eclat-6.jpg"
+   ],
+   "subtitle": {
+    "uz": "Eksteryer uchun oltin metall effektli dekorativ qoplama",
+    "ru": "Декоративное покрытие для фасадов с эффектом золотого металлика"
+   },
+   "description": {
+    "uz": "Eksteryer uchun oltin metall effektli dekorativ qoplama. Eclat_Wall Painting — yorqinlikning uch o'lchamli effekti: fasadlarga oltin jilo va yorug'lik o'yinini bag'ishlaydi.\n\nTayyor holda yetkaziladi, suv bilan ko'pi bilan 20% gacha suyultiriladi. Ikki qatlam INTOSIL FINE ustiga, kerakli effektga qarab, gubkali molka yoki zanglamaydigan po'lat shpatel bilan bir yoki ikki qatlamda surtiladi. Sarfi: har bir qatlam uchun 8–10 m²/l.\n\nINTOSIL FINE bilan birgalikda travertin effektini ham olish mumkin.",
+    "ru": "Декоративное покрытие для фасадов с эффектом золотого металлика. Eclat_Wall Painting — трёхмерный эффект сияния: придаёт фасадам золотой блеск и игру света.\n\nГотово к применению, разбавляется водой максимум на 20%. Наносится в один или два слоя губчатой тёркой или шпателем из нержавеющей стали поверх двух слоёв INTOSIL FINE — в зависимости от желаемого эффекта. Расход: 8–10 м²/л на один слой.\n\nВ сочетании с INTOSIL FINE можно получить и эффект травертина."
+   }
+  },
+  {
    "id": 9,
    "slug": "mi-ku-therm",
    "name": "Mi-Ku therm",
@@ -221,7 +311,8 @@
     "img/products/therm-3.jpg",
     "img/products/therm-4.jpg",
     "img/products/therm-5.jpg",
-    "img/products/therm-6.jpg"
+    "img/products/therm-6.jpg",
+    "img/products/therm-7.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun atermik dekorativ qoplama",
@@ -245,7 +336,9 @@
     "img/products/mirror-2.jpg",
     "img/products/mirror-3.jpg",
     "img/products/mirror-4.jpg",
-    "img/products/mirror-5.jpg"
+    "img/products/mirror-5.jpg",
+    "img/products/mirror-6.jpg",
+    "img/products/mirror-7.jpg"
    ],
    "subtitle": {
     "uz": "Ichki yuzalar uchun ohak asosidagi yaltiroq shpaklyovka",
@@ -274,7 +367,8 @@
     "img/products/teodorico-7.jpg",
     "img/products/teodorico-8.jpg",
     "img/products/teodorico-epd.jpg",
-    "img/products/teodorico-qadoq.jpg"
+    "img/products/teodorico-qadoq.jpg",
+    "img/products/teodorico-9.jpg"
    ],
    "subtitle": {
     "uz": "Oltin, kumush va bronza effektli ohakli dekorativ suvoq",
@@ -301,7 +395,8 @@
     "img/products/archi-5.jpg",
     "img/products/archi-6.jpg",
     "img/products/archi-epd.jpg",
-    "img/products/archi-qadoq.jpg"
+    "img/products/archi-qadoq.jpg",
+    "img/products/archi-7.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun tosh effektli gidravlik ohakli kukunsimon qoplama",
@@ -310,6 +405,54 @@
    "description": {
     "uz": "Interyer uchun tosh effektli, gidravlik ohak asosidagi kukunsimon devor qoplamasi. Archi + Pietra — ichki xonalar devorlari uchun kukunsimon mineral qoplama bo'lib, u tabiiy gidravlik ohak NHL 3.5 (EN 459-1), havoiy ohak, sinchiklab saralangan to'ldiruvchilar aralashmasi va a'lo darajada ishlov berish qulayligini ta'minlovchi reologik modifikatorlar asosida tayyorlangan. Nufuzli dekorativ pardozlar yaratish uchun.",
     "ru": "Порошковое покрытие для стен на основе гидравлической извести для интерьеров с эффектом камня. Archi + Pietra — это порошковое минеральное покрытие для стен внутренних помещений на основе натуральной гидравлической извести NHL 3.5 (EN 459-1), воздушной извести, смеси тщательно отобранных заполнителей и реологических модификаторов, обеспечивающих отличную обрабатываемость. Для создания престижных декоративных отделок."
+   }
+  },
+  {
+   "id": 29,
+   "slug": "archi-argilla",
+   "name": "Archi+ Argilla",
+   "categories": [
+    2
+   ],
+   "image": "img/products/archiargilla.jpg",
+   "gallery": [
+    "img/products/archiargilla-1.jpg",
+    "img/products/archiargilla-2.jpg",
+    "img/products/archiargilla-3.jpg"
+   ],
+   "subtitle": {
+    "uz": "Interyer uchun ohak va tabiiy loy asosidagi kukunsimon mineral intonachino",
+    "ru": "Минеральная штукатурка в порошке для интерьеров на основе извести и натуральной глины"
+   },
+   "description": {
+    "uz": "Interyer uchun ohak va tabiiy loy asosidagi kukunsimon mineral intonachino. Yer va uning ranglaridan ilhomlangan — zamonaviy interyerlarni trendy-chic rustik uslubda bezash uchun ideal.\n\nArchi+ liniyasidagi bu intonachino haqiqiy tabiiy loy va havoli ohak asosida tayyorlangan va Novacolor'ning barqaror yondashuvi hamda innovatsiyalarini tasdiqlaydi. Loy kabi tarixiy xomashyo ilg'or texnologiyalar bilan uyg'unlashib, nufuzli interyerlar uchun kukunsimon mineral suvoqlar to'plami — Archi+ gammasida o'zining eng yuqori ifodasini topadi.\n\nTarkibi tufayli Archi+ Argilla bir qatlamda gidravlik bog'lovchilar asosidagi yangi va eski suvoqlarga, gips va gipsokarton yuzalarga, organik yoki mineral bo'yoq va qoplamalarga hamda yutuvchan mineral konglomeratlarga surtilishi mumkin. Sarfi (kukunga nisbatan): bir qatlam uchun 1,8–2,2 kg/m². Havoga uchuvchan moddalar kam ajralishi bo'yicha A+ sertifikatiga ega.",
+    "ru": "Минеральная штукатурка в порошке для интерьеров на основе извести и натуральной глины. Вдохновлена землёй и её цветами — идеальна для оформления современных интерьеров в стиле trendy-chic с ноткой рустика.\n\nИнтоначино линии Archi+ на основе настоящей натуральной глины и воздушной извести подтверждает экологичный подход и инновационность Novacolor. Такое историческое сырьё, как глина, в сочетании с передовыми технологиями находит своё высшее выражение в гамме Archi+ — коллекции порошковых минеральных штукатурок для престижных интерьеров.\n\nБлагодаря своему составу Archi+ Argilla наносится в один слой на новые и старые штукатурки на гидравлических вяжущих, гипсовые и гипсокартонные поверхности, органические или минеральные краски и покрытия, а также на впитывающие минеральные конгломераты. Расход (по порошку): 1,8–2,2 кг/м² на один слой. Сертификат A+ за низкий уровень выбросов летучих веществ."
+   }
+  },
+  {
+   "id": 30,
+   "slug": "materia-viva",
+   "name": "Materia Viva",
+   "categories": [
+    2
+   ],
+   "image": "img/products/materiaviva.jpg",
+   "gallery": [
+    "img/products/materiaviva-1.jpg",
+    "img/products/materiaviva-2.jpg",
+    "img/products/materiaviva-3.jpg",
+    "img/products/materiaviva-4.jpg",
+    "img/products/materiaviva-5.jpg",
+    "img/products/materiaviva-6.jpg",
+    "img/products/materiaviva-7.jpg"
+   ],
+   "subtitle": {
+    "uz": "Tabiiy to'ldiruvchilar qo'shilgan ohak asosidagi dekorativ qoplama",
+    "ru": "Декоративное покрытие на основе извести с природными наполнителями"
+   },
+   "description": {
+    "uz": "Tabiiy xomashyo bo'laklari qo'shilgan ohak asosidagi dekorativ qoplama — natural bond. Materia Viva — uchrashuv hikoyasi: qulay makonlarni loyihalash uchun innovatsion yuzalarni yaratuvchi qadimiy bog'liqlik, Tabiat bilan uning sof elementlarida uzluksiz muloqot. Ohak landshaft xomashyosi bo'laklari tufayli yangi ifodaga ega bo'ladi.\n\nKolleksiya to'rt variantdan iborat. Cocciopesto — O'rta yer dengizi arxitekturasi merosi, ajoyib ranglarining doimo yangi tuslarini ochib beradigan material. Conchiglia — yorug'lik va uning aks-sadolari bilan uzluksiz raqsga tushadigan chig'anoq bo'laklari, dengiz boyligini hikoya qiluvchi manzara. Pomice — yumshoq soyalar va kontrastlardan iborat teksturasi bilan o'ynaydigan noyob, yengil material. Sughero — himoya qiluvchi tabiat yumshoqligi, teginish orqali so'zlovchi sokinlik hashamati.\n\nHar bir variant Materia Viva asosini tegishli tabiiy to'ldiruvchi va suv bilan aralashtirib tayyorlanadi (aralashtirish nisbatlari katalogda keltirilgan). Tabiiy mahsulot bo'lgani uchun partiyalar o'rtasida aralashma suvi miqdori va to'ldiruvchilarning fizik va rang xususiyatlarida kichik farqlar bo'lishi mumkin — bu yakuniy estetikaga ta'sir qilmaydi.",
+    "ru": "Декоративное покрытие на основе извести с фрагментами природного сырья — natural bond. Materia Viva — это история встречи: древняя связь, рождающая инновационные поверхности для уютных пространств, непрерывный диалог с Природой в её чистых элементах. Известь обретает новое выражение благодаря фрагментам сырья из природного ландшафта.\n\nКоллекция включает четыре варианта. Cocciopesto — наследие средиземноморской архитектуры, материал, раскрывающий всё новые оттенки своих удивительных цветов. Conchiglia — фрагменты ракушек, мерцающие на поверхности в непрерывном танце со светом и его отражениями. Pomice — взрывная лёгкость уникального материала, играющего фактурой из мягких теней и контрастов. Sughero — мягкость защищающей природы, роскошь тишины, которая говорит через прикосновение.\n\nКаждый вариант готовится смешиванием основы Materia Viva с соответствующим природным наполнителем и водой (пропорции смешивания приведены в каталоге). Поскольку это натуральные продукты, между партиями возможны небольшие различия в количестве воды затворения и в физических и цветовых характеристиках наполнителей — без ущерба для итоговой эстетики."
    }
   },
   {
@@ -326,7 +469,8 @@
     "img/products/florenzia-3.jpg",
     "img/products/florenzia-4.jpg",
     "img/products/florenzia-5.jpg",
-    "img/products/florenzia-6.jpg"
+    "img/products/florenzia-6.jpg",
+    "img/products/florenzia-7.jpg"
    ],
    "subtitle": {
     "uz": "Interyerni yaltiroq pardozlash uchun ohakli shpaklyovka",
@@ -384,7 +528,15 @@
     "img/products/calce-5.jpg",
     "img/products/calce-6.jpg",
     "img/products/calce-epd.jpg",
-    "img/products/calce-qadoq.jpg"
+    "img/products/calce-qadoq.jpg",
+    "img/products/calce-7.jpg",
+    "img/products/calce-8.jpg",
+    "img/products/calce-9.jpg",
+    "img/products/calce-10.jpg",
+    "img/products/calce-11.jpg",
+    "img/products/calce-12.jpg",
+    "img/products/calce-13.jpg",
+    "img/products/calce-14.jpg"
    ],
    "subtitle": {
     "uz": "Ohak va loy asosidagi mineral dekorativ qoplama",
@@ -393,6 +545,53 @@
    "description": {
     "uz": "Interyer va eksteryer uchun ohak va loy asosidagi mineral dekorativ qoplama. CalceCruda — kuchli tabiiy tusga ega mikrog'ovakli dekorativ mineral qoplama bo'lib, u yashash qulayligiga faol hissa qo'shadi. CalceCruda ohak gidrati, tozalangan loy, saralangan marmar va tabiiy qumning o'ziga xos xususiyatlari asosida yaratilgan; ular to'g'ri nisbatda uyg'unlashganda a'lo darajadagi texnologiklik va shakl berish qulayligini ta'minlaydi. Loy komponenti zarrachalarning to'rsimon tuzilmasini hosil qiladi, ishlov berish vaqtini tartibga soladi va mahsulotni surtish qulayligini yaxshilaydi. Tarkibdagi sellyuloza tolalari tuzilmani mustahkamlaydi va boshqa komponentlar bilan uyg'unlikda qalinroq qatlam hosil qilishga yordam beradi.\n\nCalceCruda noshaffof estetik ko'rinishga, yumshoq yoki iliq ranglarga ega go'zal pardoz olish imkonini beradi va ayni paytda ichki hamda tashqi yuzalar uchun nafis bezak elementi bo'lib xizmat qiladi.\n\nCalceCruda atrofdagi havoda mavjud bo'lishi mumkin bo'lgan formaldegid konsentratsiyasini sezilarli darajada kamaytira oladi. Ushbu xususiyatning samaradorligi maxsus ISO 16000-23 standartiga muvofiq tasdiqlangan. Parchalanish jarayonining davomiyligi o'zgaruvchan, chunki bu xususiyat atrof-muhit sharoitlariga chambarchas bog'liq.",
     "ru": "Минеральное декоративное покрытие на основе извести и глины для интерьера и экстерьера. CalceCruda — это микропористое декоративное минеральное покрытие с сильным природным оттенком, которое активно способствует комфорту жизни. CalceCruda создано на основе особых свойств гидрата извести, очищенной глины, отборного мрамора и натурального песка, которые при правильном балансе позволяют получить превосходную технологичность и формуемость. Глиняный компонент создает сетчатую структуру частиц, регулирует время обработки и улучшает удобоукладываемость продукта. Присутствие целлюлозных волокон укрепляет структуру, способствуя в синергии с другими компонентами созданию большей толщины.\n\nCalceCruda позволяет получить прекрасную отделку с непрозрачными эстетическими эффектами, мягкими или теплыми цветами, являясь при этом элегантным элементом декора для внутренних и внешних поверхностей.\n\nCalceCruda может значительно снизить концентрацию формальдегида, который может присутствовать в окружающем воздухе. Эффективность этого свойства проверена в соответствии с конкретным стандартом ISO 16000-23. Продолжительность процесса разрушения непостоянна, ведь это свойство тесно связано с условиями окружающей среды."
+   }
+  },
+  {
+   "id": 31,
+   "slug": "mineral-finishes",
+   "name": "Mineral Finishes",
+   "categories": [
+    2
+   ],
+   "image": "img/products/mineralfinishes.jpg",
+   "gallery": [
+    "img/products/mineralfinishes-1.jpg",
+    "img/products/mineralfinishes-2.jpg",
+    "img/products/mineralfinishes-3.jpg",
+    "img/products/mineralfinishes-4.jpg",
+    "img/products/mineralfinishes-5.jpg",
+    "img/products/mineralfinishes-6.jpg"
+   ],
+   "subtitle": {
+    "uz": "Interyer va eksteryer uchun ohak asosidagi pardozlar: Marmur Fine, Marmur Medio, Era a Pennello",
+    "ru": "Отделки на основе извести для интерьеров и фасадов: Marmur Fine, Marmur Medio, Era a Pennello"
+   },
+   "description": {
+    "uz": "Interyer va eksteryer uchun ohak asosidagi pardozlar. Mineral Finishes ichki va tashqi yuzalarni bezash uchun mineral pardozlar gammasini taklif etadi.\n\nMARMUR FINE va MARMUR MEDIO — interyer va eksteryer uchun mayda yoki o'rta donali ohak asosidagi intonachino. Zanglamaydigan po'lat shpatel bilan ikki qatlamda surtiladi. Sarfi: Marmur Fine — ikki qatlamda 1,5–2,5 kg/m², Marmur Medio — ikki qatlamda 2–2,5 kg/m².\n\nERA A PENNELLO — interyer va eksteryer uchun ohakli bo'yoq. Valik, mo'yqalam yoki airless bilan ikki qatlamda surtiladi: birinchi qatlam 40–50%, ikkinchisi 25–30% suv bilan suyultiriladi. Sarfi: ikki qatlamda 2–4 m²/kg. Katalogdagi ranglar Era a Pennello bilan bajarilgan; ularning barchasini Marmur Fine va Marmur Medio bilan ham olish mumkin.",
+    "ru": "Отделки на основе извести для интерьеров и фасадов. Mineral Finishes предлагает гамму минеральных отделок для декорирования внутренних и наружных поверхностей.\n\nMARMUR FINE и MARMUR MEDIO — интоначино на основе извести мелкой или средней фракции для интерьеров и фасадов. Наносится в два слоя шпателем из нержавеющей стали. Расход: Marmur Fine — 1,5–2,5 кг/м² в два слоя, Marmur Medio — 2–2,5 кг/м² в два слоя.\n\nERA A PENNELLO — известковая краска для интерьеров и фасадов. Наносится в два слоя валиком, кистью или краскопультом airless: первый слой разбавляют водой на 40–50%, второй — на 25–30%. Расход: 2–4 м²/кг в два слоя. Цвета каталога выполнены краской Era a Pennello; все они доступны также для Marmur Fine и Marmur Medio."
+   }
+  },
+  {
+   "id": 32,
+   "slug": "antiche-patine",
+   "name": "Antiche Patine",
+   "categories": [
+    2
+   ],
+   "image": "img/products/antiche.jpg",
+   "gallery": [
+    "img/products/antiche-1.jpg",
+    "img/products/antiche-2.jpg",
+    "img/products/antiche-3.jpg"
+   ],
+   "subtitle": {
+    "uz": "Interyer va eksteryer uchun lessirovkalar (velatura) gammasi",
+    "ru": "Гамма лессирующих покрытий для интерьеров и фасадов"
+   },
+   "description": {
+    "uz": "Interyer va eksteryer uchun lessirovkalar gammasi. Antiche Patine devorlarga qadimiy patina ko'rinishini beradigan shaffof rangli qoplamalarni taklif etadi.\n\nFASE SILOSSANICA — interyer va eksteryerda lessirovka uchun siloksan asosli vosita. Suv bilan ko'pi bilan 100% gacha suyultiriladi va mo'yqalam, gubka yoki junli qo'lqop bilan bir yoki ikki qatlamda surtiladi. Sarfi: ikki qatlamda 12–15 m²/l.\n\nPATINA MINERALE — interyer va eksteryerdagi mineral asoslar uchun silikatli lessirovka. Suv bilan ko'pi bilan 20% gacha suyultiriladi va mo'yqalam, gubka yoki qo'lqop bilan bir yoki ikki qatlamda surtiladi. Sarfi: ikki qatlamda 4–8 m²/l.",
+    "ru": "Гамма лессирующих покрытий для интерьеров и фасадов. Antiche Patine предлагает прозрачные цветные покрытия, придающие стенам вид старинной патины.\n\nFASE SILOSSANICA — силоксановое связующее для лессировок внутри и снаружи помещений. Разбавляется водой максимум на 100% и наносится в один или два слоя кистью, губкой или меховой рукавицей. Расход: 12–15 м²/л в два слоя.\n\nPATINA MINERALE — силикатная лессировка для минеральных оснований внутри и снаружи помещений. Разбавляется водой максимум на 20% и наносится в один или два слоя кистью, губкой или рукавицей. Расход: 4–8 м²/л в два слоя."
    }
   },
   {
@@ -412,7 +611,9 @@
     "img/products/ironic-6.jpg",
     "img/products/ironic-7.jpg",
     "img/products/ironic-8.jpg",
-    "img/products/ironic-9.jpg"
+    "img/products/ironic-9.jpg",
+    "img/products/ironic-10.jpg",
+    "img/products/ironic-11.jpg"
    ],
    "subtitle": {
     "uz": "Ichki va tashqi ishlar uchun zang effektli qoplama",
@@ -439,7 +640,10 @@
     "img/products/verderame-5.jpg",
     "img/products/verderame-6.jpg",
     "img/products/verderame-7.jpg",
-    "img/products/verderame-8.jpg"
+    "img/products/verderame-8.jpg",
+    "img/products/verderame-9.jpg",
+    "img/products/verderame-10.jpg",
+    "img/products/verderame-11.jpg"
    ],
    "subtitle": {
     "uz": "Oksidlangan mis effektli dekorativ qoplama",
@@ -463,7 +667,8 @@
     "img/products/zeus-2.jpg",
     "img/products/zeus-3.jpg",
     "img/products/zeus-4.jpg",
-    "img/products/zeus-5.jpg"
+    "img/products/zeus-5.jpg",
+    "img/products/zeus-6.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun metall folga effektli dekorativ qoplama",
@@ -488,7 +693,13 @@
     "img/products/archiplusconcrete-3.jpg",
     "img/products/archiplusconcrete-4.jpg",
     "img/products/archiplusconcrete-5.jpg",
-    "img/products/archiplusconcrete-6.jpg"
+    "img/products/archiplusconcrete-6.jpg",
+    "img/products/archiplusconcrete-7.jpg",
+    "img/products/archiplusconcrete-8.jpg",
+    "img/products/archiplusconcrete-9.jpg",
+    "img/products/archiplusconcrete-10.jpg",
+    "img/products/archiplusconcrete-11.jpg",
+    "img/products/archiplusconcrete-12.jpg"
    ],
    "subtitle": {
     "uz": "Beton effektli kukunsimon ohakli suvoq",
@@ -497,6 +708,29 @@
    "description": {
     "uz": "Ichki va tashqi ishlar uchun beton effektli kukunsimon ohakli suvoq. Archi + Concrete — an'anaviy qoidalarga rioya qilgan holda ishlab chiqilgan, interyer uchun kukunsimon ohakli suvoq. U so'ndirilgan ohak, oq sement, sinchiklab saralangan to'ldiruvchilar va a'lo darajada surtish qulayligini ta'minlovchi reologik modifikatorlardan iborat. Mahsulotning o'ziga xos granulometrik egri chizig'i hamda siloksan fazali akril-siloksan glazurining bir yoki bir necha qatlamini surtish «sement»ga o'xshash effektlarni olish imkonini beradi, shu sababli u interyer dizaynidagi eng zamonaviy loyihalarda qo'llanilishi mumkin.\n\nArchi + Concrete yumshoq va yorqin ranglarga ega yashirin estetik effekt olish imkonini beradi. Surtilgan mahsulot qalinligi u qoplangan asosni vaqt o'tishi bilan samarali himoya qilishni kafolatlaydi.",
     "ru": "Известковая штукатурка в виде порошка с эффектом бетона для внутренних и наружных работ. Archi + Concrete — это известковая порошковая штукатурка для интерьеров, разработанная с соблюдением традиционных правил. Она состоит из гашеной извести, белого цемента, тщательно отобранных заполнителей и модификаторов реологических свойств, обеспечивающих отличную удобоукладываемость. Особая гранулометрическая кривая продукта и нанесение одного или нескольких слоев акрил-силоксановой глазури с силоксановой фазой позволяют получить эффекты, похожие на «цементные», и по этой причине продукт может использоваться в самых современных работах по дизайну интерьера.\n\nArchi + Concrete позволяет получить скрытый эстетический эффект с мягкими и яркими цветами. Толщина нанесенного продукта гарантирует эффективную защиту основы, на которую он нанесен, с течением времени."
+   }
+  },
+  {
+   "id": 33,
+   "slug": "concrete-by-novacolor",
+   "name": "Concrete by Novacolor",
+   "categories": [
+    4
+   ],
+   "image": "img/products/concrete.jpg",
+   "gallery": [
+    "img/products/concrete-1.jpg",
+    "img/products/concrete-2.jpg",
+    "img/products/concrete-3.jpg",
+    "img/products/concrete-4.jpg"
+   ],
+   "subtitle": {
+    "uz": "Eksteryer uchun beton effektli akril-siloksan intonachino",
+    "ru": "Акрил-силоксановая штукатурка с эффектом бетона для фасадов"
+   },
+   "description": {
+    "uz": "Eksteryer uchun beton effektli, suv o'tlariga qarshi (anti-alga) mayda donali akril-siloksan intonachino. Concrete by Novacolor — Novacolor'ning beton effektli suvoqlar gammasidagi tayyor pasta ko'rinishidagi versiya: fasad va tashqi yuzalarga beton ko'rinishini beradi.\n\nZanglamaydigan po'lat yoki plastik shpatel bilan ikki qatlamda surtiladi. Asos to'liq quriganidan keyin yuzani bir yoki ikki qatlam Fase Silossanica bilan qo'shimcha bezash mumkin. Sarfi: ikki qatlamda 1,6–2 kg/m².",
+    "ru": "Мелкозернистая акрил-силоксановая штукатурка для фасадов с эффектом бетона и защитой от водорослей. Concrete by Novacolor — пастообразная версия в гамме бетонных штукатурок Novacolor: придаёт фасадам и наружным поверхностям вид бетона.\n\nНаносится в два слоя шпателем из нержавеющей стали или пластика. После полного высыхания поверхность можно дополнительно декорировать одним или двумя слоями Fase Silossanica. Расход: 1,6–2 кг/м² в два слоя."
    }
   },
   {
@@ -521,7 +755,14 @@
     "img/products/wall2floor-11.jpg",
     "img/products/wall2floor-12.jpg",
     "img/products/wall2floor-13.jpg",
-    "img/products/wall2floor-14.jpg"
+    "img/products/wall2floor-14.jpg",
+    "img/products/wall2floor-15.jpg",
+    "img/products/wall2floor-16.jpg",
+    "img/products/wall2floor-17.jpg",
+    "img/products/wall2floor-18.jpg",
+    "img/products/wall2floor-19.jpg",
+    "img/products/wall2floor-20.jpg",
+    "img/products/wall2floor-21.jpg"
    ],
    "subtitle": {
     "uz": "Gorizontal va vertikal yuzalar uchun dekorativ qoplama",
@@ -547,7 +788,9 @@
     "img/products/supremematt-4.jpg",
     "img/products/supremematt-5.jpg",
     "img/products/supremematt-epd.jpg",
-    "img/products/supremematt-qadoq.jpg"
+    "img/products/supremematt-qadoq.jpg",
+    "img/products/supremematt-6.jpg",
+    "img/products/supremematt-7.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun suv asosidagi past emissiyali mat bo'yoq",
@@ -572,7 +815,9 @@
     "img/products/extramatt-3.jpg",
     "img/products/extramatt-4.jpg",
     "img/products/extramatt-epd.jpg",
-    "img/products/extramatt-qadoq.jpg"
+    "img/products/extramatt-qadoq.jpg",
+    "img/products/extramatt-5.jpg",
+    "img/products/extramatt-6.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun suv asosidagi o'ta yuviluvchan mat bo'yoq",
@@ -597,7 +842,8 @@
     "img/products/eggy-3.jpg",
     "img/products/eggy-4.jpg",
     "img/products/eggy-epd.jpg",
-    "img/products/eggy-qadoq.jpg"
+    "img/products/eggy-qadoq.jpg",
+    "img/products/eggy-5.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun «tuxum po'chog'i» effektli suvda eriydigan emal",
@@ -606,6 +852,77 @@
    "description": {
     "uz": "Interyer uchun «tuxum po'chog'i» effektli suvda eriydigan emal. MATmotion Eggy — oson surtiladigan, tez quriydigan, «tuxum po'chog'i» kabi mat ko'rinishga ega ichki qoplama. Surtish vaqtida uchuvchan birikmalar kam ajralib chiqishi, formaldegid va qo'shimcha plastifikatorlar yo'qligi bo'yalgan xonalardan tezda qayta foydalanish imkonini beradi.\n\nMATmotion Eggy eshiklar, romlar, moldinglar, plintuslar va kichik mebellarni ichki pardozlash uchun ideal. MATmotion Eggy qoplamasi asoslarga yuqori sirt qattiqligi, ishqalanish va tirnalishga chidamlilik, yopishib qolmaslik xususiyati va oson tozalanish xossasini beradi.",
     "ru": "Водорастворимая эмаль с эффектом яичной скорлупы для интерьеров. MATmotion Eggy — это легко наносимое быстросохнущее покрытие для внутренних работ, характеризующееся матовым эффектом яичной скорлупы. Низкое выделение летучих соединений при нанесении, отсутствие формальдегида и добавленных пластификаторов позволяют быстро повторно использовать окрашенные помещения.\n\nMATmotion Eggy находит свое идеальное применение во внутренней отделке дверей, рам, молдингов, плинтусов, небольшой мебели. Применение MATmotion Eggy придает основаниям высокую твердость поверхности, устойчивость к истиранию, устойчивость к царапинам, антиблокировку и легкость очистки."
+   }
+  },
+  {
+   "id": 34,
+   "slug": "celestia-wall-painting",
+   "name": "Celestia_Wall Painting",
+   "categories": [
+    6
+   ],
+   "image": "img/products/celestia.jpg",
+   "gallery": [
+    "img/products/celestia-1.jpg",
+    "img/products/celestia-2.jpg",
+    "img/products/celestia-3.jpg",
+    "img/products/celestia-4.jpg",
+    "img/products/celestia-5.jpg"
+   ],
+   "subtitle": {
+    "uz": "Interyer uchun «soft touch» effektli dekorativ qoplama",
+    "ru": "Декоративное покрытие для интерьеров с эффектом «soft touch»"
+   },
+   "description": {
+    "uz": "Interyer uchun «soft touch» effektli dekorativ qoplama. Celestia_Wall Painting devorga yumshoq, taktil yuza bag'ishlaydi.\n\nIkki qatlam rangli Novalux E bilan tayyorlangan asos ustiga Celestia_Wall Painting «spalter» mo'yqalami yoki zanglamaydigan po'lat shpatel bilan, kesishuvchi harakatlar bilan ikki qatlamda surtiladi. Sarfi: ikki qatlamda 6–8 m²/l.\n\nCelestia Finish — devorga yoqimli taktil effekt va biroz «satin» ko'rinish beradigan shaffof pardoz. Ikki qatlam rangli Novalux E ustiga mayda strukturali valik bilan ikki qatlamda surtiladi. Katalogda Celestia_Wall Painting uchun 21 ta va Celestia Finish uchun 8 ta rang tusi taqdim etilgan.",
+    "ru": "Декоративное покрытие для интерьеров с эффектом «soft touch». Celestia_Wall Painting придаёт стене мягкую, тактильную поверхность.\n\nНа основание, подготовленное двумя слоями колерованной Novalux E, Celestia_Wall Painting наносят в два слоя кистью «спальтер» или шпателем из нержавеющей стали перекрёстными движениями. Расход: 6–8 м²/л в два слоя.\n\nCelestia Finish — прозрачная отделка, которая придаёт стене приятный тактильный эффект и слегка «сатинированный» вид. Наносится в два слоя валиком с тонкой структурой поверх двух слоёв колерованной Novalux E. В каталоге представлены 21 оттенок Celestia_Wall Painting и 8 оттенков Celestia Finish."
+   }
+  },
+  {
+   "id": 35,
+   "slug": "matmotion-deco",
+   "name": "MATmotion Deco",
+   "categories": [
+    6
+   ],
+   "image": "img/products/matmotiondeco.jpg",
+   "gallery": [
+    "img/products/matmotiondeco-1.jpg",
+    "img/products/matmotiondeco-2.jpg",
+    "img/products/matmotiondeco-3.jpg",
+    "img/products/matmotiondeco-4.jpg",
+    "img/products/matmotiondeco-5.jpg",
+    "img/products/matmotiondeco-6.jpg"
+   ],
+   "subtitle": {
+    "uz": "Interyer uchun dekorativ pardozlar: Velvet, Silk va Marocaine",
+    "ru": "Декоративные отделки для интерьеров: Velvet, Silk и Marocaine"
+   },
+   "description": {
+    "uz": "Interyer uchun dekorativ pardozlar: Velvet, Silk va Marocaine. MATmotion — Novacolor ichki devor va shiftlarni, hatto katta maydonlarda ham, bezash uchun yaratgan tayyor emallar va professional suv asosli bo'yoqlar liniyasi. Velvet, Silk va Marocaine bilan MATmotion Deco'ga aylanadi: yuqori samaradorlik va oson bajarilishni uyg'unlashtirgan dekorativ pardozlar.\n\nMATmotion Velvet — akril polimerlarning suvli emulsiyasi asosidagi, formaldegidsiz, yaxshi yopuvchi mat shpatel pardozi. MATmotion PRIMER bilan birga bir yoki ikki qatlamda oson surtiladi va mineral pardozlarni eslatuvchi chuqur, jonli tuslardagi mat, baxmalsimon yuza hosil qiladi.\n\nMATmotion Silk — tajribasi kam ustalar ham oson surta oladigan, yengil metall effektli interyer pardozi (silver va extrawhite asoslari). Bir yoki ikki qatlam Silk bilan bezatilgan yuza surtishda hosil bo'ladigan soyalar va sadafsimon pigmentlar aksi o'rtasidagi uyg'unlik va kontrast tufayli yoqimli yorug'lik va rang o'yiniga ega bo'ladi.\n\nMATmotion Marocaine — teksturali to'ldiruvchilar va qum effektli kumushrang pigmentlar asosidagi vertikal ichki yuzalar uchun pardoz (silver asosi). Sadafsimon pigmentlar yorqinligi va bo'rtma to'ldiruvchilarning atlas jilosi yaratgan kontrast bilan ajralib turadi.\n\nMATmotion — formaldegid va qo'shimcha plastifikatorlarsiz «yashil» liniya. MATmotion Silk va Marocaine qazilma xomashyo o'rnini bosuvchi, barqaror biomassadan olingan maxsus bog'lovchi bilan ishlab chiqariladi («Mass Balance» usuli, REDcert2 sertifikati).",
+    "ru": "Декоративные отделки для интерьеров: Velvet, Silk и Marocaine. MATmotion — линия готовых эмалей и профессиональных водных красок, созданная Novacolor для отделки внутренних стен и потолков, в том числе больших площадей. С Velvet, Silk и Marocaine линия MATmotion становится Deco: удобные в работе декоративные отделки с высокими характеристиками и простотой нанесения.\n\nMATmotion Velvet — матовая шпатлёвочная отделка для интерьеров на основе акриловых полимеров в водной эмульсии, без формальдегида, с высокой укрывистостью. В сочетании с MATmotion PRIMER легко наносится в один или два слоя и создаёт матовую бархатистую поверхность с глубокими, яркими тонами, напоминающими минеральные отделки.\n\nMATmotion Silk — декоративная отделка для интерьеров с лёгким металлическим эффектом, простая в нанесении даже для менее опытных мастеров (базы silver и extrawhite). Поверхность, покрытая одним или двумя слоями Silk, получает приятную игру света и цвета благодаря гармонии и контрасту теней от нанесения и отблесков перламутровых пигментов.\n\nMATmotion Marocaine — отделка для вертикальных внутренних поверхностей на основе фактурных наполнителей и серебристых пигментов с песчаным эффектом (база silver). Выделяется контрастом между сиянием перламутровых пигментов и сатиновым блеском рельефных наполнителей.\n\nMATmotion — «зелёная» линия без формальдегида и добавленных пластификаторов. MATmotion Silk и Marocaine производятся со специальным связующим из устойчивой биомассы, заменяющим ископаемое сырьё (метод Mass Balance, сертификат REDcert2)."
+   }
+  },
+  {
+   "id": 36,
+   "slug": "matpassion-chalk-paint",
+   "name": "Matpassion Chalk Paint Effect",
+   "categories": [
+    6
+   ],
+   "image": "img/products/matpassion.jpg",
+   "gallery": [
+    "img/products/matpassion-1.jpg",
+    "img/products/matpassion-2.jpg",
+    "img/products/matpassion-3.jpg"
+   ],
+   "subtitle": {
+    "uz": "Interyer uchun «shabby chic» effektli mat dekorativ bo'yoq",
+    "ru": "Матовая декоративная краска для интерьеров с эффектом «shabby chic»"
+   },
+   "description": {
+    "uz": "Interyer uchun «shabby chic» effektli mat dekorativ bo'yoq. Matpassion Chalk Paint Effect bo'r bo'yog'i (chalk paint) effektidagi mat yuza va eskirtirilgan «shabby chic» ko'rinishini yaratadi.\n\nTayyor holda yetkaziladi, suv bilan ko'pi bilan 5% gacha suyultiriladi. Mo'yqalam bilan ikki qatlamda surtiladi. Sarfi: notekis asoslarda bir qatlam uchun 5–8 m²/l, silliq asoslarda — 8–11 m²/l.",
+    "ru": "Матовая декоративная краска для интерьеров с эффектом «shabby chic». Matpassion Chalk Paint Effect создаёт матовую поверхность с эффектом меловой краски (chalk paint) и состаренный вид в стиле «shabby chic».\n\nГотова к применению, разбавляется водой максимум на 5%. Наносится кистью в два слоя. Расход: 5–8 м²/л на один слой на неровных основаниях, 8–11 м²/л — на гладких."
    }
   },
   {
@@ -619,7 +936,10 @@
    "gallery": [
     "img/products/cerawax-1.jpg",
     "img/products/cerawax-2.jpg",
-    "img/products/cerawax-3.jpg"
+    "img/products/cerawax-3.jpg",
+    "img/products/cerawax-4.jpg",
+    "img/products/cerawax-5.jpg",
+    "img/products/cerawax-6.jpg"
    ],
    "subtitle": {
     "uz": "Mineral pardozlar uchun sovuq polietilen mumi",
@@ -642,7 +962,8 @@
     "img/products/archiplustadelak-1.jpg",
     "img/products/archiplustadelak-2.jpg",
     "img/products/archiplustadelak-3.jpg",
-    "img/products/archiplustadelak-4.jpg"
+    "img/products/archiplustadelak-4.jpg",
+    "img/products/archiplustadelak-5.jpg"
    ],
    "subtitle": {
     "uz": "Interyer uchun gidravlik ohak asosidagi kukunsimon bo'yoq",
@@ -662,7 +983,7 @@
     "ru": "Металлик"
    },
    "image": "img/categories/metallik.jpg",
-   "count": 8
+   "count": 11
   },
   {
    "id": 2,
@@ -671,7 +992,7 @@
     "ru": "Минералы"
    },
    "image": "img/categories/mineral.jpg",
-   "count": 7
+   "count": 11
   },
   {
    "id": 3,
@@ -689,7 +1010,7 @@
     "ru": "Бетон Арт"
    },
    "image": "img/categories/betonart.jpg",
-   "count": 2
+   "count": 3
   },
   {
    "id": 5,
@@ -706,8 +1027,8 @@
     "uz": "Matt",
     "ru": "Матовая продукция"
    },
-   "image": "img/products/supremematt.jpg",
-   "count": 3
+   "image": "img/categories/matt.jpg",
+   "count": 6
   },
   {
    "id": 7,
@@ -870,7 +1191,8 @@
     "swahili",
     "matmotion-eggy",
     "matmotion-extra-matt",
-    "matmotion-supreme-matt"
+    "matmotion-supreme-matt",
+    "swahili-opaco"
    ],
    "size": 1271
   },
@@ -885,7 +1207,8 @@
     "calce-cruda",
     "florenzia",
     "marmorino-ks",
-    "teodorico"
+    "teodorico",
+    "mineral-finishes"
    ],
    "size": 1270
   },
@@ -900,7 +1223,8 @@
     "calce-cruda",
     "florenzia",
     "marmorino-ks",
-    "teodorico"
+    "teodorico",
+    "mineral-finishes"
    ],
    "size": 1257
   },
@@ -914,7 +1238,8 @@
    "products": [
     "archi-pietra",
     "archi-concrete",
-    "archi-tadelakt"
+    "archi-tadelakt",
+    "archi-argilla"
    ],
    "size": 1428
   },
@@ -928,7 +1253,9 @@
    "products": [
     "archi-pietra",
     "archi-concrete",
-    "archi-tadelakt"
+    "archi-tadelakt",
+    "archi-argilla",
+    "materia-viva"
    ],
    "size": 1257
   },
@@ -946,7 +1273,8 @@
     "swahili",
     "luce-wall-painting",
     "animamundi",
-    "metallo-fuso"
+    "metallo-fuso",
+    "swahili-opaco"
    ],
    "size": 135
   },
@@ -969,7 +1297,9 @@
     "uz": "Archi+ Argilla — yong‘inga chidamlilik A1 sinfi (EN 13501-1)",
     "ru": "Archi+ Argilla — класс пожарной безопасности A1 (EN 13501-1)"
    },
-   "products": [],
+   "products": [
+    "archi-argilla"
+   ],
    "size": 321
   },
   {
@@ -982,7 +1312,8 @@
    "products": [
     "archi-pietra",
     "archi-concrete",
-    "archi-tadelakt"
+    "archi-tadelakt",
+    "archi-argilla"
    ],
    "size": 818
   },
@@ -1065,7 +1396,9 @@
     "uz": "EPD — Era a Pennello",
     "ru": "EPD — Era a Pennello"
    },
-   "products": [],
+   "products": [
+    "mineral-finishes"
+   ],
    "size": 597
   },
   {
@@ -1075,7 +1408,9 @@
     "uz": "EPD — Marmur Fine",
     "ru": "EPD — Marmur Fine"
    },
-   "products": [],
+   "products": [
+    "mineral-finishes"
+   ],
    "size": 635
   },
   {
@@ -1198,6 +1533,569 @@
    "poster": "video/ig-9.jpg",
    "instagram": "https://www.instagram.com/p/DcdNuX_tz1J/",
    "product": null
+  }
+ ],
+ "catalogs": [
+  {
+   "file": "metallics.pdf",
+   "group": "collection",
+   "title": {
+    "uz": "Metallics — metall effektli pardozlar",
+    "ru": "Metallics — металлизированные покрытия"
+   },
+   "products": [
+    "dune",
+    "dune-opaco",
+    "swahili",
+    "swahili-opaco",
+    "africa",
+    "luce-wall-painting",
+    "animamundi",
+    "metallo-fuso",
+    "r-stone",
+    "eclat-wall-painting",
+    "mi-ku-therm"
+   ],
+   "pages": 24,
+   "size": 2825
+  },
+  {
+   "file": "minerals.pdf",
+   "group": "collection",
+   "title": {
+    "uz": "Minerals — mineral pardozlar",
+    "ru": "Minerals — минеральные покрытия"
+   },
+   "products": [
+    "calce-cruda",
+    "archi-pietra",
+    "archi-tadelakt",
+    "florenzia",
+    "mirror",
+    "marmorino-ks",
+    "mineral-finishes",
+    "teodorico"
+   ],
+   "pages": 24,
+   "size": 8066
+  },
+  {
+   "file": "oxidation.pdf",
+   "group": "collection",
+   "title": {
+    "uz": "Oxidation — zang va mis effektli bo'yoqlar",
+    "ru": "Oxidation — краски с эффектом ржавчины и меди"
+   },
+   "products": [
+    "ironic",
+    "verderame"
+   ],
+   "pages": 5,
+   "size": 3072
+  },
+  {
+   "file": "concrete.pdf",
+   "group": "collection",
+   "title": {
+    "uz": "Concrete — beton effektli qoplamalar",
+    "ru": "Concrete — покрытия с эффектом бетона"
+   },
+   "products": [
+    "archi-concrete",
+    "concrete-by-novacolor"
+   ],
+   "pages": 7,
+   "size": 3570
+  },
+  {
+   "file": "metallics-2019.pdf",
+   "group": "collection",
+   "title": {
+    "uz": "Metallics — 2019-yil nashri",
+    "ru": "Metallics — издание 2019 года"
+   },
+   "products": [],
+   "pages": 11,
+   "size": 3533
+  },
+  {
+   "file": "matmotion.pdf",
+   "group": "colors",
+   "title": {
+    "uz": "MATmotion — rang katalogi",
+    "ru": "MATmotion — каталог цветов"
+   },
+   "products": [
+    "matmotion-supreme-matt",
+    "matmotion-extra-matt",
+    "matmotion-eggy"
+   ],
+   "pages": 11,
+   "size": 1834
+  },
+  {
+   "file": "matmotion-color-trends-2021.pdf",
+   "group": "colors",
+   "title": {
+    "uz": "MATmotion Color Trends 2021",
+    "ru": "MATmotion Color Trends 2021"
+   },
+   "products": [
+    "matmotion-supreme-matt",
+    "matmotion-extra-matt",
+    "matmotion-eggy"
+   ],
+   "pages": 8,
+   "size": 297
+  },
+  {
+   "file": "portfolio.pdf",
+   "group": "inspiration",
+   "title": {
+    "uz": "Portfolio — ranglar va dizayn",
+    "ru": "Portfolio — цвета и дизайн"
+   },
+   "products": [],
+   "pages": 19,
+   "size": 4318
+  },
+  {
+   "file": "photobook.pdf",
+   "group": "inspiration",
+   "title": {
+    "uz": "Made in Italy Photobook — barcha fakturalar",
+    "ru": "Made in Italy Photobook — все фактуры"
+   },
+   "products": [],
+   "pages": 276,
+   "size": 8287
+  },
+  {
+   "file": "stencil-collection.pdf",
+   "group": "inspiration",
+   "title": {
+    "uz": "Stencil Collection — Royal Design Studio trafaretlari",
+    "ru": "Stencil Collection — трафареты Royal Design Studio"
+   },
+   "products": [],
+   "pages": 13,
+   "size": 2526
+  },
+  {
+   "file": "wall2floor-manual.pdf",
+   "group": "technical",
+   "title": {
+    "uz": "Wall2Floor — texnik qo'llanma",
+    "ru": "Wall2Floor — техническое руководство"
+   },
+   "products": [
+    "wall2floor-top-coat"
+   ],
+   "pages": 72,
+   "size": 4795
+  },
+  {
+   "file": "africa.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Africa — mahsulot katalogi",
+    "ru": "Africa — каталог продукта"
+   },
+   "products": [
+    "africa"
+   ],
+   "pages": 8,
+   "size": 632
+  },
+  {
+   "file": "dune.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Dune — mahsulot katalogi",
+    "ru": "Dune — каталог продукта"
+   },
+   "products": [
+    "dune"
+   ],
+   "pages": 12,
+   "size": 1294
+  },
+  {
+   "file": "dune-opaco.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Dune Opaco — mahsulot katalogi",
+    "ru": "Dune Opaco — каталог продукта"
+   },
+   "products": [
+    "dune-opaco"
+   ],
+   "pages": 8,
+   "size": 4371
+  },
+  {
+   "file": "swahili.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Swahili — mahsulot katalogi",
+    "ru": "Swahili — каталог продукта"
+   },
+   "products": [
+    "swahili"
+   ],
+   "pages": 12,
+   "size": 2138
+  },
+  {
+   "file": "swahili-opaco.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Swahili Opaco — mahsulot katalogi",
+    "ru": "Swahili Opaco — каталог продукта"
+   },
+   "products": [
+    "swahili-opaco"
+   ],
+   "pages": 8,
+   "size": 4679
+  },
+  {
+   "file": "metallo-fuso.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Metallo_Fuso — mahsulot katalogi",
+    "ru": "Metallo_Fuso — каталог продукта"
+   },
+   "products": [
+    "metallo-fuso"
+   ],
+   "pages": 12,
+   "size": 2947
+  },
+  {
+   "file": "luce-wall-painting.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Luce_Wall Painting — mahsulot katalogi",
+    "ru": "Luce_Wall Painting — каталог продукта"
+   },
+   "products": [
+    "luce-wall-painting"
+   ],
+   "pages": 10,
+   "size": 3404
+  },
+  {
+   "file": "animamundi.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Animamundi — mahsulot katalogi",
+    "ru": "Animamundi — каталог продукта"
+   },
+   "products": [
+    "animamundi"
+   ],
+   "pages": 10,
+   "size": 1095
+  },
+  {
+   "file": "r-stone.pdf",
+   "group": "product",
+   "title": {
+    "uz": "R-Stone — mahsulot katalogi",
+    "ru": "R-Stone — каталог продукта"
+   },
+   "products": [
+    "r-stone"
+   ],
+   "pages": 8,
+   "size": 2201
+  },
+  {
+   "file": "eclat.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Eclat_Wall Painting — mahsulot katalogi",
+    "ru": "Eclat_Wall Painting — каталог продукта"
+   },
+   "products": [
+    "eclat-wall-painting"
+   ],
+   "pages": 5,
+   "size": 655
+  },
+  {
+   "file": "mirror.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Mirror — mahsulot katalogi",
+    "ru": "Mirror — каталог продукта"
+   },
+   "products": [
+    "mirror"
+   ],
+   "pages": 8,
+   "size": 3075
+  },
+  {
+   "file": "teodorico.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Teodorico — mahsulot katalogi",
+    "ru": "Teodorico — каталог продукта"
+   },
+   "products": [
+    "teodorico"
+   ],
+   "pages": 6,
+   "size": 2995
+  },
+  {
+   "file": "archi-pietra.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Archi+ Pietra — mahsulot katalogi",
+    "ru": "Archi+ Pietra — каталог продукта"
+   },
+   "products": [
+    "archi-pietra"
+   ],
+   "pages": 8,
+   "size": 684
+  },
+  {
+   "file": "archi-argilla.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Archi+ Argilla — mahsulot katalogi",
+    "ru": "Archi+ Argilla — каталог продукта"
+   },
+   "products": [
+    "archi-argilla"
+   ],
+   "pages": 6,
+   "size": 961
+  },
+  {
+   "file": "materia-viva.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Materia Viva — mahsulot katalogi",
+    "ru": "Materia Viva — каталог продукта"
+   },
+   "products": [
+    "materia-viva"
+   ],
+   "pages": 14,
+   "size": 3399
+  },
+  {
+   "file": "florenzia.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Florenzia — mahsulot katalogi",
+    "ru": "Florenzia — каталог продукта"
+   },
+   "products": [
+    "florenzia"
+   ],
+   "pages": 8,
+   "size": 1133
+  },
+  {
+   "file": "marmorino-ks.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Marmorino KS — mahsulot katalogi",
+    "ru": "Marmorino KS — каталог продукта"
+   },
+   "products": [
+    "marmorino-ks"
+   ],
+   "pages": 8,
+   "size": 1622
+  },
+  {
+   "file": "calcecruda.pdf",
+   "group": "product",
+   "title": {
+    "uz": "CalceCruda — mahsulot katalogi",
+    "ru": "CalceCruda — каталог продукта"
+   },
+   "products": [
+    "calce-cruda"
+   ],
+   "pages": 10,
+   "size": 1151
+  },
+  {
+   "file": "mineral-finishes.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Mineral Finishes — mahsulot katalogi",
+    "ru": "Mineral Finishes — каталог продукта"
+   },
+   "products": [
+    "mineral-finishes"
+   ],
+   "pages": 8,
+   "size": 1704
+  },
+  {
+   "file": "antiche-patine.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Antiche Patine — mahsulot katalogi",
+    "ru": "Antiche Patine — каталог продукта"
+   },
+   "products": [
+    "antiche-patine"
+   ],
+   "pages": 12,
+   "size": 890
+  },
+  {
+   "file": "ironic.pdf",
+   "group": "product",
+   "title": {
+    "uz": "IRONic — mahsulot katalogi",
+    "ru": "IRONic — каталог продукта"
+   },
+   "products": [
+    "ironic"
+   ],
+   "pages": 4,
+   "size": 333
+  },
+  {
+   "file": "verderame.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Verderame_Wall Painting — mahsulot katalogi",
+    "ru": "Verderame_Wall Painting — каталог продукта"
+   },
+   "products": [
+    "verderame"
+   ],
+   "pages": 5,
+   "size": 1270
+  },
+  {
+   "file": "zeus.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Zeus — mahsulot katalogi",
+    "ru": "Zeus — каталог продукта"
+   },
+   "products": [
+    "zeus"
+   ],
+   "pages": 7,
+   "size": 730
+  },
+  {
+   "file": "archi-concrete.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Archi+ Concrete — mahsulot katalogi",
+    "ru": "Archi+ Concrete — каталог продукта"
+   },
+   "products": [
+    "archi-concrete"
+   ],
+   "pages": 8,
+   "size": 788
+  },
+  {
+   "file": "concrete-by-novacolor.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Concrete by Novacolor — mahsulot katalogi",
+    "ru": "Concrete by Novacolor — каталог продукта"
+   },
+   "products": [
+    "concrete-by-novacolor"
+   ],
+   "pages": 5,
+   "size": 590
+  },
+  {
+   "file": "celestia.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Celestia_Wall Painting — mahsulot katalogi",
+    "ru": "Celestia_Wall Painting — каталог продукта"
+   },
+   "products": [
+    "celestia-wall-painting"
+   ],
+   "pages": 8,
+   "size": 3068
+  },
+  {
+   "file": "matmotion-deco.pdf",
+   "group": "product",
+   "title": {
+    "uz": "MATmotion Deco — mahsulot katalogi",
+    "ru": "MATmotion Deco — каталог продукта"
+   },
+   "products": [
+    "matmotion-deco"
+   ],
+   "pages": 12,
+   "size": 1576
+  },
+  {
+   "file": "matpassion.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Matpassion Chalk Paint Effect — mahsulot katalogi",
+    "ru": "Matpassion Chalk Paint Effect — каталог продукта"
+   },
+   "products": [
+    "matpassion-chalk-paint"
+   ],
+   "pages": 4,
+   "size": 1261
+  },
+  {
+   "file": "cera-wax.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Cera Wax — mahsulot katalogi",
+    "ru": "Cera Wax — каталог продукта"
+   },
+   "products": [
+    "cera-wax"
+   ],
+   "pages": 6,
+   "size": 554
+  },
+  {
+   "file": "archi-tadelakt.pdf",
+   "group": "product",
+   "title": {
+    "uz": "Archi+ Tadelakt — mahsulot katalogi",
+    "ru": "Archi+ Tadelakt — каталог продукта"
+   },
+   "products": [
+    "archi-tadelakt"
+   ],
+   "pages": 6,
+   "size": 1530
+  },
+  {
+   "file": "calcecruda-loyihalar.pdf",
+   "group": "product",
+   "title": {
+    "uz": "CalceCruda — loyihalar katalogi",
+    "ru": "CalceCruda — каталог проектов"
+   },
+   "products": [
+    "calce-cruda"
+   ],
+   "pages": 20,
+   "size": 8086
   }
  ]
 }
